@@ -68,6 +68,12 @@ const PublicNavigation = () => {
                   >
                     Thông tin tài khoản
                   </Link>
+                  <Link
+                    to="/chat"
+                    className="rounded-lg p-2 w-full block text-left hover:bg-teal-200"
+                  >
+                    Liên hệ
+                  </Link>
                   <button
                     onClick={handleLogout}
                     className="rounded-lg w-full p-2 text-left text-red-600 hover:text-red-700 hover:bg-teal-200"

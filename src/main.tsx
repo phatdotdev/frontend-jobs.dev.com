@@ -19,6 +19,7 @@ import HomeView from "./pages/HomeView.tsx";
 import PublicLayout from "./components/Layout/PublicLayout.tsx";
 import CompanyView from "./pages/CompanyView.tsx";
 import ProfileBasedRole from "./components/Authentication/ProfileBasedRole.tsx";
+import ChatView from "./pages/ChatView.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -30,6 +31,7 @@ const router = createBrowserRouter(
         <Route path="" element={<HomeView />} />
         <Route path="jobs" element={<JobView />} />
         <Route path="companies" element={<CompanyView />} />
+        <Route path="chat" element={<ChatView />} />
       </Route>
 
       <Route path="profile" element=<ProfileBasedRole /> />
