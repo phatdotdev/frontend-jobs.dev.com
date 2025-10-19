@@ -68,11 +68,35 @@ const PublicNavigation = () => {
                   >
                     Thông tin tài khoản
                   </Link>
+                  {userInfo.role === "JOBSEEKER" && (
+                    <Link
+                      to="/job-seeker"
+                      className="rounded-lg p-2 w-full block text-left hover:bg-teal-200"
+                    >
+                      Quản lý ứng viên
+                    </Link>
+                  )}
+                  {userInfo.role === "RECRUITER" && (
+                    <Link
+                      to="/recruiter"
+                      className="rounded-lg p-2 w-full block text-left hover:bg-teal-200"
+                    >
+                      Quản lý doanh nghiệp
+                    </Link>
+                  )}
+                  {userInfo.role === "ADMIN" && (
+                    <Link
+                      to="/"
+                      className="rounded-lg p-2 w-full block text-left hover:bg-teal-200"
+                    >
+                      Quản lý hệ thống
+                    </Link>
+                  )}
                   <Link
                     to="/chat"
                     className="rounded-lg p-2 w-full block text-left hover:bg-teal-200"
                   >
-                    Liên hệ
+                    Lịch sử liên hệ
                   </Link>
                   <button
                     onClick={handleLogout}

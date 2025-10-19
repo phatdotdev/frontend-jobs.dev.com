@@ -20,6 +20,12 @@ import PublicLayout from "./components/Layout/PublicLayout.tsx";
 import CompanyView from "./pages/CompanyView.tsx";
 import ProfileBasedRole from "./components/Authentication/ProfileBasedRole.tsx";
 import ChatView from "./pages/ChatView.tsx";
+import JobSeekerPageView from "./pages/JobSeeker/JobSeekerPageView.tsx";
+import RecruiterPageView from "./pages/Recruiter/RecruiterPageView.tsx";
+import RecruiterRoute from "./components/Authentication/RecruiterRoute.tsx";
+import CreateJobPostView from "./pages/Recruiter/CreateJobPostView.tsx";
+import JobPostingListView from "./pages/Recruiter/JobPostingListView.tsx";
+import NotFoundPage from "./pages/NotFoundPage.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -36,12 +42,23 @@ const router = createBrowserRouter(
 
       <Route path="profile" element=<ProfileBasedRole /> />
 
-      {/* protected routes */}
-      <Route element={<JobSeekerRoute />}></Route>
+      {/* job seeker routes */}
+      <Route path="/job-seeker" element={<JobSeekerRoute />}>
+        <Route path="" element={<JobSeekerPageView />} />
+      </Route>
+
+      {/* recruiter routes */}
+      <Route path="/recruiter" element={<RecruiterRoute />}>
+        <Route path="" element={<RecruiterPageView />} />
+        <Route path="post" element={<CreateJobPostView />} />
+        <Route path="list" element={<JobPostingListView />} />
+      </Route>
 
       {/* expert routes */}
 
       {/* admin routes */}
+
+      <Route path="*" element={<NotFoundPage />} />
     </Route>
   )
 );
