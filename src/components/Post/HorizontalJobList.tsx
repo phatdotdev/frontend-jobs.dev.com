@@ -1,4 +1,4 @@
-import JobPosting from "./JobPosting";
+import JobPosting from "./JobPostingCard";
 
 type JobPostingType = {
   id: string;

@@ -1,13 +1,11 @@
-import { useSelector } from "react-redux";
-import type { RootState } from "../../redux/features/store";
 import { Outlet, useNavigate } from "react-router-dom";
 import RecruiterPageHeader from "../Recruiter/RecruiterPageHeader";
+import { useGetUserInfoQuery } from "../../redux/api/userApiSlice";
 
 const RecruiterRoute = () => {
-  const selectCurrentUser = (state: RootState) => state.authentication.userInfo;
-  const userInfo = useSelector(selectCurrentUser);
+  const { data: { data: userInfo } = {}, isLoading } = useGetUserInfoQuery();
   const navigate = useNavigate();
-  if (!userInfo || userInfo.role !== "RECRUITER") {
+  if (!isLoading && userInfo?.role !== "RECRUITER") {
     navigate("/");
   }
   return (

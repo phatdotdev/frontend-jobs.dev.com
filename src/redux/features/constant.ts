@@ -11,3 +11,8 @@ export const CER_URL = "/api/v1/certifications";
 export const PROJ_URL = "/api/v1/projects";
 export const AWD_URL = "/api/v1/awards";
 export const ACT_URL = "/api/v1/activities";
+// RESOURCE
+export const TAG_URL = "/api/v1/resource/tags";
+export const LOC_URL = "/api/v1/resource/locations";
+export const SCH_URL = "/api/v1/resource/schools";
+export const CERT_URL = "/api/v1/resource/certificates";

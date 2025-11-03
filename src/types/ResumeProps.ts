@@ -32,6 +32,17 @@ export type SkillProps = {
   updatedAt: Date;
 };
 
+export type CertificationProps = {
+  id: string;
+  name: string;
+  organization: string;
+  issueDate: string;
+  expirationDate?: string;
+  description?: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type ProjectProps = {
   id: string;
   name: string;

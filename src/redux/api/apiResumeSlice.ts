@@ -1,14 +1,16 @@
 import type { ResponseProps } from "../../types/ResponseProps";
-import type {
-  ActivityProps,
-  AwardProps,
-  ExperienceProps,
-  ProjectProps,
-  SkillProps,
+import {
+  type CertificationProps,
+  type ActivityProps,
+  type AwardProps,
+  type ExperienceProps,
+  type ProjectProps,
+  type SkillProps,
 } from "../../types/ResumeProps";
 import {
   ACT_URL,
   AWD_URL,
+  CER_URL,
   EDU_URL,
   EXP_URL,
   PROJ_URL,
@@ -97,6 +99,23 @@ export const apiResumeSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    // CERTIFICATIONS
+    getAllCertifications: builder.query<
+      ResponseProps<CertificationProps[]>,
+      void
+    >({
+      query: () => ({ url: `${CER_URL}` }),
+    }),
+    createCertification: builder.mutation<
+      ResponseProps<CertificationProps>,
+      CertificationProps
+    >({
+      query: (data) => ({
+        url: `${CER_URL}`,
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -108,6 +127,7 @@ export const {
   useGetAllProjectsQuery,
   useGetAllAwardsQuery,
   useGetAllActivitiesQuery,
+  useGetAllCertificationsQuery,
   // POST
   useCreateEducationMutation,
   useCreateExperienceMutation,
@@ -115,4 +135,5 @@ export const {
   useCreateProjectMutation,
   useCreateAwardMutation,
   useCreateActivityMutation,
+  useCreateCertificationMutation,
 } = apiResumeSlice;

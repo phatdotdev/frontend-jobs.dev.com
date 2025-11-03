@@ -1,6 +1,6 @@
-import type { UserInfoProp } from "../models/UserInfoProp";
+import type { UserResponseProps } from "../types/UserProps";
 
-export const getUserInfo = (): UserInfoProp | null => {
+export const getUserInfo = (): UserResponseProps | null => {
   const raw = localStorage.getItem("userInfo");
   const exp = localStorage.getItem("expirationTime");
 
@@ -16,7 +16,7 @@ export const getUserInfo = (): UserInfoProp | null => {
   }
 
   try {
-    const userInfo: UserInfoProp = JSON.parse(raw);
+    const userInfo: UserResponseProps = JSON.parse(raw);
     return userInfo;
   } catch (error) {
     return null;

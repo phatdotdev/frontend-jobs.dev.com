@@ -1,5 +1,6 @@
 import ActivityManager from "../../components/JobSeeker/ActivityManager";
 import AwardManager from "../../components/JobSeeker/AwardManager";
+import CertificationManager from "../../components/JobSeeker/CertificationManager";
 import EducationManager from "../../components/JobSeeker/EducationManager";
 import ExperienceManager from "../../components/JobSeeker/ExperienceManager";
 import ProjectManager from "../../components/JobSeeker/ProjectManager";
@@ -11,6 +12,7 @@ const JobSeekerPageView = () => {
       <EducationManager />
       <ExperienceManager />
       <SkillManager />
+      <CertificationManager />
       <ProjectManager />
       <AwardManager />
       <ActivityManager />

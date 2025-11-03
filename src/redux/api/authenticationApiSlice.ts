@@ -1,5 +1,6 @@
 import { apiSlice } from "./apiSlice";
 import { AUTH_URL } from "../features/constant";
+import { type ResponseProps } from "../../types/ResponseProps";
 
 export interface AuthRequest {
   email: string;
@@ -39,7 +40,14 @@ export const authenticationApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    logout: builder.mutation<ResponseProps<null>, void>({
+      query: () => ({
+        url: `${AUTH_URL}/logout`,
+        method: "POST",
+      }),
+    }),
   }),
 });
 
-export const { useLoginMutation, useRegisterMutation } = authenticationApiSlice;
+export const { useLoginMutation, useRegisterMutation, useLogoutMutation } =
+  authenticationApiSlice;

@@ -26,6 +26,15 @@ import RecruiterRoute from "./components/Authentication/RecruiterRoute.tsx";
 import CreateJobPostView from "./pages/Recruiter/CreateJobPostView.tsx";
 import JobPostingListView from "./pages/Recruiter/JobPostingListView.tsx";
 import NotFoundPage from "./pages/NotFoundPage.tsx";
+import AdminPage from "./pages/Admin/AdminPage.tsx";
+import AdminDashboard from "./pages/Admin/AdminDashboard.tsx";
+import ManageUserPage from "./pages/Admin/ManageUserPage.tsx";
+import ManageTagPage from "./pages/Admin/ManageTagPage.tsx";
+import ManageSchoolPage from "./pages/Admin/ManageSchoolPage.tsx";
+import ManageCertificatePage from "./pages/Admin/ManageCertificatePage.tsx";
+import ManageResourcePage from "./pages/Admin/ManageResourcePage.tsx";
+import ManageLocationPage from "./pages/Admin/ManageLocationPage.tsx";
+import JobDetailView from "./pages/JobDetailView.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -36,6 +45,7 @@ const router = createBrowserRouter(
         <Route path="register" element={<Register />} />
         <Route path="" element={<HomeView />} />
         <Route path="jobs" element={<JobView />} />
+        <Route path="jobs/:id" element={<JobDetailView />} />
         <Route path="companies" element={<CompanyView />} />
         <Route path="chat" element={<ChatView />} />
       </Route>
@@ -57,6 +67,16 @@ const router = createBrowserRouter(
       {/* expert routes */}
 
       {/* admin routes */}
+      <Route path="/admin" element={<AdminPage />}>
+        <Route path="" element={<AdminDashboard />} />
+        <Route path="users" element={<ManageUserPage />} />
+        <Route path="resource" element={<ManageResourcePage />}>
+          <Route path="tags" element={<ManageTagPage />} />
+          <Route path="schools" element={<ManageSchoolPage />} />
+          <Route path="certificates" element={<ManageCertificatePage />} />
+          <Route path="locations" element={<ManageLocationPage />} />
+        </Route>
+      </Route>
 
       <Route path="*" element={<NotFoundPage />} />
     </Route>
