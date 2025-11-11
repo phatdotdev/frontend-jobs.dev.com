@@ -11,7 +11,7 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
-  const [register, { isLoading, error }] = useRegisterMutation();
+  const [register, { isLoading }] = useRegisterMutation();
 
   const handleSubmitForm = (e: React.FormEvent<HTMLElement>) => {
     e.preventDefault();
@@ -36,7 +36,8 @@ const Register = () => {
 
   const handleConfirm = async (role: "JOBSEEKER" | "RECRUITER") => {
     try {
-      const resposne = await register({
+      console.log({ username, password, email, role });
+      await register({
         username,
         email,
         password,

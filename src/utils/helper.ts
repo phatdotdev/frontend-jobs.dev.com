@@ -20,6 +20,13 @@ export const timeAgo = (dateString: string): string => {
   return `${diffDays} ngày trước`;
 };
 
+export const formatCount = (num: number) => {
+  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+  if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+  if (num >= 999) return "999+";
+  return num.toString();
+};
+
 export function formatDateTime(dateString: string): string {
   const date = new Date(dateString);
 

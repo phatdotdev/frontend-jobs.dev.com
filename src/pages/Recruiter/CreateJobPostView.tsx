@@ -18,6 +18,8 @@ import { useGetAllLocationsQuery } from "../../redux/api/apiAdminSlice";
 import type { JobType, Location } from "../../types/PostingProps";
 import SectionTitle from "../../components/UI/SectionTitle";
 import InputField from "../../components/UI/InputField";
+import { useDispatch } from "react-redux";
+import { addToast } from "../../redux/features/toastSlice";
 
 const CreateJobPostForm = () => {
   const [createJobPosting, { isLoading }] = useCreateJobPostingMutation();
@@ -39,6 +41,8 @@ const CreateJobPostForm = () => {
   const [images, setImages] = useState<File[]>([]);
   const [error, setError] = useState("");
   const [locationId, setLocationId] = useState("");
+
+  const dispatch = useDispatch();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +72,14 @@ const CreateJobPostForm = () => {
 
     try {
       await createJobPosting(formData).unwrap();
-      navigate("/jobs");
+      dispatch(
+        addToast({
+          type: "success",
+          title: "Tạo bài đăng thành công",
+          message: "Tạo bài đăng thành công (được ghi bản nháp)",
+        })
+      );
+      navigate("/recruiter/jobs");
     } catch (err: any) {
       setError(
         err?.data?.message || "Đã xảy ra lỗi không xác định khi tạo bài đăng."

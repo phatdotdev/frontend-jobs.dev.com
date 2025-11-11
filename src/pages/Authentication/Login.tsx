@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useLoginMutation } from "../../redux/api/authenticationApiSlice";
 import { useLazyGetUserInfoQuery } from "../../redux/api/userApiSlice";
+import { useDispatch } from "react-redux";
+import { addToast } from "../../redux/features/toastSlice";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -14,15 +16,32 @@ const Login = () => {
   const [searchParams] = useSearchParams();
   const redirect = searchParams.get("redirect");
 
+  const dispatch = useDispatch();
+
   const handleSubmit = async (e: React.FormEvent<HTMLElement>) => {
     e.preventDefault();
     try {
       await login({ email, password }).unwrap();
       triggerGetUser();
-      if (redirect) navigate(redirect);
-      else navigate("/");
+      if (redirect) {
+        navigate(redirect);
+      } else navigate("/");
+
+      dispatch(
+        addToast({
+          type: "success",
+          title: "Đăng nhập thành công!",
+          message: "Chào mừng bạn trở lại",
+        })
+      );
     } catch (err) {
-      console.error(err);
+      dispatch(
+        addToast({
+          type: "error",
+          title: "Đăng nhập thất bại!",
+          message: "Email hoặc mật khẩu không đúng!",
+        })
+      );
     }
   };
 

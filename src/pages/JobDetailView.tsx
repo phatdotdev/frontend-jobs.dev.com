@@ -9,10 +9,10 @@ import {
   CheckCircle,
   X,
   Send,
-  Loader2, // Đổi Loader thành Loader2 để có icon quay
+  Loader2,
   Calendar,
   type LucideIcon,
-  Layers, // Icon mới cho mô tả
+  Layers,
 } from "lucide-react";
 import { useGetJobPostingDetailQuery } from "../redux/api/postApiSlice";
 import { useNavigate, useParams } from "react-router-dom";
@@ -28,6 +28,8 @@ import {
   useSearchApplyQuery,
 } from "../redux/api/applicationSlice";
 import ApplicationInfo from "../components/Application/ApplicationInfo"; // Component đã cải tiến
+import InteractionItem from "../components/Post/InteractionItem";
+import type { PostingProps } from "../types/PostingProps";
 
 // Định nghĩa lại Icon Loader cho đồng bộ
 const Loader = Loader2;
@@ -63,7 +65,7 @@ const JobDetailView: React.FC = () => {
     isLoading: isJobLoading,
     isError: isJobError,
   } = useGetJobPostingDetailQuery(id as string);
-  const job = jobData?.data;
+  const job: PostingProps = jobData?.data;
 
   const { data: userDataResponse, isLoading: isUserLoading } =
     useGetUserInfoQuery();
@@ -225,9 +227,9 @@ const JobDetailView: React.FC = () => {
       {/* --- */}
 
       {/* 2. Main Content and Sidebar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 grid grid-cols-1 lg:grid-cols-3 gap-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* LEFT COLUMN - Job Tabs */}
-        <div className="lg:col-span-2 space-y-10">
+        <div className="lg:col-span-1  space-y-8">
           <ImageCarousel images={job.imageNames} />
 
           <div className="bg-white p-6 md:p-10 rounded-2xl shadow-2xl border border-gray-100">
@@ -335,6 +337,11 @@ const JobDetailView: React.FC = () => {
                   </p>
                 </div>
               </div>
+              {/* Tương tác  */}
+              <InteractionItem
+                likes={job?.likes as number}
+                views={job?.views as number}
+              />
             </div>
           </div>
 

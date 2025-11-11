@@ -58,6 +58,19 @@ export const postApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    // INTERACTION
+    likeJobPosting: builder.mutation<ResponseProps<any>, any>({
+      query: (id) => ({
+        url: `${POST_URL}/${id}/like`,
+        method: "POST",
+      }),
+    }),
+    viewJobPosting: builder.mutation<ResponseProps<any>, any>({
+      query: (id) => ({
+        url: `${POST_URL}/${id}/view`,
+        method: "POST",
+      }),
+    }),
   }),
 });
 
@@ -68,4 +81,7 @@ export const {
   useSearchJobPostingsQuery,
   useGetJobPostingDetailQuery,
   useUpdateJobPostingMutation,
+  // INTERACTION
+  useLikeJobPostingMutation,
+  useViewJobPostingMutation,
 } = postApiSlice;

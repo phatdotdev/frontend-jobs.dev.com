@@ -14,12 +14,22 @@ export type PostingProps = {
   requirements: string;
   benefits: string;
   state: "DRAFT" | "PUBLISHED" | "EXPIRED" | "ACHIVED";
-  views: number;
-  likes: number;
+  views?: number;
+  likes?: number;
+  applies?: number;
 
-  createdAt: Date;
-  updateAt: Date;
-  expiredAt: Date;
+  avatarUrl: string;
+  companyName: string;
+  minSalary: number;
+  maxSalary: number;
+  experience: string;
+
+  createdAt: string;
+  updateAt: string;
+  expiredAt: string;
+  imageNames: string[];
+
+  location: { id: string; name: string };
 };
 
 export type JobType =
