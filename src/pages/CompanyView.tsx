@@ -57,16 +57,17 @@ const CompanyList: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8 space-y-6">
-      <h1 className="text-3xl font-extrabold text-teal-700 tracking-tight flex items-center gap-3">
-        <Building2 className="text-teal-500" size={28} />
-        Danh sách Công ty Tuyển dụng
+    <div className="min-h-screen bg-gray-50 p-4 md:p-10 space-y-10">
+      <h1 className="text-4xl lg:text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-4">
+        <Building2 className="text-teal-600 w-8 h-8" />
+        <span className="text-teal-600">Tìm kiếm</span> Doanh nghiệp
       </h1>
 
       {/* Thanh tìm kiếm */}
-      <div className="bg-white p-4 rounded-xl shadow-lg flex flex-col md:flex-row gap-3 border border-gray-100">
+      <div className="bg-white p-4 rounded-2xl shadow-xl flex flex-col md:flex-row gap-3 border border-gray-100/50 transition-all duration-300 hover:shadow-2xl">
+        {/* Input Field */}
         <div className="relative flex-grow">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-teal-500" />
           <input
             type="text"
             value={searchTerm}
@@ -74,16 +75,18 @@ const CompanyList: React.FC = () => {
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSearch();
             }}
-            placeholder="Nhập tên công ty cần tìm..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition duration-150"
+            placeholder="Tìm kiếm công ty, vị trí, hoặc từ khóa..." // Tối ưu hóa placeholder
+            className="w-full pl-12 pr-4 py-2.5 bg-gray-50 border-transparent rounded-xl 
+                       focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent 
+                       transition duration-200 placeholder-gray-500 text-gray-800 shadow-inner"
           />
         </div>
-
-        {/* Nút Tìm kiếm */}
         <button
           onClick={handleSearch}
           disabled={isLoading}
-          className="flex items-center justify-center gap-2 bg-teal-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-teal-600 transition duration-200 shadow-md shadow-teal-600/30 disabled:opacity-50"
+          // 🎯 Nút chính: Màu sắc đậm hơn, shadow mạnh và hiệu ứng hover rõ ràng
+          className="flex items-center justify-center gap-2 bg-teal-500 text-white px-8 py-2.5 rounded-xl font-bold 
+                   hover:bg-teal-700 transition duration-200 disabled:opacity-50 disabled:shadow-none"
         >
           {isLoading ? (
             <Loader className="animate-spin h-5 w-5" />
@@ -93,11 +96,13 @@ const CompanyList: React.FC = () => {
           {isLoading ? "Đang tìm..." : "Tìm kiếm"}
         </button>
 
-        {/* Nút Đặt lại */}
+        {/* Nút Đặt lại (Reset) */}
         <button
           onClick={handleReset}
           disabled={isLoading || (!searchQuery && !searchTerm)}
-          className="flex items-center justify-center gap-2 bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-300 transition duration-200 disabled:opacity-50"
+          // 🎯 Nút phụ: Thiết kế tối giản, viền nhẹ
+          className="flex items-center justify-center gap-2 bg-white text-gray-600 px-6 py-2.5 rounded-xl font-semibold 
+                   border border-gray-300 hover:bg-gray-100 transition duration-200 disabled:opacity-50"
         >
           <RotateCw size={20} /> Đặt lại
         </button>

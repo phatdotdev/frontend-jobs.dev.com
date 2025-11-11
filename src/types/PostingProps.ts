@@ -21,3 +21,17 @@ export type PostingProps = {
   updateAt: Date;
   expiredAt: Date;
 };
+
+export type JobType =
+  | "FULL_TIME"
+  | "PART_TIME"
+  | "INTERNSHIP"
+  | "FREELANCE"
+  | "CONTRACT"
+  | "TEMPORARY"
+  | "REMOTE";
+
+export type Location = {
+  id: string;
+  name: string;
+};

@@ -3,6 +3,8 @@ export type UserResponseProps = {
   username: String;
   email?: string;
   role: String;
+  avatarUrl?: string;
+  coverUrl?: string;
   status?: string;
   createdAt: Date;
   updatedAt: Date;

@@ -1,12 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
 import { apiSlice } from "../api/apiSlice";
-import authenticationReducer from "../features/authSlice";
+import notificationsSlice from "./notificationSlice";
+import messagesSlice from "./messageSlice";
 
 export const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
-    authentication: authenticationReducer,
+    notifications: notificationsSlice.reducer,
+    messages: messagesSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(apiSlice.middleware),

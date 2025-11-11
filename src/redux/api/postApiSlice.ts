@@ -24,6 +24,9 @@ export const postApiSlice = apiSlice.injectEndpoints({
         params,
       }),
     }),
+    getJobPostingDetail: builder.query<ResponseProps<any>, string>({
+      query: (id) => ({ url: `${POST_URL}/${id}` }),
+    }),
     // ADMIN
     getAllJobPostings: builder.query<ResponseProps<any>, JobSearchProps>({
       query: (params) => ({
@@ -32,9 +35,13 @@ export const postApiSlice = apiSlice.injectEndpoints({
       }),
     }),
     // RECRUITER
-    getMineJobPostings: builder.query<ResponseProps<any>, void>({
-      query: () => ({
+    getMineJobPostings: builder.query<
+      ResponseProps<any>,
+      { page: number; size: number }
+    >({
+      query: (params) => ({
         url: `${POST_URL}/mine`,
+        params,
       }),
     }),
     createJobPosting: builder.mutation<ResponseProps<any>, any>({
@@ -44,13 +51,12 @@ export const postApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
-    getPostImage: builder.query<string, { postId: string; imageName: string }>({
-      query: ({ postId, imageName }) => ({
-        url: `${POST_URL}/${postId}/images/${imageName}`,
-        responseHandler: (response) => response.blob(),
-        responseType: "blob",
+    updateJobPosting: builder.mutation<ResponseProps<any>, any>({
+      query: ({ data, id }) => ({
+        url: `${POST_URL}/${id}`,
+        method: "PUT",
+        body: data,
       }),
-      transformResponse: (blob: Blob) => URL.createObjectURL(blob),
     }),
   }),
 });
@@ -58,6 +64,8 @@ export const postApiSlice = apiSlice.injectEndpoints({
 export const {
   useGetMineJobPostingsQuery,
   useCreateJobPostingMutation,
-  useGetPostImageQuery,
+  // PUBLIC
   useSearchJobPostingsQuery,
+  useGetJobPostingDetailQuery,
+  useUpdateJobPostingMutation,
 } = postApiSlice;

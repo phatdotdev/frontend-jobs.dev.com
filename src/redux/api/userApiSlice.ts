@@ -1,7 +1,18 @@
 import { apiSlice } from "./apiSlice";
-import { USER_URL } from "../features/constant";
+import { UPLOAD_URL, USER_URL } from "../features/constant";
 import type { ResponseProps } from "../../types/ResponseProps";
-import type { UserResponseProps } from "../../types/UserProps";
+
+type AccountInfoProp = {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+  status: string;
+  avatarUrl: string;
+  coverUrl: string;
+  createdAt: string;
+  updatedAt?: string;
+};
 
 export const userApiSlice = apiSlice.injectEndpoints({
   overrideExisting: true,
@@ -13,7 +24,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
     }),
     // get authenticated user info
-    getUserInfo: builder.query<ResponseProps<UserResponseProps>, void>({
+    getUserInfo: builder.query<ResponseProps<AccountInfoProp>, void>({
       query: () => ({
         url: `${USER_URL}/info`,
       }),
@@ -71,6 +82,28 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: `${USER_URL}/companies/${id}`,
       }),
     }),
+    changePassword: builder.mutation<ResponseProps<any>, any>({
+      query: (data) => ({
+        url: `${USER_URL}/password`,
+        method: "PUT",
+        body: data,
+      }),
+    }),
+    // upload
+    uploadUserAvatar: builder.mutation<any, FormData>({
+      query: (formData) => ({
+        url: `${UPLOAD_URL}/avatar`,
+        method: "POST",
+        body: formData,
+      }),
+    }),
+    uploadUserBackground: builder.mutation<any, FormData>({
+      query: (formData) => ({
+        url: `${UPLOAD_URL}/background`,
+        method: "POST",
+        body: formData,
+      }),
+    }),
   }),
 });
 
@@ -91,4 +124,9 @@ export const {
   // COMPANIES
   useSearchCompaniesQuery,
   useGetCompanyByIdQuery,
+  // UPLOAD
+  useUploadUserAvatarMutation,
+  useUploadUserBackgroundMutation,
+  // PASSWORD
+  useChangePasswordMutation,
 } = userApiSlice;

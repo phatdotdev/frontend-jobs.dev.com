@@ -14,9 +14,11 @@ import {
   UserCheck,
   Menu as MenuIcon,
   X,
+  Star,
 } from "lucide-react";
 import { useGetUserInfoQuery } from "../redux/api/userApiSlice";
 import { useLogoutMutation } from "../redux/api/authenticationApiSlice";
+import NotificationPanel from "./Notification/NotificationPanel";
 
 const PublicNavigation = () => {
   const [logout] = useLogoutMutation();
@@ -75,7 +77,7 @@ const PublicNavigation = () => {
   const userMenuItems = [
     {
       label: "Thông tin tài khoản",
-      path: "/profile",
+      path: "/account",
       icon: UserCircle,
       role: "ALL",
     },
@@ -90,6 +92,12 @@ const PublicNavigation = () => {
       path: "/recruiter",
       icon: Building,
       role: "RECRUITER",
+    },
+    {
+      label: "Quản lý đánh giá",
+      path: "/expert",
+      icon: Star,
+      role: "EXPERT",
     },
     {
       label: "Quản lý hệ thống",
@@ -204,37 +212,40 @@ const PublicNavigation = () => {
           <div className="flex items-center gap-3">
             {userInfo ? (
               // Logged In User Menu
-              <div
-                className="relative"
-                onMouseEnter={() => setShowUserMenu(true)}
-              >
-                <button
-                  onClick={() => setShowUserMenu((prev) => !prev)}
-                  className="flex items-center gap-2 bg-white border border-gray-200 p-1 pl-3 rounded-full text-gray-800 font-semibold hover:border-teal-500 transition duration-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              <div className="flex items-center gap-4">
+                <NotificationPanel />
+                <div
+                  className="relative"
+                  onMouseEnter={() => setShowUserMenu(true)}
                 >
-                  {/* Role Chip */}
-                  <div className="hidden sm:block">
-                    {renderUserRole(String(userInfo.role))}
-                  </div>
+                  <button
+                    onClick={() => setShowUserMenu((prev) => !prev)}
+                    className="flex items-center gap-2 bg-white border border-gray-200 p-1 pl-3 rounded-full text-gray-800 font-semibold hover:border-teal-500 transition duration-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  >
+                    {/* Role Chip */}
+                    <div className="hidden sm:block">
+                      {renderUserRole(String(userInfo.role))}
+                    </div>
 
-                  {/* Avatar */}
-                  <img
-                    src={avatarUrl}
-                    alt="Avatar"
-                    className="w-8 h-8 rounded-full object-cover border-2 border-white"
-                  />
+                    {/* Avatar */}
+                    <img
+                      src={avatarUrl}
+                      alt="Avatar"
+                      className="w-8 h-8 rounded-full object-cover border-2 border-white"
+                    />
 
-                  {/* Dropdown Indicator */}
-                  <ChevronDown
-                    size={18}
-                    className={`text-teal-600 transition-transform duration-300 mr-1 ${
-                      showUserMenu ? "rotate-180" : "rotate-0"
-                    }`}
-                  />
-                </button>
+                    {/* Dropdown Indicator */}
+                    <ChevronDown
+                      size={18}
+                      className={`text-teal-600 transition-transform duration-300 mr-1 ${
+                        showUserMenu ? "rotate-180" : "rotate-0"
+                      }`}
+                    />
+                  </button>
 
-                {/* User Dropdown Menu */}
-                {showUserMenu && userMenuContent}
+                  {/* User Dropdown Menu */}
+                  {showUserMenu && userMenuContent}
+                </div>
               </div>
             ) : (
               // Auth Buttons (Logged Out)

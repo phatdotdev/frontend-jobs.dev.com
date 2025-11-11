@@ -6,7 +6,7 @@ import {
   Phone,
   ShieldCheck,
   ShieldX,
-  User,
+  Calendar,
 } from "lucide-react";
 
 type Company = {
@@ -27,7 +27,7 @@ type Company = {
 
 const defaultAvatar = "https://placehold.co/80x80/009688/ffffff?text=LOGO";
 
-// Helper Component for structured information display
+// Helper Component cho hiển thị thông tin, tối giản hóa
 const InfoPill = ({
   icon,
   label,
@@ -37,14 +37,14 @@ const InfoPill = ({
   label: string;
   value: string;
 }) => (
-  <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
-    <span className="flex-shrink-0 text-teal-600">{icon}</span>
-    <div className="min-w-0">
-      <p className="text-xs font-medium text-gray-500 truncate">{label}</p>
-      <p className="text-sm font-medium text-gray-800 truncate">
-        {value || "---"}
-      </p>
-    </div>
+  // Thiết kế InfoPill nhỏ gọn, chỉ hiển thị label và value trên hai dòng
+  <div className="flex flex-col p-2 rounded-lg transition duration-150 border border-gray-200 bg-white hover:bg-gray-50">
+    <p className="text-xs font-medium text-gray-500 flex items-center gap-1 uppercase tracking-wider mb-0.5">
+      <span className="text-teal-500">{icon}</span> {label}
+    </p>
+    <p className="text-sm font-semibold text-gray-800 truncate">
+      {value || "---"}
+    </p>
   </div>
 );
 
@@ -59,101 +59,99 @@ const CompanyItem = ({ company }: { company: Company }) => {
   return (
     <div
       key={company.id}
-      className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition duration-300 border border-gray-50 overflow-hidden transform hover:scale-[1.01]"
+      className="bg-white rounded-xl shadow-md transition duration-300 border border-gray-100 overflow-hidden transform hover:shadow-lg"
     >
       {/* CARD CONTENT */}
-      <div className="p-6 space-y-5">
-        {/* Header: Logo, Name, Verification Badge */}
-        <div className="flex justify-between items-start pb-4 border-b border-gray-100">
-          <div className="flex items-start gap-4">
-            {/* Logo */}
+      <div className="p-4 md:p-5 space-y-4">
+        {/* Header: Logo, Name, Verification Badge (Gọn gàng) */}
+        <div className="flex justify-between items-start pb-3 border-b border-gray-100">
+          <div className="flex items-start gap-3">
+            {/* Logo - Kích thước nhỏ gọn */}
             <img
               src={company.avatarUrl || defaultAvatar}
               alt={`Logo ${company.companyName}`}
-              className="w-16 h-16 rounded-xl object-cover border-2 border-teal-500 p-0.5 shadow-md flex-shrink-0"
+              className="w-14 h-14 rounded-xl object-cover border-2 border-teal-400 p-0.5 shadow-sm flex-shrink-0"
               onError={(e) => {
                 e.currentTarget.src = defaultAvatar;
                 e.currentTarget.onerror = null;
               }}
             />
-            {/* Name */}
-            <div className="mt-1">
-              <h3 className="text-2xl font-extrabold text-slate-800 leading-tight">
+            {/* Name và Metadata */}
+            <div className="mt-0.5 min-w-0">
+              <h3 className="text-xl font-bold text-gray-900 truncate">
                 {company.companyName}
               </h3>
-              <p className="text-sm text-teal-600 font-semibold flex items-center gap-1 mt-0.5">
-                <Building2 size={16} /> Ứng tuyển: {company.role}
+              <p className="text-xs text-purple-600 font-medium flex items-center gap-1 mt-0.5 truncate">
+                <Building2 size={14} /> {company.role} | ID:{" "}
+                {company.id.slice(0, 8)}...
               </p>
             </div>
           </div>
 
-          {/* Verification Status Badge */}
+          {/* Verification Status Badge - Nhỏ gọn và tối giản */}
           <div className="flex-shrink-0 pt-1">
             {company.verified ? (
-              <span className="inline-flex items-center rounded-full bg-teal-100 px-3 py-1 text-sm font-semibold text-teal-700 shadow-sm border border-teal-300">
-                <ShieldCheck size={16} className="mr-1" /> Đã xác thực
+              <span className="inline-flex items-center rounded-full bg-teal-100 px-2 py-0.5 text-xs font-semibold text-teal-700">
+                <ShieldCheck size={14} className="mr-1" /> Đã xác thực
               </span>
             ) : (
-              <span className="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-sm font-semibold text-yellow-700 shadow-sm border border-yellow-300">
-                <ShieldX size={16} className="mr-1" /> Chưa xác thực
+              <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-semibold text-yellow-700">
+                <ShieldX size={14} className="mr-1" /> Chưa xác thực
               </span>
             )}
           </div>
         </div>
 
-        {/* Description Block */}
-        <div className="pt-2">
-          <h4 className="text-sm font-bold text-gray-700 mb-2">
+        {/* Description Block - Tối giản */}
+        <div className="pt-1">
+          <h4 className="text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">
             Mô tả tóm tắt:
           </h4>
-          <p className="text-base text-gray-700 italic border-l-4 border-teal-500 pl-4 py-1 bg-gray-50 rounded-r-lg">
+          <p className="text-sm text-gray-700 italic border-l-2 border-teal-500 pl-3 py-1">
             {company.description || "Chưa có mô tả chi tiết từ công ty."}
           </p>
         </div>
 
-        {/* Contact Information - Grid Layout */}
+        {/* Contact Information - Grid 2 cột, InfoPill mới */}
         <div className="pt-3 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-2 gap-3">
           <InfoPill
-            icon={<User size={16} />}
-            label="Tên đăng nhập"
-            value={company.username}
-          />
-          <InfoPill
-            icon={<Mail size={16} />}
-            label="Email"
+            icon={<Mail size={14} />}
+            label="Email Liên hệ"
             value={company.email}
           />
           <InfoPill
-            icon={<Phone size={16} />}
+            icon={<Phone size={14} />}
             label="Điện thoại"
             value={company.phone}
           />
           <InfoPill
-            icon={<MapPin size={16} />}
+            icon={<MapPin size={14} />}
             label="Địa chỉ"
             value={company.address}
+          />
+          <InfoPill
+            icon={<Calendar size={14} />}
+            label="Ngày tạo"
+            value={formattedCreatedAt}
           />
         </div>
       </div>
 
-      {/* Contact Button */}
-      <div className="px-6 pb-5 pt-3 flex justify-end">
+      {/* Footer: Contact Button (Sử dụng không gian footer để đặt nút) */}
+      <div className="bg-gray-50 px-5 py-3 flex justify-between items-center rounded-b-xl border-t border-gray-100">
+        <p className="text-xs text-gray-500">
+          Cập nhật:{" "}
+          <span className="font-semibold text-gray-700">
+            {formattedUpdatedAt}
+          </span>
+        </p>
         <a
           href={`mailto:${company.email}`}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white text-sm font-semibold rounded-lg shadow hover:bg-teal-700 transition"
+          className="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-500 text-white text-sm font-semibold rounded-lg shadow-md hover:bg-teal-600 transition"
+          aria-label={`Liên hệ với ${company.companyName} qua email`}
         >
           <Mail size={16} /> Liên hệ
         </a>
-      </div>
-
-      {/* Footer: Dates */}
-      <div className="bg-gray-50 px-6 py-3 text-xs text-gray-500 flex justify-between rounded-b-2xl border-t border-gray-100">
-        <div>
-          <span className="font-semibold">Ngày tạo:</span> {formattedCreatedAt}
-        </div>
-        <div>
-          <span className="font-semibold">Cập nhật:</span> {formattedUpdatedAt}
-        </div>
       </div>
     </div>
   );

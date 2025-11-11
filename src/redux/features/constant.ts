@@ -11,8 +11,18 @@ export const CER_URL = "/api/v1/certifications";
 export const PROJ_URL = "/api/v1/projects";
 export const AWD_URL = "/api/v1/awards";
 export const ACT_URL = "/api/v1/activities";
+export const RSM_URL = "/api/v1/resumes";
 // RESOURCE
 export const TAG_URL = "/api/v1/resource/tags";
 export const LOC_URL = "/api/v1/resource/locations";
 export const SCH_URL = "/api/v1/resource/schools";
 export const CERT_URL = "/api/v1/resource/certificates";
+// APPLICATION
+export const APP_URL = "/api/v1/applications";
+// UPLOAD
+export const UPLOAD_URL = "/api/v1/upload";
+// COMMUNICATION
+export const MSG_URL = "/api/v1/messages";
+export const NOTI_URL = "/api/v1/notifications";
+// FEEDBACK
+export const FB_URL = "/api/v1/feedback";

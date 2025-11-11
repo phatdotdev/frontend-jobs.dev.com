@@ -1,7 +1,9 @@
 import React from "react";
 
+// Define the properties for the component
 interface InputFieldProps {
   label?: string;
+  // Icon component type (like Briefcase or Wallet from lucide-react)
   Icon?: React.ComponentType<{ className?: string }>;
   type?: string;
   value: string;
@@ -30,16 +32,18 @@ const InputField: React.FC<InputFieldProps> = ({
   return (
     <div className="space-y-1">
       {label && (
-        <label className="block text-sm font-semibold text-gray-700">
+        <label className="block text-sm font-semibold text-gray-700 mb-1">
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
 
       <div
-        className={`relative flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-teal-500 transition duration-150 ${className}`}
+        // Thêm shadow và đảm bảo border khi focus nhất quán
+        className={`relative flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-teal-500 focus-within:border-teal-500 transition duration-150 shadow-sm ${className}`}
       >
+        {/* Icon được căn giữa dọc bằng transform */}
         {hasIcon && (
-          <Icon className="w-5 h-5 text-gray-400 ml-3 absolute left-3" />
+          <Icon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
         )}
 
         {rows > 1 ? (
@@ -50,8 +54,9 @@ const InputField: React.FC<InputFieldProps> = ({
             required={required}
             rows={rows}
             className={`w-full px-4 py-2.5 ${
+              // Áp dụng left padding nếu có icon
               hasIcon ? "pl-10" : ""
-            } bg-white rounded-lg focus:outline-none placeholder-gray-500 text-sm resize-none`}
+            } bg-white rounded-lg focus:outline-none placeholder-gray-500 text-sm resize-y text-gray-800`}
           />
         ) : (
           <input
@@ -62,7 +67,7 @@ const InputField: React.FC<InputFieldProps> = ({
             required={required}
             className={`w-full px-4 py-2.5 ${
               hasIcon ? "pl-10" : ""
-            } bg-white rounded-lg focus:outline-none placeholder-gray-500 text-sm`}
+            } bg-white rounded-lg focus:outline-none placeholder-gray-500 text-sm text-gray-800`}
           />
         )}
       </div>

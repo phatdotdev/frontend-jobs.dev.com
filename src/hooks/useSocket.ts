@@ -1,55 +1,65 @@
 import { Client, type IMessage } from "@stomp/stompjs";
 import { useEffect, useRef, useState } from "react";
 
-export interface ChatMessage {
+export interface ChatMessagePayLoad {
   senderId: string;
   receiverId: string;
   content: string;
+  isRead: boolean;
+  timestamp?: string;
+}
+
+export interface NotificationPayload {
+  id: string;
+  title: string;
+  senderId: string;
+  receiverId: string;
+  content: string;
+  isRead: boolean;
+  type?: string;
   timestamp?: string;
 }
 
 export const useSocket = (
-  userId: string,
-  token: string,
-  onMessage: (msg: ChatMessage) => void
+  onMessage: (msg: ChatMessagePayLoad) => void,
+  onNotify: (notify: NotificationPayload) => void,
+  onConnect?: () => void,
+  onDisconnect?: () => void,
+  onError?: (error: string) => void
 ) => {
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState("");
   const clientRef = useRef<Client | null>(null);
 
   useEffect(() => {
-    if (!userId || !token) {
-      setError("Missing user or token");
-      return;
-    }
-
     const client = new Client({
       brokerURL: "ws://localhost:8080/api/v1/ws",
-      connectHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
       reconnectDelay: 5000,
-      debug: (msg) => console.log("STOMP:", msg),
+      // debug: (msg) => console.log("STOMP:", msg),
     });
 
     client.onConnect = () => {
-      console.log(`[${userId}] connected.`);
       setConnected(true);
       setError("");
 
       client.subscribe("/user/queue/messages", (msg: IMessage) => {
         try {
-          const body: ChatMessage = JSON.parse(msg.body);
-          console.log(`[${userId}] received:`, body);
+          const body: ChatMessagePayLoad = JSON.parse(msg.body);
           onMessage(body);
+        } catch (error) {}
+      });
+
+      client.subscribe("/user/queue/notifications", (msg: IMessage) => {
+        try {
+          const notify = JSON.parse(msg.body);
+          onNotify(notify);
         } catch (error) {
-          console.error("Parse error:", error);
+          console.error("Notification parse error:", error);
         }
       });
     };
 
-    client.onStompError = (frame) => {
-      console.log("STOMP Error:", frame);
+    client.onStompError = () => {
       setError("frame.body");
       setConnected(false);
     };
@@ -58,12 +68,11 @@ export const useSocket = (
     clientRef.current = client;
 
     return () => {
-      console.log(`[${userId}] cleanup.`);
       client.deactivate();
     };
-  }, [userId, token]);
+  }, []);
 
-  const sendMessage = (msg: ChatMessage) => {
+  const sendMessage = (msg: ChatMessagePayLoad) => {
     if (!clientRef.current?.connected) {
       return;
     }
@@ -73,5 +82,24 @@ export const useSocket = (
     });
   };
 
-  return { connected, error, sendMessage };
+  const markMessagesAsRead = (senderId: string) => {
+    if (!clientRef.current?.connected) return;
+
+    clientRef.current.publish({
+      destination: "/app/read",
+      body: JSON.stringify({ senderId }),
+    });
+  };
+
+  const sendNotify = (notify: NotificationPayload) => {
+    if (!clientRef.current?.connected) {
+      return;
+    }
+    clientRef.current.publish({
+      destination: "/app/notify",
+      body: JSON.stringify(notify),
+    });
+  };
+
+  return { connected, error, sendMessage, sendNotify, markMessagesAsRead };
 };

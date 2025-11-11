@@ -1,252 +1,83 @@
-import React, { useMemo } from "react";
-import {
-  MapPin,
-  Calendar,
-  Eye,
-  Heart,
-  DollarSign,
-  Pencil,
-  Trash2,
-  ExternalLink,
-  Clock,
-  Settings,
-} from "lucide-react";
-import { useGetPostImageQuery } from "../../redux/api/postApiSlice";
-import { skipToken } from "@reduxjs/toolkit/query";
-
-const defaultPostImage =
-  "https://placehold.co/600x400/155e75/FFFFFF?text=Job+Cover";
+import { Briefcase, Building2, Clock, DollarSign, MapPin } from "lucide-react";
+import { getImageUrl, timeAgo } from "../../utils/helper";
+import { Link } from "react-router-dom";
 
 type JobPosting = {
   id: string;
   title: string;
-  type: "FULL_TIME" | "PART_TIME" | "INTERNSHIP";
-  description: string;
-  requirements: string;
-  benefits: string;
-  promotedSalary: number | null;
-  location: { id: string; name: string } | null;
-  imageNames: string[];
-  views: number;
-  likes: number;
-  state: string;
-  expiredAt: string;
+  companyName: string;
+  location: { id: string; name: string };
+  minSalary: number;
+  maxSalary: number;
+  type: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "INTERNSHIP";
   createdAt: string;
+  avatarUrl: string;
 };
 
-type Props = {
-  job: JobPosting;
-  showActions: boolean;
-};
-
-const stateLabel: Record<string, string> = {
-  DRAFT: "Bản nháp",
-  PUBLISHED: "Đang hoạt động",
-  ARCHIVED: "Đã lưu trữ",
-};
-
-const getStateClasses = (state: string) => {
-  switch (state) {
-    case "DRAFT":
-      return "bg-yellow-100 text-yellow-800 border-yellow-300";
-    case "PUBLISHED":
-      return "bg-teal-100 text-teal-800 border-teal-300";
-    case "ARCHIVED":
-      return "bg-gray-100 text-gray-700 border-gray-300";
-    default:
-      return "bg-gray-100 text-gray-700 border-gray-300";
-  }
-};
-
-const JobPostingCard: React.FC<Props> = ({ job, showActions }) => {
-  if (!job) return null;
-  const {
-    id,
-    title,
-    type,
-    description,
-    promotedSalary,
-    location,
-    imageNames,
-    views,
-    state,
-    likes,
-    expiredAt,
-  } = job;
-
-  const typeLabel = {
-    FULL_TIME: "Toàn thời gian",
-    PART_TIME: "Bán thời gian",
-    INTERNSHIP: "Thực tập",
+const JobPostingItem = ({ job }: { job: JobPosting }) => {
+  const formatSalary = (min: number, max: number) => {
+    const formatNumber = (num: number) => num.toLocaleString("en-US");
+    return `${formatNumber(min)} - ${formatNumber(max)} USD`;
   };
 
-  const { data: imageUrl } = useGetPostImageQuery(
-    imageNames
-      ? {
-          postId: id,
-          imageName: imageNames[0],
-        }
-      : skipToken
-  );
-
-  const expiryDate = new Date(expiredAt);
-  const isExpired = expiryDate.getTime() < Date.now() && state === "PUBLISHED"; // Chỉ coi là hết hạn nếu trạng thái là PUBLISHED
-  const expiryDateString = expiryDate.toLocaleDateString("vi-VN");
-
-  const formatSalary = (salary: number | null) => {
-    if (salary === null) return "Thương lượng";
-    return salary.toLocaleString("vi-VN") + " VNĐ";
-  };
-
-  const stateClasses = getStateClasses(state);
+  const typeStyle =
+    job.type === "FULL_TIME"
+      ? "bg-blue-100 text-blue-700"
+      : "bg-purple-100 text-purple-700";
 
   return (
-    <div
-      className={`
-      bg-white rounded-2xl shadow-xl overflow-hidden 
-      transform hover:shadow-2xl transition duration-300 ease-in-out cursor-pointer
-      ${
-        isExpired
-          ? "border-2 border-red-400 opacity-90"
-          : "border-2 border-teal-100 hover:scale-[1.03]"
-      }
-    `}
-    >
-      {/* 1. Khu vực hình ảnh và Badges */}
-      <div className="relative">
-        <img
-          src={imageUrl}
-          alt={`Hình ảnh cho ${title}`}
-          className="w-full h-40 object-cover brightness-95"
-          onError={(e) => {
-            e.currentTarget.src = defaultPostImage;
-            e.currentTarget.onerror = null;
-          }}
-        />
-
-        {/* Thông tin nổi bật: Lương & Loại hình */}
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 pt-8 flex justify-between items-end">
-          {/* Lương: Nổi bật bằng màu vàng sáng/cyan */}
-          <span className="flex items-center text-lg font-extrabold text-cyan-300 drop-shadow-lg">
-            <DollarSign size={20} className="mr-1" />
-            {promotedSalary ? formatSalary(promotedSalary) : "Thương lượng"}
-          </span>
-          {/* Loại hình: Teal đậm */}
-          <span className="bg-teal-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
-            {typeLabel[type]}
-          </span>
-        </div>
-      </div>
-
-      {/* 2. Khu vực nội dung */}
-      <div className="p-5 space-y-3">
-        {/* Tiêu đề */}
-        <h3 className="text-xl font-extrabold text-slate-800 line-clamp-2 leading-snug hover:text-teal-600 transition mb-2">
-          {title}
-        </h3>
-
-        {/* TRẠNG THÁI (MỚI: Đặt ngay dưới tiêu đề) */}
-        <span
-          className={`inline-flex items-center text-xs font-bold px-3 py-1 rounded-full border shadow-sm transition-all ${stateClasses}`}
-        >
-          {stateLabel[state] || state}
-        </span>
-
-        {/* Thông tin chính (Location & Deadline) */}
-        <div className="flex items-center text-sm text-gray-700 gap-x-4 gap-y-2 flex-wrap pt-2 pb-3 border-b border-gray-100">
-          {location && (
-            <span className="flex items-center gap-1 font-medium text-gray-600">
-              <MapPin size={16} className="text-teal-500" /> {location.name}
-            </span>
-          )}
-
-          <span
-            className={`flex items-center gap-1 font-medium ${
-              isExpired ? "text-red-600" : "text-gray-600"
-            }`}
-          >
-            {isExpired ? (
-              <>
-                <Clock size={16} className="text-red-500" /> Đã HẾT HẠN
-              </>
-            ) : (
-              <>
-                <Calendar size={16} className="text-gray-400" /> Hạn nộp:{" "}
-                {expiryDateString}
-              </>
-            )}
-          </span>
-        </div>
-
-        {/* Mô tả ngắn */}
-        <p className="text-gray-600 text-sm line-clamp-3 min-h-[60px]">
-          {description || "Không có mô tả ngắn."}
-        </p>
-
-        {/* Lượt xem & Lượt thích */}
-        <div className="flex items-center justify-start gap-4 text-sm text-gray-500 pt-1 border-t border-gray-50">
-          <span className="flex items-center gap-1 font-medium">
-            <Eye size={16} className="text-teal-400" />
-            {views.toLocaleString("vi-VN")}
-          </span>
-          <span className="flex items-center gap-1 font-medium">
-            <Heart size={16} className="text-red-400" fill="currentColor" />
-            {likes.toLocaleString("vi-VN")}
-          </span>
-        </div>
-
-        {/* 3. Khu vực Hành động */}
-        {showActions && (
-          <div className="pt-4 flex flex-col gap-3">
-            {/* KHU VỰC QUẢN LÝ TRẠNG THÁI (Tách biệt) */}
-            <div className="flex items-center justify-between p-3 bg-teal-50 rounded-lg border border-teal-200">
-              <div className="flex items-center text-sm font-semibold text-teal-700">
-                <Settings size={16} className="mr-2" /> Quản lý Trạng thái:
-              </div>
-              <select
-                className="text-sm border border-teal-400 bg-white rounded px-2 py-1 text-gray-700 focus:ring-teal-500 focus:border-teal-500"
-                onChange={(e) =>
-                  console.log("Chuyển sang trạng thái:", e.target.value)
-                }
-                defaultValue={state}
-              >
-                <option value="DRAFT">Bản nháp</option>
-                <option value="PUBLISHED">Đang hoạt động</option>
-                <option value="ARCHIVED">Đã lưu trữ</option>
-              </select>
-            </div>
-
-            {/* KHU VỰC HÀNH ĐỘNG KHÁC */}
-            <div className="flex justify-end gap-3 pt-2">
-              {/* Nút Xem Chi Tiết */}
-              <button
-                className="flex items-center gap-1 text-sm font-semibold text-teal-600 hover:text-teal-800 transition duration-200"
-                onClick={() => console.log("Xem chi tiết", id)}
-              >
-                <ExternalLink size={16} /> Xem
-              </button>
-
-              {/* Nút Chỉnh Sửa */}
-              <button
-                className="flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-800 transition duration-200"
-                onClick={() => console.log("Chỉnh sửa", id)}
-              >
-                <Pencil size={16} /> Sửa
-              </button>
-
-              {/* Nút Xóa */}
-              <button
-                className="flex items-center gap-1 text-sm font-semibold text-red-600 hover:text-red-800 transition duration-200"
-                onClick={() => console.log("Xóa", id)}
-              >
-                <Trash2 size={16} /> Xóa
-              </button>
-            </div>
+    <div className="bg-white rounded-xl p-5 shadow-lg border border-gray-100 transition duration-300 hover:shadow-xl hover:border-teal-300 flex flex-col space-y-4">
+      <div className="flex justify-between items-start">
+        <div className="flex items-center gap-4">
+          <img
+            src={getImageUrl(job.avatarUrl)}
+            alt={job.companyName}
+            className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border-2 border-teal-500 p-0.5"
+          />
+          <div>
+            <h3 className="text-xl font-bold text-gray-900 leading-tight w-[80%]">
+              {job.title}
+            </h3>
+            <p className="text-sm font-medium text-gray-500 flex items-center gap-1 mt-1">
+              <Building2 size={16} /> {job.companyName}
+            </p>
           </div>
-        )}
+        </div>
+        <span
+          className={`px-2 py-0.5 text-xs font-semibold rounded-full ${typeStyle} whitespace-nowrap`}
+        >
+          {job.type.replace("_", " ").toLowerCase()}
+        </span>
       </div>
+
+      <div className="grid grid-cols-2 gap-3 text-sm font-medium pt-3 border-t border-gray-100">
+        <div className="flex items-center gap-2 text-teal-600">
+          <DollarSign size={16} />
+          <span className="text-gray-700 font-semibold">
+            {formatSalary(job.minSalary, job.maxSalary)}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-teal-600">
+          <MapPin size={16} />
+          <span className="text-gray-700">{job.location.name}</span>
+        </div>
+        <div className="flex items-center gap-2 text-gray-500">
+          <Clock size={16} />
+          <span>Đăng {timeAgo(job.createdAt)}</span>
+        </div>
+        <div className="flex items-center gap-2 text-gray-500">
+          <Briefcase size={16} />
+          <span>{job.type === "INTERNSHIP" ? "Thực tập" : "Lâu dài"}</span>
+        </div>
+      </div>
+
+      <Link to={`/jobs/${job.id}`}>
+        <button className="block w-full bg-teal-500 text-white py-2 mt-2 rounded-lg font-bold hover:bg-teal-600 transition duration-200">
+          Xem chi tiết
+        </button>
+      </Link>
     </div>
   );
 };
 
-export default JobPostingCard;
+export default JobPostingItem;

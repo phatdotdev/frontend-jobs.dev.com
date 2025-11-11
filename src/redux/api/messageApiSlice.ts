@@ -1,10 +1,11 @@
+import type { ResponseProps } from "../../types/ResponseProps";
 import { MESSAGE_URL } from "../features/constant";
 import { apiSlice } from "./apiSlice";
 
 export const messageApiSlice = apiSlice.injectEndpoints({
   overrideExisting: true,
   endpoints: (builder) => ({
-    getAllMessages: builder.query({
+    getAllMessages: builder.query<ResponseProps<any>, void>({
       query: () => ({
         url: `${MESSAGE_URL}/mine`,
       }),

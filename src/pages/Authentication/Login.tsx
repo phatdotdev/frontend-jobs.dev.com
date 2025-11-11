@@ -1,10 +1,6 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { setCredentials, logout } from "../../redux/features/authSlice";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useLoginMutation } from "../../redux/api/authenticationApiSlice";
-import { jwtDecode } from "jwt-decode";
-import type { CredentialsProps } from "../../types/UserProps";
 import { useLazyGetUserInfoQuery } from "../../redux/api/userApiSlice";
 
 const Login = () => {
@@ -14,21 +10,17 @@ const Login = () => {
   const [triggerGetUser] = useLazyGetUserInfoQuery();
 
   const [login, { isLoading }] = useLoginMutation();
-  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get("redirect");
 
   const handleSubmit = async (e: React.FormEvent<HTMLElement>) => {
     e.preventDefault();
     try {
-      const resposne = await login({ email, password }).unwrap();
-      const token = resposne.data.accessToken;
-      const decoded = jwtDecode<CredentialsProps>(token);
-      dispatch(setCredentials(decoded));
+      await login({ email, password }).unwrap();
       triggerGetUser();
-      localStorage.setItem("accessToken", token);
-      localStorage.setItem("userInfo", JSON.stringify(decoded));
-      localStorage.setItem("expirationTime", decoded.exp.toString());
-      navigate("/");
+      if (redirect) navigate(redirect);
+      else navigate("/");
     } catch (err) {
       console.error(err);
     }
