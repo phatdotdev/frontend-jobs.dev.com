@@ -1,6 +1,6 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import AdminNavigation from "./AdminNavigation";
-import { useGetUserInfoQuery } from "../../redux/api/userApiSlice";
+import { useGetUserInfoQuery } from "../../redux/api/apiUserSlice";
 import { useEffect } from "react";
 
 const AdminPage = () => {

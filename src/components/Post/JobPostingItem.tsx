@@ -1,7 +1,7 @@
 import { Briefcase, Building2, Clock, DollarSign, MapPin } from "lucide-react";
 import { getImageUrl, mapJobTypeVietnamese, timeAgo } from "../../utils/helper";
 import { useNavigate } from "react-router-dom";
-import { useViewJobPostingMutation } from "../../redux/api/postApiSlice";
+import { useViewJobPostingMutation } from "../../redux/api/apiPostSlice";
 
 type JobPosting = {
   id: string;

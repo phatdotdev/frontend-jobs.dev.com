@@ -6,7 +6,7 @@ import PostViewer from "../View/PostViewer";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../../redux/features/store";
 import ErrorAlert from "../../components/UI/ErrorAlert";
-import { useGetJobPostingDetailQuery } from "../../redux/api/postApiSlice";
+import { useGetJobPostingDetailQuery } from "../../redux/api/apiPostSlice";
 import { useParams } from "react-router-dom";
 import { setDraft } from "../../redux/features/postSlice";
 import DataLoader from "../../components/UI/DataLoader";

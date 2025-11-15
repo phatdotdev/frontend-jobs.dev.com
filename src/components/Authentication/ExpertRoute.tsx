@@ -1,5 +1,5 @@
 import { Outlet, useNavigate } from "react-router-dom";
-import { useGetUserInfoQuery } from "../../redux/api/userApiSlice";
+import { useGetUserInfoQuery } from "../../redux/api/apiUserSlice";
 import ExpertPageHeader from "../Expert/ExpertPageHeader";
 import { useEffect } from "react";
 

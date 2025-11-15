@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useLoginMutation } from "../../redux/api/authenticationApiSlice";
-import { useLazyGetUserInfoQuery } from "../../redux/api/userApiSlice";
+import { useLazyGetUserInfoQuery } from "../../redux/api/apiUserSlice";
 import { useDispatch } from "react-redux";
 import { addToast } from "../../redux/features/toastSlice";
 

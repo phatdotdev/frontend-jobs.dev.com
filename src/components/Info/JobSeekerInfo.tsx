@@ -13,7 +13,7 @@ import {
 import {
   useGetJobSeekerProfileQuery,
   useUpdateJobSeekerProfileMutation,
-} from "../../redux/api/userApiSlice";
+} from "../../redux/api/apiUserSlice";
 import DataLoader from "../UI/DataLoader";
 import { formatDateTime } from "../../utils/helper";
 import { useEffect, useState } from "react";
@@ -133,7 +133,12 @@ const JobSeekerInfo = () => {
             value={username}
             disabled={!isEditing}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full px-5 py-4 rounded-xl font-medium bg-gray-50 border-2 border-gray-200 text-gray-700 cursor-default"
+            className={`w-full px-5 py-4 rounded-xl font-medium border-2 text-gray-700 
+                        ${
+                          isEditing
+                            ? "bg-white border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-300 text-gray-900"
+                            : "bg-gray-50 border-gray-200 cursor-default"
+                        }`}
           />
         </div>
         {/* EMAIL */}
@@ -162,7 +167,12 @@ const JobSeekerInfo = () => {
             value={firstname}
             onChange={(e) => setFirstname(e.target.value)}
             disabled={!isEditing}
-            className="w-full px-5 py-4 rounded-xl font-medium bg-gray-50 border-2 border-gray-200 text-gray-700 cursor-default"
+            className={`w-full px-5 py-4 rounded-xl font-medium border-2 text-gray-700 
+                        ${
+                          isEditing
+                            ? "bg-white border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-300 text-gray-900"
+                            : "bg-gray-50 border-gray-200 cursor-default"
+                        }`}
           />
         </div>
         {/* Lastname */}
@@ -176,7 +186,12 @@ const JobSeekerInfo = () => {
             value={lastname}
             disabled={!isEditing}
             onChange={(e) => setLastname(e.target.value)}
-            className="w-full px-5 py-4 rounded-xl font-medium bg-gray-50 border-2 border-gray-200 text-gray-700 cursor-default"
+            className={`w-full px-5 py-4 rounded-xl font-medium border-2 text-gray-700 
+                        ${
+                          isEditing
+                            ? "bg-white border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-300 text-gray-900"
+                            : "bg-gray-50 border-gray-200 cursor-default"
+                        }`}
           />
         </div>
         {/* Phone */}
@@ -190,7 +205,12 @@ const JobSeekerInfo = () => {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             disabled={!isEditing}
-            className="w-full px-5 py-4 rounded-xl font-medium bg-gray-50 border-2 border-gray-200 text-gray-700 cursor-default"
+            className={`w-full px-5 py-4 rounded-xl font-medium border-2 text-gray-700 
+                        ${
+                          isEditing
+                            ? "bg-white border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-300 text-gray-900"
+                            : "bg-gray-50 border-gray-200 cursor-default"
+                        }`}
           />
         </div>
         {/* Address */}
@@ -204,9 +224,12 @@ const JobSeekerInfo = () => {
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             disabled={!isEditing}
-            className={`w-full px-5 py-4 rounded-xl font-medium bg-gray-50 border-2 border-gray-200 text-gray-700 cursor-default ${
-              isEditing ? "bg-white" : ""
-            }`}
+            className={`w-full px-5 py-4 rounded-xl font-medium border-2 text-gray-700 
+                        ${
+                          isEditing
+                            ? "bg-white border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-300 text-gray-900"
+                            : "bg-gray-50 border-gray-200 cursor-default"
+                        }`}
           />
         </div>
       </div>

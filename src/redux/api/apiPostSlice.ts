@@ -76,6 +76,11 @@ export const postApiSlice = apiSlice.injectEndpoints({
         method: "POST",
       }),
     }),
+    getRecentPostByRecruiter: builder.query<ResponseProps<any>, any>({
+      query: (id) => ({
+        url: `${POST_URL}/recruiter/${id}/recent`,
+      }),
+    }),
   }),
 });
 
@@ -90,4 +95,6 @@ export const {
   useLikeJobPostingMutation,
   useViewJobPostingMutation,
   useIsLikedQuery,
+  // RECENT
+  useGetRecentPostByRecruiterQuery,
 } = postApiSlice;

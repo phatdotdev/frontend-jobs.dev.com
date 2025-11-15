@@ -1,6 +1,6 @@
 import { MdDashboard } from "react-icons/md";
 import HorizontalJobList from "../../components/Post/HorizontalJobList";
-import { useGetMineJobPostingsQuery } from "../../redux/api/postApiSlice";
+import { useGetMineJobPostingsQuery } from "../../redux/api/apiPostSlice";
 
 const RecruiterPageView = () => {
   const {

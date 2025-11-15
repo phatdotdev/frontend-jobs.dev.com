@@ -10,7 +10,7 @@ import {
   Edit,
   File,
 } from "lucide-react";
-import { useCreateJobPostingMutation } from "../../redux/api/postApiSlice";
+import { useCreateJobPostingMutation } from "../../redux/api/apiPostSlice";
 import { useNavigate } from "react-router-dom";
 import { useGetAllLocationsQuery } from "../../redux/api/apiAdminSlice";
 import type { JobType, Location } from "../../types/PostingProps";

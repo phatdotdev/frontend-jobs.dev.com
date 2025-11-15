@@ -15,7 +15,7 @@ import {
   FileText,
   Download,
 } from "lucide-react";
-import { useGetJobPostingDetailQuery } from "../../redux/api/postApiSlice";
+import { useGetJobPostingDetailQuery } from "../../redux/api/apiPostSlice";
 import { useNavigate, useParams } from "react-router-dom";
 import DataLoader from "../../components/UI/DataLoader";
 import {
@@ -24,7 +24,7 @@ import {
   mapJobTypeVietnamese,
 } from "../../utils/helper";
 import ImageCarousel from "../../components/UI/ImageCarosel";
-import { useGetUserInfoQuery } from "../../redux/api/userApiSlice";
+import { useGetUserInfoQuery } from "../../redux/api/apiUserSlice";
 import { useLazyGetAllResumesQuery } from "../../redux/api/apiResumeSlice";
 
 import CvSelectionModal from "../../components/Modal/CvSelectModal";

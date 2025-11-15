@@ -21,7 +21,7 @@ import {
   useGetApplicantsByPostQuery,
   useUpdateApplicationStateMutation,
 } from "../../redux/api/apiApplicationSlice";
-import { useGetJobPostingDetailQuery } from "../../redux/api/postApiSlice";
+import { useGetJobPostingDetailQuery } from "../../redux/api/apiPostSlice";
 import type {
   ApplicationDetail,
   ApplicationState,

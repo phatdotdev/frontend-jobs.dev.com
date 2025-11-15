@@ -5,7 +5,7 @@ import { formatCount } from "../../utils/helper";
 import {
   useIsLikedQuery,
   useLikeJobPostingMutation,
-} from "../../redux/api/postApiSlice";
+} from "../../redux/api/apiPostSlice";
 import { useParams } from "react-router-dom";
 
 interface InteractionItemProps {

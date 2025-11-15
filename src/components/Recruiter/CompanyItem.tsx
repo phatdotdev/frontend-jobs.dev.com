@@ -7,7 +7,10 @@ import {
   ShieldCheck,
   ShieldX,
   Calendar,
+  Eye,
 } from "lucide-react";
+import { formatDate, getImageUrl } from "../../utils/helper";
+import { Link } from "react-router-dom";
 
 type Company = {
   id: string;
@@ -49,26 +52,21 @@ const InfoPill = ({
 );
 
 const CompanyItem = ({ company }: { company: Company }) => {
-  const formattedCreatedAt = new Date(company.createdAt).toLocaleDateString(
-    "vi-VN"
-  );
-  const formattedUpdatedAt = new Date(company.updatedAt).toLocaleDateString(
-    "vi-VN"
-  );
+  const formattedCreatedAt = formatDate(company.createdAt);
 
   return (
     <div
       key={company.id}
-      className="bg-white rounded-xl shadow-md transition duration-300 border border-gray-100 overflow-hidden transform hover:shadow-lg"
+      className="flex flex-col bg-white rounded-xl shadow-md transition duration-300 border border-gray-100 overflow-hidden transform hover:shadow-lg"
     >
       {/* CARD CONTENT */}
-      <div className="p-4 md:p-5 space-y-4">
+      <div className="flex-1 p-4 md:p-5 space-y-4">
         {/* Header: Logo, Name, Verification Badge (Gọn gàng) */}
         <div className="flex justify-between items-start pb-3 border-b border-gray-100">
           <div className="flex items-start gap-3">
             {/* Logo - Kích thước nhỏ gọn */}
             <img
-              src={company.avatarUrl || defaultAvatar}
+              src={getImageUrl(company.avatarUrl as string) || defaultAvatar}
               alt={`Logo ${company.companyName}`}
               className="w-14 h-14 rounded-xl object-cover border-2 border-teal-400 p-0.5 shadow-sm flex-shrink-0"
               onError={(e) => {
@@ -79,11 +77,10 @@ const CompanyItem = ({ company }: { company: Company }) => {
             {/* Name và Metadata */}
             <div className="mt-0.5 min-w-0">
               <h3 className="text-xl font-bold text-gray-900 truncate">
-                {company.companyName}
+                {company.companyName ?? "Không xác định"}
               </h3>
               <p className="text-xs text-purple-600 font-medium flex items-center gap-1 mt-0.5 truncate">
-                <Building2 size={14} /> {company.role} | ID:{" "}
-                {company.id.slice(0, 8)}...
+                <Building2 size={14} /> {company.role}
               </p>
             </div>
           </div>
@@ -107,7 +104,7 @@ const CompanyItem = ({ company }: { company: Company }) => {
           <h4 className="text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">
             Mô tả tóm tắt:
           </h4>
-          <p className="text-sm text-gray-700 italic border-l-2 border-teal-500 pl-3 py-1">
+          <p className="text-sm text-gray-700 italic border-l-2 border-teal-500 pl-3 py-1 line-clamp-2">
             {company.description || "Chưa có mô tả chi tiết từ công ty."}
           </p>
         </div>
@@ -138,20 +135,29 @@ const CompanyItem = ({ company }: { company: Company }) => {
       </div>
 
       {/* Footer: Contact Button (Sử dụng không gian footer để đặt nút) */}
-      <div className="bg-gray-50 px-5 py-3 flex justify-between items-center rounded-b-xl border-t border-gray-100">
+      <div className="bottom-0 bg-gray-50 px-5 py-3 flex justify-between items-center rounded-b-xl border-t border-gray-100">
         <p className="text-xs text-gray-500">
-          Cập nhật:{" "}
+          Ngày tham gia:{" "}
           <span className="font-semibold text-gray-700">
-            {formattedUpdatedAt}
+            {formattedCreatedAt}
           </span>
         </p>
-        <a
-          href={`mailto:${company.email}`}
-          className="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-500 text-white text-sm font-semibold rounded-lg shadow-md hover:bg-teal-600 transition"
-          aria-label={`Liên hệ với ${company.companyName} qua email`}
-        >
-          <Mail size={16} /> Liên hệ
-        </a>
+        <div className="flex gap-4">
+          <a
+            href={`mailto:${company.email}`}
+            className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white text-sm font-semibold rounded-lg shadow-md hover:bg-blue-600 transition"
+            aria-label={`Liên hệ với ${company.companyName} qua email`}
+          >
+            <Mail size={16} /> Liên hệ
+          </a>
+          <Link
+            to={`/companies/${company.id}`}
+            className="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-500 text-white text-sm font-semibold rounded-lg shadow-md hover:bg-teal-600 transition"
+            aria-label={`Liên hệ với ${company.companyName} qua email`}
+          >
+            <Eye size={16} /> Xem chi tiết
+          </Link>
+        </div>
       </div>
     </div>
   );

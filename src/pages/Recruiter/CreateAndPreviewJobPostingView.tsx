@@ -8,7 +8,7 @@ import ErrorAlert from "../../components/UI/ErrorAlert";
 import { setDraft } from "../../redux/features/postSlice";
 import CreateJobPostView from "./CreateJobPostView";
 import type { JobType } from "../../types/PostingProps";
-import { useGetRecruiterProfileQuery } from "../../redux/api/userApiSlice";
+import { useGetRecruiterProfileQuery } from "../../redux/api/apiUserSlice";
 
 const CreateAndPreviewJobPostingView = () => {
   const handleToggle = (preview: boolean) => {

@@ -1,24 +1,23 @@
 import {
   BadgeCheck,
   Building2,
-  CircleAlert,
   CircleX,
   FilePenLine,
   IdCard,
   KeyRound,
+  Link,
   Mail,
   MapPin,
   OctagonAlert,
   Phone,
   SaveAll,
-  Tag,
   Text,
   User,
 } from "lucide-react";
 import {
   useGetRecruiterProfileQuery,
   useUpdateRecruiterProfileMutation,
-} from "../../redux/api/userApiSlice";
+} from "../../redux/api/apiUserSlice";
 import DataLoader from "../UI/DataLoader";
 import { formatDateTime } from "../../utils/helper";
 import { useEffect, useState } from "react";
@@ -33,6 +32,7 @@ const RecruiterInfo = () => {
   const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
+  const [website, setWebsite] = useState("");
 
   const [isEditing, setIsEditing] = useState(false);
 
@@ -47,6 +47,7 @@ const RecruiterInfo = () => {
         description,
         address,
         phone,
+        website,
       }).unwrap();
     } catch (error) {
       dispatch(
@@ -72,6 +73,7 @@ const RecruiterInfo = () => {
       setDescription(info.description || "");
       setAddress(info.address || "");
       setPhone(info.phone || "");
+      setWebsite(info.website || "");
     }
   }, [info]);
   if (isLoading) {
@@ -82,8 +84,19 @@ const RecruiterInfo = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b-2 border-gray-100">
         {/* Info */}
         <div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-1">
-            Thông tin doanh nghiệp
+          <h3 className="flex items-center gap-4 text-2xl font-bold text-gray-900 mb-1">
+            <span>Thông tin doanh nghiệp </span>
+            {info.verified ? (
+              <p className="flex text-sm gap-2 items-center px-2 bg-emerald-200 border border-emerald-500 rounded-full text-emerald-700 font-bold">
+                <BadgeCheck size={12} />
+                Đã xác minh
+              </p>
+            ) : (
+              <p className="flex text-sm gap-2 items-center px-2 bg-yellow-100 border border-gray-500 text-yellow-600 border-yellow-500 rounded-full font-bold">
+                <OctagonAlert size={12} />
+                Chưa xác minh
+              </p>
+            )}
           </h3>
           <p className="text-gray-600 text-medium">
             Quản lý và cập nhật thông tin doanh nghiệp
@@ -144,7 +157,12 @@ const RecruiterInfo = () => {
             value={username}
             disabled={!isEditing}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full px-5 py-4 rounded-xl font-medium bg-gray-50 border-2 border-gray-200 text-gray-700 cursor-default"
+            className={`w-full px-5 py-4 rounded-xl font-medium border-2 text-gray-700 
+                        ${
+                          isEditing
+                            ? "bg-white border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-300 text-gray-900"
+                            : "bg-gray-50 border-gray-200 cursor-default"
+                        }`}
           />
         </div>
         {/* EMAIL */}
@@ -173,26 +191,32 @@ const RecruiterInfo = () => {
             value={companyName}
             onChange={(e) => setCompanyName(e.target.value)}
             disabled={!isEditing}
-            className="w-full px-5 py-4 rounded-xl font-medium bg-gray-50 border-2 border-gray-200 text-gray-700 cursor-default"
+            className={`w-full px-5 py-4 rounded-xl font-medium border-2 text-gray-700 
+                        ${
+                          isEditing
+                            ? "bg-white border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-300 text-gray-900"
+                            : "bg-gray-50 border-gray-200 cursor-default"
+                        }`}
           />
         </div>
-        {/* Verified */}
+        {/* Website */}
         <div className="col-span-1">
           <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3">
-            <BadgeCheck className="h-5 w-5 text-teal-600" />
-            Trạng thái xác minh
+            <Link className="h-5 w-5 text-teal-600" />
+            Website công ty
           </label>
-          {info.verified ? (
-            <p className="flex gap-4 items-center p-4 bg-emerald-200 border border-emerald-500 rounded-lg text-emerald-700 font-bold">
-              <BadgeCheck />
-              Đã xác minh
-            </p>
-          ) : (
-            <p className="flex gap-4 items-center p-4 bg-gray-200 border border-gray-700 text-gray-700 border-gray-500 rounded-lg font-bold">
-              <OctagonAlert />
-              Chưa xác minh
-            </p>
-          )}
+          <input
+            type="text"
+            value={website}
+            disabled={!isEditing}
+            onChange={(e) => setWebsite(e.target.value)}
+            className={`w-full px-5 py-4 rounded-xl font-medium border-2 text-gray-700 
+                        ${
+                          isEditing
+                            ? "bg-white border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-300 text-gray-900"
+                            : "bg-gray-50 border-gray-200 cursor-default"
+                        }`}
+          />
         </div>
         {/* Phone */}
         <div className="col-span-1">
@@ -205,7 +229,12 @@ const RecruiterInfo = () => {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             disabled={!isEditing}
-            className="w-full px-5 py-4 rounded-xl font-medium bg-gray-50 border-2 border-gray-200 text-gray-700 cursor-default"
+            className={`w-full px-5 py-4 rounded-xl font-medium border-2 text-gray-700 
+                        ${
+                          isEditing
+                            ? "bg-white border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-300 text-gray-900"
+                            : "bg-gray-50 border-gray-200 cursor-default"
+                        }`}
           />
         </div>
         {/* Address */}
@@ -219,9 +248,12 @@ const RecruiterInfo = () => {
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             disabled={!isEditing}
-            className={`w-full px-5 py-4 rounded-xl font-medium bg-gray-50 border-2 border-gray-200 text-gray-700 cursor-default ${
-              isEditing ? "bg-white" : ""
-            }`}
+            className={`w-full px-5 py-4 rounded-xl font-medium border-2 text-gray-700 
+                        ${
+                          isEditing
+                            ? "bg-white border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-300 text-gray-900"
+                            : "bg-gray-50 border-gray-200 cursor-default"
+                        }`}
           />
         </div>
         {/* Description */}
@@ -235,7 +267,12 @@ const RecruiterInfo = () => {
             disabled={!isEditing}
             rows={10}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-5 py-4 rounded-xl font-medium bg-gray-50 border-2 border-gray-200 text-gray-700 cursor-default"
+            className={`w-full px-5 py-4 rounded-xl font-medium border-2 text-gray-700 
+                        ${
+                          isEditing
+                            ? "bg-white border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-300 text-gray-900"
+                            : "bg-gray-50 border-gray-200 cursor-default"
+                        }`}
           ></textarea>
         </div>
       </div>

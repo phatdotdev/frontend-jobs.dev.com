@@ -9,7 +9,7 @@ import {
   Eye,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useGetMineJobPostingsQuery } from "../../redux/api/postApiSlice";
+import { useGetMineJobPostingsQuery } from "../../redux/api/apiPostSlice";
 import LoadingSpinner from "../../components/UI/LoadingSpinner";
 import DataLoader from "../../components/UI/DataLoader";
 

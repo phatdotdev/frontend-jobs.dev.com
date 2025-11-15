@@ -16,7 +16,7 @@ import {
   X,
   Star,
 } from "lucide-react";
-import { useGetUserInfoQuery } from "../redux/api/userApiSlice";
+import { useGetUserInfoQuery } from "../redux/api/apiUserSlice";
 import { useLogoutMutation } from "../redux/api/authenticationApiSlice";
 import NotificationPanel from "./Notification/NotificationPanel";
 

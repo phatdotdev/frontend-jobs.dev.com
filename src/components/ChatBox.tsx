@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { type ChatMessagePayLoad } from "../hooks/useSocket";
 import { FaPaperPlane, FaRegUserCircle } from "react-icons/fa";
-import { getImageUrl } from "../utils/helper";
+import { formatTime, getImageUrl } from "../utils/helper";
 import { type UserResponseProps } from "../types/UserProps";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../redux/features/store";
@@ -43,22 +43,19 @@ const ChatBox = ({ currentUserId, receiver }: ChatBoxProps) => {
     inputRef.current?.focus();
   };
 
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const isToday = date.toDateString() === now.toDateString();
-    return isToday
-      ? date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })
-      : date.toLocaleDateString("vi-VN");
-  };
-
   const { sendMessage } = useSocketContext();
 
-  const filteredMessages = messages.filter(
-    (msg) =>
-      (msg.senderId === currentUserId && msg.receiverId === receiver.id) ||
-      (msg.senderId === receiver.id && msg.receiverId === currentUserId)
-  );
+  const filteredMessages = messages
+    .filter(
+      (msg) =>
+        (msg.senderId === currentUserId && msg.receiverId === receiver.id) ||
+        (msg.senderId === receiver.id && msg.receiverId === currentUserId)
+    )
+    .sort(
+      (a, b) =>
+        new Date(a.timestamp as string).getTime() -
+        new Date(b.timestamp as string).getTime()
+    );
 
   return (
     <div className="flex flex-col h-full bg-gradient-to-b from-gray-50 to-white">

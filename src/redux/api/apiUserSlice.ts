@@ -89,6 +89,12 @@ export const userApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    // GET USERS BY ID
+    getRecruiterById: builder.query<ResponseProps<any>, any>({
+      query: (id) => ({
+        url: `${USER_URL}/recruiter/${id}`,
+      }),
+    }),
     // upload
     uploadUserAvatar: builder.mutation<any, FormData>({
       query: (formData) => ({
@@ -129,4 +135,6 @@ export const {
   useUploadUserBackgroundMutation,
   // PASSWORD
   useChangePasswordMutation,
+  // GET USERS BY ID
+  useGetRecruiterByIdQuery,
 } = userApiSlice;

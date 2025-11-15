@@ -10,7 +10,7 @@ import {
   ChevronDown,
   Filter,
 } from "lucide-react";
-import { useSearchJobPostingsQuery } from "../../redux/api/postApiSlice";
+import { useSearchJobPostingsQuery } from "../../redux/api/apiPostSlice";
 import DataLoader from "../../components/UI/DataLoader";
 import JobPostingItem from "../../components/Post/JobPostingCard";
 
@@ -99,9 +99,7 @@ const JobView: React.FC = () => {
     }
   };
 
-  // Logic kiểm tra nút Đặt lại
   const isResetEnabled = Object.values(searchParams).some((val, index) => {
-    // Loại trừ page và size khỏi việc kiểm tra reset
     const key = Object.keys(searchParams)[index];
     if (key === "page" || key === "size") return false;
 

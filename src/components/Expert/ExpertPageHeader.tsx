@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { useGetUserInfoQuery } from "../../redux/api/userApiSlice";
+import { useGetUserInfoQuery } from "../../redux/api/apiUserSlice";
 import DataLoader from "../UI/DataLoader";
 import ErrorAlert from "../UI/ErrorAlert";
 import {

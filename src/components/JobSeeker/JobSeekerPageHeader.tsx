@@ -14,7 +14,7 @@ import {
   ArrowBigLeft,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { useGetJobSeekerProfileQuery } from "../../redux/api/userApiSlice";
+import { useGetJobSeekerProfileQuery } from "../../redux/api/apiUserSlice";
 import {
   formatDate,
   getImageUrl,

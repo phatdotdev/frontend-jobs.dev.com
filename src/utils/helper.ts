@@ -37,7 +37,7 @@ export function formatDateTime(dateString: string): string {
   const hours = date.getHours().toString().padStart(2, "0");
   const minutes = date.getMinutes().toString().padStart(2, "0");
 
-  return `⏰ ${hours}:${minutes} | 📅 ${day}/${month}/${year}`;
+  return `${hours}:${minutes} | ${day}/${month}/${year}`;
 }
 
 export function formatDate(dateString: string): string {
@@ -49,6 +49,15 @@ export function formatDate(dateString: string): string {
 
   return `${day}/${month}/${year}`;
 }
+
+export const formatTime = (timestamp: string) => {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const isToday = date.toDateString() === now.toDateString();
+  return isToday
+    ? date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })
+    : date.toLocaleDateString("vi-VN");
+};
 
 export const mapGenderToVietnamese = (gender: string | undefined): string => {
   if (!gender) return "Không xác định";

@@ -1,10 +1,9 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState } from "react";
 import { Building2, Search, RotateCw, Loader } from "lucide-react";
-import { useSearchCompaniesQuery } from "../../redux/api/userApiSlice";
+import { useSearchCompaniesQuery } from "../../redux/api/apiUserSlice";
 import DataLoader from "../../components/UI/DataLoader";
 import CompanyItem from "../../components/Recruiter/CompanyItem";
 
-// --- Type Definitions ---
 type Company = {
   id: string;
   username: string;
@@ -35,6 +34,8 @@ const CompanyView: React.FC = () => {
     page,
     size,
   });
+
+  console.log(companies);
 
   const handleSearch = () => {
     setSearchQuery(searchTerm);
@@ -105,7 +106,7 @@ const CompanyView: React.FC = () => {
           Không tìm thấy công ty nào phù hợp với từ khóa "{searchQuery}".
         </p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="md:mx-[100px] grid grid-cols-1 md:grid-cols-3 gap-6">
           {companies.map((company: Company) => (
             <CompanyItem key={company.id} company={company} />
           ))}

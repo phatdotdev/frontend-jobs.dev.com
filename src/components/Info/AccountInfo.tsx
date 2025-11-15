@@ -14,7 +14,7 @@ import {
   useGetUserInfoQuery,
   useUploadUserAvatarMutation,
   useUploadUserBackgroundMutation,
-} from "../../redux/api/userApiSlice";
+} from "../../redux/api/apiUserSlice";
 import DataLoader from "../UI/DataLoader";
 import { Link } from "react-router-dom";
 import { getImageUrl } from "../../utils/helper";

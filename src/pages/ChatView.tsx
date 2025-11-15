@@ -13,8 +13,8 @@ import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../redux/features/store";
 import { markAsRead, setMessages } from "../redux/features/messageSlice";
 import { useGetAllMessagesQuery } from "../redux/api/messageApiSlice";
-import { useGetUserInfoQuery } from "../redux/api/userApiSlice";
 import { useSocketContext } from "../context/SocketContext";
+import { useGetUserInfoQuery } from "../redux/api/apiUserSlice";
 
 const ChatView = () => {
   const { data: { data: userInfo } = {} } = useGetUserInfoQuery();

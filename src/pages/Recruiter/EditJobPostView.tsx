@@ -14,7 +14,7 @@ import {
   PenBoxIcon,
 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useUpdateJobPostingMutation } from "../../redux/api/postApiSlice";
+import { useUpdateJobPostingMutation } from "../../redux/api/apiPostSlice";
 import { useGetAllLocationsQuery } from "../../redux/api/apiAdminSlice";
 import type { JobType, Location } from "../../types/PostingProps";
 import SectionTitle from "../../components/UI/SectionTitle";

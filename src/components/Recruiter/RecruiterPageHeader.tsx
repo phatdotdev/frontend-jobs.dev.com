@@ -16,7 +16,7 @@ import {
   ArrowBigLeft,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { useGetRecruiterProfileQuery } from "../../redux/api/userApiSlice";
+import { useGetRecruiterProfileQuery } from "../../redux/api/apiUserSlice";
 import { getImageUrl } from "../../utils/helper";
 import { FaBackward } from "react-icons/fa6";
 

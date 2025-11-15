@@ -4,13 +4,14 @@ import {
   IdCard,
   KeyRound,
   Mail,
+  Phone,
   SaveAll,
   User,
 } from "lucide-react";
 import {
   useGetExpertProfileQuery,
   useUpdateExpertProfileMutation,
-} from "../../redux/api/userApiSlice";
+} from "../../redux/api/apiUserSlice";
 import DataLoader from "../UI/DataLoader";
 import { formatDateTime } from "../../utils/helper";
 import { useEffect, useState } from "react";
@@ -20,8 +21,7 @@ import { addToast } from "../../redux/features/toastSlice";
 const ExpertInfo = () => {
   const { data: { data: info } = {}, isLoading } = useGetExpertProfileQuery();
   const [username, setUsername] = useState("");
-
-  console.log(info);
+  const [phone, setPhone] = useState("");
 
   const [isEditing, setIsEditing] = useState(false);
 
@@ -32,6 +32,7 @@ const ExpertInfo = () => {
     try {
       updateProfile({
         username,
+        phone,
       }).unwrap();
     } catch (error) {
       dispatch(
@@ -53,6 +54,7 @@ const ExpertInfo = () => {
   useEffect(() => {
     if (info) {
       setUsername(info.username || "");
+      setPhone(info.phone || "");
     }
   }, [info]);
   if (isLoading) {
@@ -125,7 +127,12 @@ const ExpertInfo = () => {
             value={username}
             disabled={!isEditing}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full px-5 py-4 rounded-xl font-medium bg-gray-50 border-2 border-gray-200 text-gray-700 cursor-default"
+            className={`w-full px-5 py-4 rounded-xl font-medium border-2 text-gray-700 
+                        ${
+                          isEditing
+                            ? "bg-white border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-300 text-gray-900"
+                            : "bg-gray-50 border-gray-200 cursor-default"
+                        }`}
           />
         </div>
         {/* EMAIL */}
@@ -139,6 +146,25 @@ const ExpertInfo = () => {
             value={info.email || ""}
             readOnly
             className="w-full px-5 py-4 rounded-xl font-medium bg-gray-50 border-2 border-gray-200 text-gray-700 cursor-default"
+          />
+        </div>
+        {/* PHONE */}
+        <div className="col-span-1">
+          <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3">
+            <Phone className="h-5 w-5 text-teal-600" />
+            Phone
+          </label>
+          <input
+            type="text"
+            value={phone || ""}
+            disabled={!isEditing}
+            onChange={(e) => setPhone(e.target.value)}
+            className={`w-full px-5 py-4 rounded-xl font-medium border-2 text-gray-700 
+                        ${
+                          isEditing
+                            ? "bg-white border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-300 text-gray-900"
+                            : "bg-gray-50 border-gray-200 cursor-default"
+                        }`}
           />
         </div>
       </div>
