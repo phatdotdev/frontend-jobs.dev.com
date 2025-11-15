@@ -27,8 +27,8 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
             className="flex transition-transform ease-in-out duration-500"
             style={{ transform: `translateX(-${current * 100}%)` }}
           >
-            {images.map(getImageUrl).map((src, index) => (
-              <div key={index} className="min-w-full flex-shrink-0">
+            {images.map((src, index) => (
+              <div key={index} className="w-full flex-shrink-0 mx-auto">
                 <img
                   src={src}
                   alt={`Ảnh ${index + 1}`}

@@ -1,214 +1,258 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Trash2,
   Briefcase,
   ClipboardList,
   Wallet,
   Image,
-  Send,
   Loader,
-  XCircle,
   LayoutGrid,
-  Zap,
   Save,
-  Rocket,
-  Pencil,
+  Edit2,
+  File,
+  PenIcon,
+  PenBoxIcon,
 } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
-import {
-  useGetJobPostingDetailQuery,
-  useUpdateJobPostingMutation,
-} from "../../redux/api/postApiSlice";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { useUpdateJobPostingMutation } from "../../redux/api/postApiSlice";
 import { useGetAllLocationsQuery } from "../../redux/api/apiAdminSlice";
 import type { JobType, Location } from "../../types/PostingProps";
 import SectionTitle from "../../components/UI/SectionTitle";
 import InputField from "../../components/UI/InputField";
 import { getImageUrl } from "../../utils/helper";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  updateDraftField,
+  addNewImages,
+  removeExistingImage,
+  removeNewImage,
+  type JobFormData,
+  removeNewDocument,
+  addNewDocuments,
+} from "../../redux/features/postSlice";
+import { addToast } from "../../redux/features/toastSlice";
+import { getFileIcon, getFileIconFromName } from "../../utils/helpRender";
 
 const EditJobPostingView = () => {
-  const jobId = useParams().id as string;
-
-  const {
-    data: jobResponse,
-    isLoading: isFetchingJob,
-    isError: isFetchError,
-  } = useGetJobPostingDetailQuery(jobId);
+  const { id: jobId } = useParams();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [updateJobPosting, { isLoading: isUpdating }] =
     useUpdateJobPostingMutation();
-  const navigate = useNavigate();
   const { data: locationsData } = useGetAllLocationsQuery();
   const locations: Location[] = locationsData?.data ?? [];
 
-  // State
-  const [title, setTitle] = useState("");
-  const [type, setType] = useState<JobType>("FULL_TIME");
-  const [description, setDescription] = useState("");
-  const [requirements, setRequirements] = useState("");
-  const [benefits, setBenefits] = useState("");
-  const [minSalary, setMinSalary] = useState<string>("");
-  const [maxSalary, setMaxSalary] = useState<string>("");
-  const [requiredExperienceDescription, setRequiredExperienceDescription] =
-    useState<string>("");
-  const [expiredAt, setExpiredAt] = useState("");
-  const [locationId, setLocationId] = useState("");
+  // Lấy draft từ Redux để đồng bộ
+  const {
+    id,
+    title,
+    type,
+    description,
+    requirements,
+    benefits,
+    requiredDocuments,
+    minSalary,
+    maxSalary,
+    experience,
+    expiredAt,
+    locationId,
+    imageUrls,
+    state,
+    documents,
+  } = useSelector((state: any) => state.post.draft) || {};
 
-  // Image handling
+  // Ảnh
   const [newImages, setNewImages] = useState<File[]>([]);
   const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
+  const [documentFiles, setDocumentFiles] = useState<File[]>([]);
+  const [existingDocuments, setExistingDocument] = useState<any[]>([]);
 
-  // UI State
-  const [error, setError] = useState("");
-  const maxImages = 5;
-
-  // Effect to load data into state once fetched
   useEffect(() => {
-    if (jobResponse?.data) {
-      const job = jobResponse.data;
-      setTitle(job.title || "");
-      setType(job.type || "FULL_TIME");
-      setDescription(job.description || "");
-      setRequirements(job.requirements || "");
-      setBenefits(job.benefits || "");
-      setMinSalary(job.minSalary ? String(job.minSalary) : "");
-      setMaxSalary(job.maxSalary ? String(job.maxSalary) : "");
-      setRequiredExperienceDescription(job.experience || "");
-      // Format date for datetime-local input
-      setExpiredAt(job.expiredAt ? job.expiredAt.substring(0, 16) : "");
-      setLocationId(job.location.id || "");
-      setExistingImageUrls(job.imageNames || []);
+    setExistingImageUrls(imageUrls || []);
+    setExistingDocument(documents || []);
+  }, [imageUrls, documents]);
+
+  const maxImages = 5;
+  const totalImages = existingImageUrls?.length + newImages?.length;
+  const canUpload = totalImages < maxImages;
+
+  const maxDocuments = 5;
+  const totalDocuments = documentFiles.length;
+  const canUploadDocument = totalDocuments < maxDocuments;
+
+  const isLoading = isUpdating;
+
+  const updateField = (field: keyof JobFormData, value: any) => {
+    dispatch(updateDraftField({ [field]: value }));
+  };
+
+  // Xử lý ảnh
+  const handleImageChange = (
+    e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>
+  ) => {
+    let files: FileList | null = null;
+    if ("files" in e.target) files = e.target.files;
+    else if ("dataTransfer" in e) files = e.dataTransfer.files;
+
+    if (!files) return;
+
+    const allowedFiles = Array.from(files).filter((f) =>
+      f.type.startsWith("image/")
+    );
+    const newFiles = allowedFiles.slice(0, maxImages - totalImages);
+
+    setNewImages((prev) => [...prev, ...newFiles]);
+    dispatch(addNewImages(newFiles.map((file) => URL.createObjectURL(file))));
+    console.log(newFiles.map((file) => URL.createObjectURL(file)));
+
+    if ("target" in e && "value" in e.target) {
+      e.target.value = "";
     }
-  }, [jobResponse]);
+  };
 
-  const state = jobResponse?.data?.state;
+  const handleRemoveExistingImage = (url: string) => {
+    setExistingImageUrls((prev) => prev.filter((u) => u !== url));
+    dispatch(removeExistingImage(url));
+  };
 
-  // Handle form submission (for both Save Draft and Publish)
+  const handleRemoveNewImage = (index: number) => {
+    setNewImages((prev) => prev.filter((_, i) => i !== index));
+    dispatch(removeNewImage(index));
+  };
+
+  // Xử lý tài liệu
+  const handleDocumentChange = (
+    e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>
+  ) => {
+    let files: FileList | null = null;
+    if ("files" in e.target) files = e.target.files;
+    else if ("dataTransfer" in e) files = e.dataTransfer.files;
+
+    if (!files) return;
+
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ];
+
+    const validFiles = Array.from(files).filter((f) =>
+      allowedTypes.includes(f.type)
+    );
+    const newFiles = validFiles.slice(0, maxDocuments - documentFiles.length);
+
+    // Lưu File thật
+    setDocumentFiles((prev) => [...prev, ...newFiles]);
+
+    // Lưu tên file vào Redux (string → an toàn)
+    dispatch(addNewDocuments(newFiles.map((file) => file.name)));
+
+    if ("target" in e && "value" in e.target) {
+      e.target.value = "";
+    }
+  };
+
+  // Xóa tài liệu
+
+  const handleRemoveExistingDocument = (index: number) => {
+    setExistingDocument((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveNewDocument = (index: number) => {
+    setDocumentFiles((prev) => prev.filter((_, i) => i !== index));
+    dispatch(removeNewDocument(index));
+  };
+
   const handleSubmit = async (
     e: React.FormEvent,
-    state: "DRAFT" | "PUBLISHED"
+    publishState: "DRAFT" | "PUBLISHED"
   ) => {
     e.preventDefault();
-    setError("");
 
     if (!locationId) {
-      setError("Vui lòng chọn Địa điểm làm việc.");
+      dispatch(
+        addToast({
+          type: "error",
+          title: "Lỗi",
+          message: "Vui lòng chọn địa điểm làm việc",
+        })
+      );
       return;
     }
-    if (!title || !description || !requirements || !expiredAt) {
-      setError(
-        "Vui lòng điền các trường bắt buộc (Tiêu đề, Mô tả, Yêu cầu, Hạn chót)."
+
+    if (
+      !title ||
+      !description ||
+      !requirements ||
+      !expiredAt ||
+      !requiredDocuments
+    ) {
+      dispatch(
+        addToast({
+          type: "error",
+          title: "Lỗi khi lưu tài liệu",
+          message: "Vui lòng điền đầy đủ các trường bắt buộc",
+        })
       );
       return;
     }
 
     const formData = new FormData();
-
     const payload = {
       id: jobId,
       title,
       type,
       description,
       requirements,
+      requiredDocuments,
       benefits,
-      minSalary: minSalary === "" ? null : Number(minSalary),
-      maxSalary: maxSalary === "" ? null : Number(maxSalary),
-      experience: requiredExperienceDescription || null,
+      minSalary: minSalary ? Number(minSalary) : null,
+      maxSalary: maxSalary ? Number(maxSalary) : null,
+      experience: experience || null,
       expiredAt: expiredAt ? new Date(expiredAt).toISOString() : null,
       locationId,
-      state,
+      state: publishState,
       imagesToRetain: existingImageUrls,
+      documentsToRetain: existingDocuments.map((document) => document.fileName),
     };
 
     formData.append("data", JSON.stringify(payload));
-
-    // 2. Append new image files
     newImages.forEach((file) => formData.append("images", file));
+    documentFiles.forEach((file) => formData.append("documents", file));
 
     try {
       await updateJobPosting({ data: formData, id: jobId }).unwrap();
-      navigate("/recruiter/jobs");
+      console.log(payload);
+      // navigate("/recruiter/jobs");
     } catch (err: any) {
-      setError(
-        err?.data?.message ||
-          "Đã xảy ra lỗi không xác định khi cập nhật bài đăng."
+      dispatch(
+        addToast({
+          type: "error",
+          title: "Lỗi",
+          message: err?.data?.message || "Cập nhật thất bại",
+        })
       );
     }
   };
-
-  const handleImageChange = (
-    e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>
-  ) => {
-    let files: FileList | null = null;
-
-    if ("files" in e.target) {
-      files = e.target.files;
-    } else if ("dataTransfer" in e) {
-      files = e.dataTransfer.files;
-    }
-
-    if (files) {
-      const totalImages = existingImageUrls.length + newImages.length;
-      const allowedFiles = Array.from(files).filter((file) =>
-        file.type.startsWith("image/")
-      );
-
-      const newFiles = allowedFiles.slice(0, maxImages - totalImages);
-      setNewImages((prev) => [...prev, ...newFiles]);
-
-      if ("target" in e && "value" in e.target) {
-        e.target.value = "";
-      }
-    }
-  };
-
-  const handleRemoveExistingImage = (url: string) => {
-    setExistingImageUrls((prev) => prev.filter((u) => u !== url));
-  };
-
-  const handleRemoveNewImage = (index: number) => {
-    setNewImages((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const totalImages = existingImageUrls.length + newImages.length;
-  const canUpload = totalImages < maxImages;
-  const isLoading = isFetchingJob || isUpdating;
-
-  if (isFetchingJob) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <Loader className="animate-spin h-8 w-8 text-teal-600 mr-3" />
-        <p className="text-xl text-gray-700 font-medium">
-          Đang tải dữ liệu bài đăng...
-        </p>
-      </div>
-    );
-  }
-
-  if (isFetchError || !jobResponse?.data) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-red-50">
-        <XCircle className="h-8 w-8 text-red-600 mr-3" />
-        <p className="text-xl text-red-700 font-medium">
-          Không tìm thấy bài đăng hoặc có lỗi xảy ra.
-        </p>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50">
       <form className="max-w-6xl mx-auto sm:p-10 bg-white shadow-2xl rounded space-y-10">
         {/* Header */}
         <div className="relative flex flex-col sm:flex-row justify-between items-start sm:items-center pb-6 border-b border-gray-200 mb-8">
           <div className="mb-4 sm:mb-0 w-full">
-            <h1 className="text-4xl font-extrabold text-gray-900 leading-tight flex items-center gap-3">
-              <Pencil className="h-8 w-8 text-teal-600" />
-              Chỉnh sửa bài đăng tuyển dụng
-            </h1>
+            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+              <Edit2 className="w-6 h-6 text-teal-600" />
+              Quản lý bài đăng tuyển dụng
+            </h2>
             <p className="text-gray-500 mt-2 text-lg">
               Cập nhật chi tiết cho công việc:{" "}
-              <span className="text-teal-500 font-bold">**{title}**</span>
+              <span className="text-teal-500 font-bold">
+                **{title || "..."}**
+              </span>
             </p>
-            {/* STATE */}
             <div className="absolute top-[25%] right-0 flex justify-center p-2">
               <div
                 className={`mt-3 px-3 py-1 inline-block text-sm font-semibold rounded-full ${
@@ -217,67 +261,55 @@ const EditJobPostingView = () => {
                     : "bg-yellow-100 text-yellow-700"
                 }`}
               >
-                Trạng thái hiện tại:{" "}
-                {state === "PUBLISHED" ? "ĐÃ XUẤT BẢN" : "NHÁP"}
+                Trạng thái: {state === "PUBLISHED" ? "ĐÃ XUẤT BẢN" : "NHÁP"}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="p-4 bg-red-50 border border-red-300 text-red-700 rounded-lg font-medium flex items-center gap-2">
-            <XCircle size={20} className="flex-shrink-0" />
-            <span className="font-semibold">Lỗi:</span> {error}
-          </div>
-        )}
-
-        {/* 1. Thông tin cơ bản & Phân loại */}
+        {/* 1. Thông tin cơ bản */}
         <div className="space-y-6">
           <SectionTitle icon={<Briefcase />} title="Thông tin cơ bản" />
 
           <InputField
             label="Tiêu đề Công việc"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => updateField("title", e.target.value)}
             placeholder="VD: Kỹ sư AI nhận diện bệnh cây trồng"
-            required={true}
+            required
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Loại công việc */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">
                 Loại công việc <span className="text-red-500">*</span>
               </label>
               <select
                 value={type}
-                onChange={(e) => setType(e.target.value as JobType)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-800 transition duration-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm appearance-none bg-white pr-8"
+                onChange={(e) => updateField("type", e.target.value as JobType)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-800 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm"
               >
-                <option value="FULL_TIME">Toàn thời gian (Full-time)</option>
-                <option value="PART_TIME">Bán thời gian (Part-time)</option>
-                <option value="INTERNSHIP">Thực tập (Internship)</option>
-                <option value="FREELANCE">Tự do (Freelance)</option>
-                <option value="CONTRACT">Hợp đồng (Contract)</option>
-                <option value="TEMPORARY">Tạm thời (Temporary)</option>
-                <option value="REMOTE">Làm việc từ xa (Remote)</option>
+                <option value="FULL_TIME">Toàn thời gian</option>
+                <option value="PART_TIME">Bán thời gian</option>
+                <option value="INTERNSHIP">Thực tập</option>
+                <option value="FREELANCE">Tự do</option>
+                <option value="CONTRACT">Hợp đồng</option>
+                <option value="TEMPORARY">Tạm thời</option>
+                <option value="REMOTE">Từ xa</option>
               </select>
             </div>
 
-            {/* Địa điểm làm việc */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Địa điểm làm việc <span className="text-red-500">*</span>
+                Địa điểm <span className="text-red-500">*</span>
               </label>
               <select
                 value={locationId}
-                onChange={(e) => setLocationId(e.target.value)}
-                required
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-800 transition duration-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm appearance-none bg-white pr-8"
+                onChange={(e) => updateField("locationId", e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-800 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm"
               >
                 <option value="">-- Chọn tỉnh/thành --</option>
-                {locations.map((loc: Location) => (
+                {locations.map((loc) => (
                   <option key={loc.id} value={loc.id}>
                     {loc.name}
                   </option>
@@ -293,153 +325,139 @@ const EditJobPostingView = () => {
 
           <InputField
             label="Mô tả công việc"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Mô tả chi tiết công việc, nhiệm vụ chính (Sử dụng dấu gạch đầu dòng để ứng viên dễ đọc)"
-            required={true}
+            value={description || ""}
+            onChange={(e) => updateField("description", e.target.value)}
+            placeholder="Nhiệm vụ chính, môi trường làm việc..."
+            required
             rows={5}
           />
 
           <InputField
-            label="Yêu cầu Bắt buộc"
+            label="Yêu cầu"
             value={requirements}
-            onChange={(e) => setRequirements(e.target.value)}
-            placeholder="Kinh nghiệm tối thiểu, kỹ năng chuyên môn, bằng cấp..."
-            required={true}
+            onChange={(e) => updateField("requirements", e.target.value)}
+            placeholder="Kinh nghiệm, kỹ năng, bằng cấp..."
+            required
             rows={4}
           />
 
           <InputField
-            label="Quyền lợi & Phúc lợi"
+            label="Quyền lợi"
             value={benefits}
-            onChange={(e) => setBenefits(e.target.value)}
-            placeholder="Mức lương, làm việc từ xa, bảo hiểm, thưởng, nghỉ phép..."
+            onChange={(e) => updateField("benefits", e.target.value)}
+            placeholder="Lương, bảo hiểm, nghỉ phép..."
+            rows={4}
+          />
+
+          <InputField
+            label="Hồ sơ yêu cầu"
+            value={requiredDocuments}
+            required={true}
+            onChange={(e) => updateField("requiredDocuments", e.target.value)}
+            placeholder="Hồ sơ xin việc, sơ yếu lý lịch, học bạ, ..."
             rows={4}
           />
         </div>
 
-        {/* 3. Thông tin tài chính, Kinh nghiệm & Thời hạn */}
-        <div className="space-y-6 border-t border-gray-100 pt-6">
-          <SectionTitle
-            icon={<Wallet />}
-            title="Tài chính, Kinh nghiệm & Thời hạn"
-          />
+        {/* 3. Tài chính & Thời hạn */}
+        <div className="space-y-6 border-t pt-6">
+          <SectionTitle icon={<Wallet />} title="Tài chính & Thời hạn" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {/* Mức lương Tối thiểu */}
             <InputField
-              label="Mức lương Tối thiểu (VND)"
-              Icon={Wallet}
+              label="Lương tối thiểu (VND)"
               value={minSalary}
               onChange={(e) =>
-                setMinSalary(e.target.value.replace(/[^0-9]/g, ""))
+                updateField("minSalary", e.target.value.replace(/[^0-9]/g, ""))
               }
               type="number"
-              placeholder="VD: 25000000"
+              placeholder="25000000"
             />
 
-            {/* Mức lương Tối đa */}
             <InputField
-              label="Mức lương Tối đa (VND)"
-              Icon={Wallet}
+              label="Lương tối đa (VND)"
               value={maxSalary}
               onChange={(e) =>
-                setMaxSalary(e.target.value.replace(/[^0-9]/g, ""))
+                updateField("maxSalary", e.target.value.replace(/[^0-9]/g, ""))
               }
               type="number"
-              placeholder="VD: 35000000"
+              placeholder="35000000"
             />
 
-            {/* Mô tả Kinh nghiệm Yêu cầu */}
             <InputField
-              label="Mô tả Kinh nghiệm Yêu cầu"
-              Icon={Zap}
-              value={requiredExperienceDescription}
-              onChange={(e) => setRequiredExperienceDescription(e.target.value)}
-              type="text"
-              placeholder="Ví dụ: Tối thiểu 3 năm lập trình React Native."
+              label="Kinh nghiệm yêu cầu"
+              value={experience}
+              onChange={(e) => updateField("experience", e.target.value)}
+              placeholder="3+ năm React"
             />
 
-            {/* Hạn nộp */}
             <InputField
-              label="Hạn chót nộp hồ sơ"
+              label="Hạn nộp"
               value={expiredAt}
-              onChange={(e) => setExpiredAt(e.target.value)}
+              onChange={(e) => updateField("expiredAt", e.target.value)}
               type="datetime-local"
-              required={true}
+              required
             />
           </div>
         </div>
 
-        {/* 4. Tải ảnh & Preview */}
-        <div className="space-y-4 border-t border-gray-100 pt-6">
-          <SectionTitle icon={<Image />} title="Ảnh minh họa (Tùy chọn)" />
-
-          <p className="text-sm font-medium text-gray-500">
-            Tổng cộng: {totalImages} / {maxImages} ảnh.
+        {/* 4. Ảnh */}
+        <div className="space-y-4 border-t pt-6">
+          <SectionTitle icon={<Image />} title="Ảnh minh họa" />
+          <p className="text-sm text-gray-500">
+            Tổng: {totalImages} / {maxImages}
           </p>
 
-          {/* Image Preview Area - Existing Images */}
-          {(existingImageUrls.length > 0 || newImages.length > 0) && (
-            <div className="mt-4">
-              <div className="flex flex-wrap gap-4">
-                {/* Existing Images */}
-                {existingImageUrls.map((url, idx) => (
-                  <div
-                    key={`exist-${idx}`}
-                    className="relative w-28 h-28 rounded-xl overflow-hidden border-2 border-green-500 shadow-lg"
+          {(existingImageUrls?.length > 0 || newImages?.length > 0) && (
+            <div className="flex flex-wrap gap-4 mt-4">
+              {existingImageUrls.map((url, i) => (
+                <div
+                  key={`old-${i}`}
+                  className="relative w-28 h-28 rounded-xl overflow-hidden border-2 border-green-500 shadow-lg"
+                >
+                  <img
+                    src={getImageUrl(url)}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveExistingImage(url)}
+                    className="absolute top-1 right-1 bg-red-600 text-white p-1.5 rounded-full"
                   >
-                    <img
-                      src={getImageUrl(url)}
-                      alt={`Existing ${idx + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveExistingImage(url)}
-                      className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1.5 shadow-xl hover:bg-red-700 transition opacity-90"
-                      title="Xóa ảnh này khỏi bài đăng"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                    <span className="absolute bottom-0 left-0 text-xs bg-green-500 text-white px-1.5 rounded-tr-lg font-semibold">
-                      Cũ
-                    </span>
-                  </div>
-                ))}
+                    <Trash2 size={16} />
+                  </button>
+                  <span className="absolute bottom-0 left-0 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-tr-lg">
+                    Cũ
+                  </span>
+                </div>
+              ))}
 
-                {/* New Images */}
-                {newImages.map((img, idx) => (
-                  <div
-                    key={`new-${idx}`}
-                    className="relative w-28 h-28 rounded-xl overflow-hidden border-2 border-teal-500 shadow-lg transform transition hover:scale-[1.03]"
+              {newImages.map((file, i) => (
+                <div
+                  key={`new-${i}`}
+                  className="relative w-28 h-28 rounded-xl overflow-hidden border-2 border-teal-500 shadow-lg"
+                >
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveNewImage(i)}
+                    className="absolute top-1 right-1 bg-red-600 text-white p-1.5 rounded-full"
                   >
-                    <img
-                      src={URL.createObjectURL(img)}
-                      alt={`New Preview ${idx + 1}`}
-                      className="w-full h-full object-cover"
-                      onLoad={() =>
-                        URL.revokeObjectURL(URL.createObjectURL(img))
-                      } // Clean up memory
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveNewImage(idx)}
-                      className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1.5 shadow-xl hover:bg-red-700 transition opacity-90"
-                      title="Xóa ảnh mới này"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                    <span className="absolute bottom-0 left-0 text-xs bg-teal-500 text-white px-1.5 rounded-tr-lg font-semibold">
-                      Mới
-                    </span>
-                  </div>
-                ))}
-              </div>
+                    <Trash2 size={16} />
+                  </button>
+                  <span className="absolute bottom-0 left-0 bg-teal-500 text-white text-xs px-1.5 py-0.5 rounded-tr-lg">
+                    Mới
+                  </span>
+                </div>
+              ))}
             </div>
           )}
 
-          {/* Drag & Drop Area */}
           <div
             onDragOver={(e) => {
               e.preventDefault();
@@ -451,38 +469,22 @@ const EditJobPostingView = () => {
             onDrop={(e) => {
               e.preventDefault();
               e.currentTarget.classList.remove("border-teal-600", "bg-teal-50");
-              if (canUpload) {
-                handleImageChange(e);
-              }
+              if (canUpload) handleImageChange(e);
             }}
-            className={`w-full border-2 border-dashed ${
+            className={`border-2 border-dashed rounded-xl p-8 text-center transition ${
               canUpload
                 ? "border-teal-400 hover:border-teal-500 cursor-pointer"
-                : "border-gray-300 cursor-not-allowed opacity-70"
-            } rounded-xl px-6 py-10 text-center transition bg-teal-50/30 mt-4`}
+                : "border-gray-300 cursor-not-allowed opacity-60"
+            }`}
             onClick={() =>
               canUpload && document.getElementById("imageInput")?.click()
             }
           >
-            <LayoutGrid
-              size={32}
-              className={`mx-auto mb-2 ${
-                canUpload ? "text-teal-600" : "text-gray-400"
-              }`}
-            />
-            <p
-              className={`font-semibold mb-1 ${
-                canUpload ? "text-teal-700" : "text-gray-500"
-              }`}
-            >
+            <LayoutGrid size={32} className="mx-auto mb-2 text-teal-600" />
+            <p className="font-semibold text-teal-700">
               {canUpload
-                ? `Kéo thả hoặc nhấn để chọn thêm tối đa ${
-                    maxImages - totalImages
-                  } ảnh`
-                : `Đã đạt giới hạn ${maxImages} ảnh`}
-            </p>
-            <p className="text-sm text-gray-500">
-              Hỗ trợ JPG, PNG (Ảnh mới sẽ được tải lên khi nhấn 'Lưu/Xuất bản')
+                ? `Thêm tối đa ${maxImages - totalImages} ảnh`
+                : "Đã đủ ảnh"}
             </p>
             <input
               id="imageInput"
@@ -496,56 +498,154 @@ const EditJobPostingView = () => {
           </div>
         </div>
 
-        {/* Footer & Submit Buttons - Đã tối ưu hóa */}
-        <div className="pt-8 border-t border-gray-200 flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4">
-          {/* Nút 3: Xem danh sách ứng viên (Ưu tiên cao hơn khi đã PUBLISHED) */}
-          {state === "PUBLISHED" && (
-            <button
-              type="button"
-              onClick={() => navigate(`/recruiter/applicants/${jobId}`)}
-              className="order-1 w-full sm:w-auto bg-indigo-600 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md hover:bg-indigo-700 transition duration-300 flex items-center justify-center gap-2 transform hover:scale-[1.01]"
-            >
-              <ClipboardList size={20} />
-              Xem danh sách ứng viên
-            </button>
-          )}
+        {/* 5. Tài liệu */}
+        <div className="space-y-4 border-t pt-6">
+          <SectionTitle
+            icon={<File />}
+            title="Tài liệu đính kèm (PDF, Word, Excel)"
+          />
 
-          {/* Nút 1: Save Draft Button (Ưu tiên thấp nhất) */}
+          {/* Upload Area */}
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.currentTarget.classList.add("border-teal-600");
+            }}
+            onDragLeave={(e) =>
+              e.currentTarget.classList.remove("border-teal-600")
+            }
+            onDrop={(e) => {
+              e.preventDefault();
+              e.currentTarget.classList.remove("border-teal-600");
+              if (canUploadDocument) handleDocumentChange(e);
+            }}
+            className={`border-2 border-dashed rounded-xl p-8 text-center transition ${
+              canUploadDocument
+                ? "border-teal-400 hover:border-teal-500 cursor-pointer"
+                : "border-gray-300 opacity-60"
+            }`}
+            onClick={() =>
+              canUploadDocument &&
+              document.getElementById("documentInput")?.click()
+            }
+          >
+            <File size={32} className="mx-auto mb-2 text-teal-600" />
+            <p className="font-semibold text-teal-700">
+              {canUploadDocument
+                ? `Thêm tối đa ${maxDocuments - documentFiles.length} tài liệu`
+                : `Đã đạt giới hạn ${maxDocuments} tài liệu`}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              PDF, Word, Excel (tối đa 5MB mỗi file)
+            </p>
+            <input
+              id="documentInput"
+              type="file"
+              multiple
+              accept=".pdf,.doc,.docx,.xls,.xlsx"
+              onChange={handleDocumentChange}
+              className="hidden"
+              disabled={!canUploadDocument}
+            />
+          </div>
+
+          {/* Danh sách tài liệu */}
+          {existingDocuments.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-700">
+                Đã đăng ({existingDocuments.length} / {maxDocuments}):
+              </p>
+              {existingDocuments.map((document: any, i: number) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between bg-gray-50 px-4 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-100 transition"
+                >
+                  <div className="flex items-center gap-2 text-sm">
+                    {getFileIconFromName(document.originalName)}
+
+                    <span className="truncate max-w-xs">
+                      {document.originalName}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveExistingDocument(i)}
+                    className="text-red-600 hover:text-red-700 text-xs font-medium"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          {documentFiles.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-700">
+                Đã chọn ({documentFiles.length} / {maxDocuments}):
+              </p>
+              {documentFiles.map((file, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between bg-gray-50 px-4 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-100 transition"
+                >
+                  <div className="flex items-center gap-2 text-sm">
+                    {getFileIcon(file)}
+
+                    <span className="truncate max-w-xs">{file.name}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveNewDocument(i)}
+                    className="text-red-600 hover:text-red-700 text-xs font-medium"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Nút hành động */}
+        <div className="pt-8 border-t flex flex-col-reverse sm:flex-row justify-end gap-3">
           <button
             type="button"
             onClick={(e) => handleSubmit(e, "DRAFT")}
             disabled={isLoading}
-            className="order-2 w-full sm:w-auto bg-gray-100 text-gray-700 font-medium py-2.5 px-6 rounded-lg shadow-sm hover:bg-gray-200 transition duration-300 disabled:opacity-50 disabled:cursor-wait flex items-center justify-center gap-2"
+            className="bg-gray-100 text-gray-700 px-6 py-2.5 rounded-lg font-medium hover:bg-gray-200 flex items-center gap-2"
           >
-            {isLoading && state === "DRAFT" ? (
-              <Loader className="animate-spin h-5 w-5 text-gray-500" />
+            {isLoading ? (
+              <Loader className="animate-spin" />
             ) : (
               <Save size={18} />
             )}
-            {state === "PUBLISHED" ? "Chuyển về Nháp & Lưu" : "Lưu Nháp"}
+            Lưu nháp
           </button>
 
-          {/* Nút 2: Publish/Update Button (Ưu tiên cao nhất) */}
           <button
             type="submit"
             onClick={(e) => handleSubmit(e, "PUBLISHED")}
             disabled={isLoading}
-            className="order-3 w-full sm:w-auto bg-teal-600 text-white font-bold text-base py-2.5 px-6 rounded-lg shadow-xl shadow-teal-500/50 hover:bg-teal-700 transition duration-300 disabled:opacity-50 disabled:cursor-wait flex items-center justify-center gap-2 transform hover:scale-[1.01]"
+            className="bg-teal-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-teal-700 flex items-center gap-2 shadow-lg"
           >
+            <PenBoxIcon />
             {isUpdating ? (
-              <>
-                <Loader className="animate-spin h-5 w-5" /> Đang xử lý...
-              </>
+              <>Đang xử lý...</>
             ) : state === "PUBLISHED" ? (
-              <>
-                <Send size={18} /> Cập nhật Bài đăng
-              </>
+              <>Cập nhật</>
             ) : (
-              <>
-                <Rocket size={18} /> Xuất bản Bài đăng
-              </>
+              <>Xuất bản</>
             )}
           </button>
+          {state === "PUBLISHED" && (
+            <button
+              type="button"
+              onClick={() => navigate(`/recruiter/applicants/${jobId}`)}
+              className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 flex items-center gap-2"
+            >
+              <ClipboardList size={20} /> Xem ứng viên
+            </button>
+          )}
         </div>
       </form>
     </div>

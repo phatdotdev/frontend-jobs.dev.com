@@ -1,5 +1,5 @@
 import { Briefcase, Building2, Clock, DollarSign, MapPin } from "lucide-react";
-import { getImageUrl, timeAgo } from "../../utils/helper";
+import { getImageUrl, mapJobTypeVietnamese, timeAgo } from "../../utils/helper";
 import { Link } from "react-router-dom";
 
 type JobPosting = {
@@ -46,7 +46,7 @@ const JobPostingItem = ({ job }: { job: JobPosting }) => {
         <span
           className={`px-2 py-0.5 text-xs font-semibold rounded-full ${typeStyle} whitespace-nowrap`}
         >
-          {job.type.replace("_", " ").toLowerCase()}
+          {mapJobTypeVietnamese(job.type)}
         </span>
       </div>
 

@@ -13,11 +13,6 @@ import {
 } from "lucide-react";
 import { skipToken } from "@reduxjs/toolkit/query";
 
-// --- Giả định các Hooks RTK Query của bạn ---
-// import { useGetCompanyDetailQuery, useGetCompanyJobPostingsQuery } from "../../redux/api/companyApiSlice";
-// import JobPostingCard from './JobPostingCard'; // Component đã cải tiến ở trên
-
-// --- Khai báo Types (Giả định) ---
 type CompanyDetail = {
   id: string;
   name: string;
@@ -38,12 +33,11 @@ type JobPosting = {
   type: "FULL_TIME" | "PART_TIME" | "INTERNSHIP";
   promotedSalary: number | null;
   location: { id: string; name: string } | null;
-  imageNames: string[];
+  imageUrls: string[];
   views: number;
   likes: number;
   expiredAt: string;
-  description: string; // Thêm vào để dùng trong JobPostingCard (nếu cần)
-  // ... các trường khác
+  description: string;
 };
 
 // --- MOCK DATA và Hooks giả định (Bạn cần thay thế bằng Hooks RTK thật) ---
@@ -102,7 +96,6 @@ const useGetCompanyJobPostingsQuery = (companyId: string) => ({
   isError: false,
 });
 
-// Giả định JobPostingCard component (Cần được import thật nếu không mock)
 const JobPostingCard = ({ job }: { job: JobPosting }) => (
   <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition duration-200">
     <h4 className="text-lg font-bold text-teal-700">{job.title}</h4>
@@ -123,7 +116,6 @@ const JobPostingCard = ({ job }: { job: JobPosting }) => (
     </p>
   </div>
 );
-// --- Hết MOCK ---
 
 const CompanyDetailPage: React.FC = () => {
   const { companyId } = useParams<{ companyId: string }>(); // Lấy ID từ URL

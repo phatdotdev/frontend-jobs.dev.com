@@ -26,7 +26,6 @@ const Login = () => {
       if (redirect) {
         navigate(redirect);
       } else navigate("/");
-
       dispatch(
         addToast({
           type: "success",

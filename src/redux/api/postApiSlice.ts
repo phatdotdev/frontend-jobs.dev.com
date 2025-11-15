@@ -65,6 +65,11 @@ export const postApiSlice = apiSlice.injectEndpoints({
         method: "POST",
       }),
     }),
+    isLiked: builder.query<ResponseProps<any>, any>({
+      query: (id) => ({
+        url: `${POST_URL}/${id}/like`,
+      }),
+    }),
     viewJobPosting: builder.mutation<ResponseProps<any>, any>({
       query: (id) => ({
         url: `${POST_URL}/${id}/view`,
@@ -84,4 +89,5 @@ export const {
   // INTERACTION
   useLikeJobPostingMutation,
   useViewJobPostingMutation,
+  useIsLikedQuery,
 } = postApiSlice;

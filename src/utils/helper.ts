@@ -37,7 +37,7 @@ export function formatDateTime(dateString: string): string {
   const hours = date.getHours().toString().padStart(2, "0");
   const minutes = date.getMinutes().toString().padStart(2, "0");
 
-  return `${day}/${month}/${year} lúc ${hours}:${minutes}`;
+  return `⏰ ${hours}:${minutes} | 📅 ${day}/${month}/${year}`;
 }
 
 export function formatDate(dateString: string): string {
@@ -66,3 +66,57 @@ export const mapGenderToVietnamese = (gender: string | undefined): string => {
       return "Chưa cập nhật";
   }
 };
+export function mapJobTypeVietnamese(type: string) {
+  switch (type) {
+    case "FULL_TIME":
+      return "Toàn thời gian";
+    case "PART_TIME":
+      return "Bán thời gian";
+    case "INTERNSHIP":
+      return "Thực tập";
+    case "FREELANCE":
+      return "Tự do";
+    case "CONTRACT":
+      return "Hợp đồng";
+    case "TEMPORARY":
+      return "Tạm thời";
+    case "REMOTE":
+      return "Làm việc từ xa";
+    default:
+      return "Không xác định";
+  }
+}
+
+export function mapApplicationStateToVi(state: string): string {
+  switch (state) {
+    case "SUBMITTED":
+      return "Mới nộp";
+    case "REVIEWING":
+      return "Đang xem";
+    case "REQUESTED":
+      return "Thiếu tài liệu";
+    case "ACCEPTED":
+      return "Chấp nhận";
+    case "REJECTED":
+      return "Từ chối";
+    default:
+      return "Không xác định";
+  }
+}
+
+export function getApplicationStateNote(state: string): string {
+  switch (state) {
+    case "SUBMITTED":
+      return "Ứng viên đã nộp hồ sơ thành công. Chờ xét duyệt từ nhà tuyển dụng.";
+    case "REQUESTED":
+      return "Vui lòng bổ sung thêm tài liệu liên quan để hoàn tất hồ sơ ứng tuyển.";
+    case "REVIEWING":
+      return "Hồ sơ của bạn đang được xem xét. Chúng tôi sẽ phản hồi sớm nhất có thể.";
+    case "ACCEPTED":
+      return "Chúc mừng! Hồ sơ của bạn đã được chấp nhận. Vui lòng kiểm tra email để biết thêm thông tin.";
+    case "REJECTED":
+      return "Rất tiếc, hồ sơ của bạn chưa phù hợp với vị trí hiện tại. Cảm ơn bạn đã quan tâm.";
+    default:
+      return "Trạng thái không xác định.";
+  }
+}

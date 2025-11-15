@@ -1,10 +1,39 @@
+export type ApplicationState =
+  | "SUBMITTED"
+  | "REVIEWING"
+  | "REQUESTED"
+  | "ACCEPTED"
+  | "REJECTED"
+  | "";
+
+export interface DocumentProps {
+  id: string;
+  fileName: string;
+  fileType: string;
+  originalName: string;
+  size: number;
+  uploadedAt: string;
+}
+
+export interface NotificationProps {
+  id: string;
+  title: string;
+  content: string;
+  timestamp: string;
+}
+
 export interface ApplicationDetail {
   id: string;
   appliedAt: string;
-  state: "SUBMITTED" | "REVIEWING" | "ACCEPTED" | "REJECTED";
+  state: "SUBMITTED" | "REVIEWING" | "REQUESTED" | "ACCEPTED" | "REJECTED";
   resume: {
     id: string;
     title?: string;
+    objectCareer: string;
+    email: string;
+    firstname: string;
+    lastname: string;
+    phone: string;
   };
   post: {
     id: string;
@@ -12,12 +41,14 @@ export interface ApplicationDetail {
     companyName: string;
     avatarUrl: string;
   };
+  notifications: any[];
+  documents: any[];
 }
 
 export interface PageData<T> {
   content: T[];
   totalPages: number;
   totalElements: number;
-  number: number; // current page (0-based)
+  number: number;
   size: number;
 }

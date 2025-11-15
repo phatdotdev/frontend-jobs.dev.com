@@ -12,6 +12,7 @@ export type PostingProps = {
     | "REMOTE";
   description: string;
   requirements: string;
+  requiredDocuments: string;
   benefits: string;
   state: "DRAFT" | "PUBLISHED" | "EXPIRED" | "ACHIVED";
   views?: number;
@@ -23,11 +24,12 @@ export type PostingProps = {
   minSalary: number;
   maxSalary: number;
   experience: string;
+  documents: any[];
 
   createdAt: string;
   updateAt: string;
   expiredAt: string;
-  imageNames: string[];
+  imageUrls: string[];
 
   location: { id: string; name: string };
 };

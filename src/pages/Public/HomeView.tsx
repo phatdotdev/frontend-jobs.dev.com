@@ -1,5 +1,4 @@
-import PageSection from "../components/PageSection";
-import Heading from "../components/PageSection";
+import PageSection from "../../components/PageSection";
 
 const HomeView = () => {
   return (

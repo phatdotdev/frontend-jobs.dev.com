@@ -3,6 +3,7 @@ import { setupListeners } from "@reduxjs/toolkit/query/react";
 import { apiSlice } from "../api/apiSlice";
 import notificationsSlice from "./notificationSlice";
 import messagesSlice from "./messageSlice";
+import postReducer from "./postSlice";
 import toastReducer from "./toastSlice";
 
 export const store = configureStore({
@@ -11,6 +12,7 @@ export const store = configureStore({
     notifications: notificationsSlice.reducer,
     messages: messagesSlice.reducer,
     toast: toastReducer,
+    post: postReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(apiSlice.middleware),

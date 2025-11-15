@@ -2,7 +2,8 @@ import { type FC, useState } from "react";
 import { X, Loader2, Send, PlusCircle } from "lucide-react";
 import type { ResumeProps as ResumeResponse } from "../../types/ResumeProps";
 import ResumeItem from "../JobSeeker/ResumeItem";
-import { Link } from "react-router-dom";
+import DataLoader from "../UI/DataLoader";
+import FileDropZone from "../Application/FileDropZone";
 
 interface CvSelectionModalProps {
   jobId: string;
@@ -10,7 +11,7 @@ interface CvSelectionModalProps {
   onClose: () => void;
   onCreateNewCv: () => void;
   isResumesLoading: boolean;
-  onConfirmApply: (resumeId: string) => void;
+  onConfirmApply: (resumeId: string, files: File[]) => void;
 }
 
 const CvSelectionModal: FC<CvSelectionModalProps> = ({
@@ -23,24 +24,23 @@ const CvSelectionModal: FC<CvSelectionModalProps> = ({
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(
     resumes[0]?.id || null
   );
-  const currentPathEncoded = encodeURIComponent(
-    location.pathname + location.search
-  );
 
   const [submittingResumeId, setSubmittingResumeId] = useState<string | null>(
     null
   );
 
+  const [documentFiles, setDocumentFiles] = useState<File[]>([]);
+
   const handleApplySelected = async () => {
     if (!selectedResumeId || submittingResumeId) return;
 
     setSubmittingResumeId(selectedResumeId);
-    await onConfirmApply(selectedResumeId);
+    await onConfirmApply(selectedResumeId, documentFiles);
     setSubmittingResumeId(null);
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 relative">
         {/* Nút đóng Modal */}
         <button
@@ -55,12 +55,7 @@ const CvSelectionModal: FC<CvSelectionModalProps> = ({
         </h3>
 
         {isResumesLoading ? (
-          <div className="h-40 flex items-center justify-center">
-            <Loader2 className="animate-spin h-8 w-8 text-teal-600" />
-            <span className="ml-3 text-lg text-teal-700">
-              Đang tải danh sách CV...
-            </span>
-          </div>
+          <DataLoader />
         ) : (
           <div className="max-h-80 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
             {resumes.length > 0 ? (
@@ -88,6 +83,8 @@ const CvSelectionModal: FC<CvSelectionModalProps> = ({
             )}
           </div>
         )}
+
+        <FileDropZone onFilesChange={setDocumentFiles} />
 
         {/* Nút xác nhận nộp và nút tạo CV mới */}
         <div className="pt-4 border-t mt-4 flex justify-between gap-3">

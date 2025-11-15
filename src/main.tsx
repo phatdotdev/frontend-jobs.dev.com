@@ -14,15 +14,12 @@ import Register from "./pages/Authentication/Register.tsx";
 import { store } from "./redux/features/store.ts";
 import { Provider } from "react-redux";
 import JobSeekerRoute from "./components/Authentication/JobSeekerRoute.tsx";
-import JobView from "./pages/JobView.tsx";
-import HomeView from "./pages/HomeView.tsx";
+import HomeView from "./pages/Public/HomeView.tsx";
 import PublicLayout from "./components/Layout/PublicLayout.tsx";
-import CompanyView from "./pages/CompanyView.tsx";
 import ChatView from "./pages/ChatView.tsx";
 import JobSeekerPageView from "./pages/JobSeeker/JobSeekerPageView.tsx";
 import RecruiterPageView from "./pages/Recruiter/RecruiterPageView.tsx";
 import RecruiterRoute from "./components/Authentication/RecruiterRoute.tsx";
-import CreateJobPostView from "./pages/Recruiter/CreateJobPostView.tsx";
 import JobPostingListView from "./pages/Recruiter/JobPostingListView.tsx";
 import NotFoundPage from "./pages/NotFoundPage.tsx";
 import AdminPage from "./pages/Admin/AdminPage.tsx";
@@ -33,21 +30,25 @@ import ManageSchoolPage from "./pages/Admin/ManageSchoolPage.tsx";
 import ManageCertificatePage from "./pages/Admin/ManageCertificatePage.tsx";
 import ManageResourcePage from "./pages/Admin/ManageResourcePage.tsx";
 import ManageLocationPage from "./pages/Admin/ManageLocationPage.tsx";
-import JobDetailView from "./pages/JobDetailView.tsx";
+import JobDetailView from "./pages/Public/JobDetailView.tsx";
 import ResumeManager from "./pages/JobSeeker/ResumeManager.tsx";
 import ResumeViewer from "./pages/JobSeeker/ResumeViewer.tsx";
 import AppliedJobs from "./pages/JobSeeker/AppliedJobs.tsx";
 import ApplicantsByPostView from "./pages/Recruiter/ApplicantsView.tsx";
-import AccountInfo from "./components/AccountInfo.tsx";
+import AccountInfo from "./components/Info/AccountInfo.tsx";
 import ActivitiesView from "./pages/JobSeeker/ActivitiesView.tsx";
 import HistoryView from "./pages/Recruiter/HistoryView.tsx";
-import JobPostDetailView from "./pages/Recruiter/JobPostDetailView.tsx";
 import ExpertRoute from "./components/Authentication/ExpertRoute.tsx";
 import FeedbackRequestView from "./pages/Expert/FeedbackRequestView.tsx";
 import DetailedReviewForm from "./pages/Expert/DetailReviewFormView.tsx";
 import ReviewHistoryPage from "./pages/Expert/ReviewHistoryView.tsx";
 import DetailHistoryReviewView from "./pages/Expert/DetailHistoryReviewView.tsx";
 import ResumeReviewView from "./pages/JobSeeker/ResumeReviewView.tsx";
+import JobView from "./pages/Public/JobView.tsx";
+import CompanyView from "./pages/Public/CompanyView.tsx";
+import EditAndPreviewJobPostingView from "./pages/Recruiter/EditAndPreviewJobPostingView.tsx";
+import CreateAndPreviewJobPostingView from "./pages/Recruiter/CreateAndPreviewJobPostingView.tsx";
+import AppliedJobDetail from "./pages/JobSeeker/AppliedJobDetail.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -73,15 +74,16 @@ const router = createBrowserRouter(
         <Route path="resume/:id" element={<ResumeViewer />} />
         <Route path="resume/:id/reviews" element={<ResumeReviewView />} />
         <Route path="applied-jobs" element={<AppliedJobs />} />
+        <Route path="applied-jobs/:id" element={<AppliedJobDetail />} />
         <Route path="activities" element={<ActivitiesView />} />
       </Route>
 
       {/* recruiter routes */}
       <Route path="/recruiter" element={<RecruiterRoute />}>
         <Route path="" element={<RecruiterPageView />} />
-        <Route path="post" element={<CreateJobPostView />} />
+        <Route path="post" element={<CreateAndPreviewJobPostingView />} />
         <Route path="jobs" element={<JobPostingListView />} />
-        <Route path="jobs/:id" element={<JobPostDetailView />} />
+        <Route path="jobs/:id" element={<EditAndPreviewJobPostingView />} />
         <Route path="applicants/:id" element={<ApplicantsByPostView />} />
         <Route path="history" element={<HistoryView />} />
       </Route>

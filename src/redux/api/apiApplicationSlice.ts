@@ -6,10 +6,10 @@ export const applicationSlice = apiSlice.injectEndpoints({
   overrideExisting: true,
   endpoints: (builder) => ({
     applyJob: builder.mutation<ResponseProps<any>, any>({
-      query: (data) => ({
+      query: (formData) => ({
         url: `${APP_URL}`,
         method: "POST",
-        body: data,
+        body: formData,
       }),
     }),
     searchApply: builder.query<ResponseProps<any>, any>({
@@ -22,6 +22,18 @@ export const applicationSlice = apiSlice.injectEndpoints({
       query: (params) => ({
         url: `${APP_URL}/mine`,
         params,
+      }),
+    }),
+    getApplicationById: builder.query<ResponseProps<any>, any>({
+      query: (id) => ({
+        url: `${APP_URL}/${id}`,
+      }),
+    }),
+    updateDocuments: builder.mutation<ResponseProps<any>, any>({
+      query: ({ id, formData }) => ({
+        url: `${APP_URL}/${id}/documents`,
+        method: "PUT",
+        body: formData,
       }),
     }),
     // RECRUITER
@@ -46,6 +58,8 @@ export const {
   useSearchApplyQuery,
   useLazySearchApplyQuery,
   useGetMyApplicationsQuery,
+  useGetApplicationByIdQuery,
+  useUpdateDocumentsMutation,
   // RECRUITER
   useGetApplicantsByPostQuery,
   useUpdateApplicationStateMutation,

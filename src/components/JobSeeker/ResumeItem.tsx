@@ -16,8 +16,8 @@ const ResumeItem: FC<ResumeItemProps> = ({
   isSubmitting,
 }) => {
   const briefIntroduction = resume.introduction
-    ? resume.introduction.substring(0, 80) +
-      (resume.introduction.length > 80 ? "..." : "")
+    ? resume.introduction.substring(0, 50) +
+      (resume.introduction.length > 50 ? "..." : "")
     : "Chưa có tóm tắt giới thiệu.";
 
   return (

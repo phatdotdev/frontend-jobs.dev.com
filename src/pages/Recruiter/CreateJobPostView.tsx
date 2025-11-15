@@ -1,16 +1,14 @@
-import React, { useState, type TextareaHTMLAttributes } from "react";
+import React, { useState } from "react";
 import {
   Trash2,
   Briefcase,
   ClipboardList,
   Wallet,
   Image,
-  Send,
-  Loader,
   XCircle,
   LayoutGrid,
-  Zap,
   Edit,
+  File,
 } from "lucide-react";
 import { useCreateJobPostingMutation } from "../../redux/api/postApiSlice";
 import { useNavigate } from "react-router-dom";
@@ -18,38 +16,139 @@ import { useGetAllLocationsQuery } from "../../redux/api/apiAdminSlice";
 import type { JobType, Location } from "../../types/PostingProps";
 import SectionTitle from "../../components/UI/SectionTitle";
 import InputField from "../../components/UI/InputField";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addToast } from "../../redux/features/toastSlice";
+import {
+  updateDraftField,
+  addNewImages,
+  removeNewImage,
+  removeNewDocument,
+  addNewDocuments,
+} from "../../redux/features/postSlice";
+import { FaFileExcel, FaFilePdf, FaFileWord } from "react-icons/fa";
+import { getFileIcon } from "../../utils/helpRender";
 
-const CreateJobPostForm = () => {
-  const [createJobPosting, { isLoading }] = useCreateJobPostingMutation();
+const CreateJobPostView = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [createJobPosting, { isLoading }] = useCreateJobPostingMutation();
   const { data } = useGetAllLocationsQuery();
   const locations: Location[] = data?.data ?? [];
 
-  const [title, setTitle] = useState("");
-  const [type, setType] = useState<JobType>("FULL_TIME");
-  const [description, setDescription] = useState("");
-  const [requirements, setRequirements] = useState("");
-  const [benefits, setBenefits] = useState("");
-  const [minSalary, setMinSalary] = useState<string>("");
-  const [maxSalary, setMaxSalary] = useState<string>("");
+  // Lấy draft từ Redux
+  const draft = useSelector((state: any) => state.post.draft) || {};
+  const {
+    title = "",
+    type = "FULL_TIME",
+    description = "",
+    requirements = "",
+    benefits = "",
+    minSalary = "",
+    maxSalary = "",
+    experience = "",
+    expiredAt = "",
+    locationId = "",
+    requiredDocuments,
+    newImageUrls = [],
+  } = draft;
 
-  const [requiredExperienceDescription, setRequiredExperienceDescription] =
-    useState<string>("");
-  const [expiredAt, setExpiredAt] = useState("");
-  const [images, setImages] = useState<File[]>([]);
-  const [error, setError] = useState("");
-  const [locationId, setLocationId] = useState("");
+  // Local state: chỉ lưu File thật
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [documentFiles, setDocumentFiles] = useState<File[]>([]);
 
-  const dispatch = useDispatch();
+  const maxImages = 5;
+  const totalImages = imageFiles.length;
+  const canUploadImage = totalImages < maxImages;
+
+  const maxDocuments = 5;
+  const totalDocuments = documentFiles.length;
+  const canUploadDocument = totalDocuments < maxDocuments;
+
+  // Cập nhật field → Redux
+  const updateField = (field: keyof typeof draft, value: any) => {
+    dispatch(updateDraftField({ [field]: value }));
+  };
+
+  // Xử lý ảnh
+  const handleImageChange = (
+    e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>
+  ) => {
+    let files: FileList | null = null;
+    if ("files" in e.target) files = e.target.files;
+    else if ("dataTransfer" in e) files = e.dataTransfer.files;
+
+    if (!files) return;
+
+    const validFiles = Array.from(files).filter((f) =>
+      f.type.startsWith("image/")
+    );
+    const newFiles = validFiles.slice(0, maxImages - totalImages);
+
+    setImageFiles((prev) => [...prev, ...newFiles]);
+    dispatch(addNewImages(newFiles.map((file) => URL.createObjectURL(file))));
+
+    if ("target" in e && "value" in e.target) {
+      e.target.value = "";
+    }
+  };
+
+  // Xử lý tài liệu
+  const handleDocumentChange = (
+    e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>
+  ) => {
+    let files: FileList | null = null;
+    if ("files" in e.target) files = e.target.files;
+    else if ("dataTransfer" in e) files = e.dataTransfer.files;
+
+    if (!files) return;
+
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ];
+
+    const validFiles = Array.from(files).filter((f) =>
+      allowedTypes.includes(f.type)
+    );
+    const newFiles = validFiles.slice(0, maxDocuments - documentFiles.length);
+
+    // Lưu File thật
+    setDocumentFiles((prev) => [...prev, ...newFiles]);
+
+    // Lưu tên file vào Redux (string → an toàn)
+    dispatch(addNewDocuments(newFiles.map((file) => file.name)));
+
+    if ("target" in e && "value" in e.target) {
+      e.target.value = "";
+    }
+  };
+
+  // Xóa hình ảnh
+  const handleRemoveImage = (index: number) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    dispatch(removeNewImage(index));
+  };
+
+  // Xóa tài liệu
+  const handleRemoveDocument = (index: number) => {
+    setDocumentFiles((prev) => prev.filter((_, i) => i !== index));
+    dispatch(removeNewDocument(index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
 
-    if (!locationId) {
-      setError("Vui lòng chọn Địa điểm làm việc.");
+    if (!locationId || !title || !description || !requirements || !expiredAt) {
+      dispatch(
+        addToast({
+          type: "error",
+          title: "Lỗi khi tạo bài viết",
+          message: "Điền đầy đủ các thông tin cần thiết!",
+        })
+      );
       return;
     }
 
@@ -60,141 +159,105 @@ const CreateJobPostForm = () => {
       description,
       requirements,
       benefits,
-      minSalary: minSalary === "" ? null : Number(minSalary),
-      maxSalary: maxSalary === "" ? null : Number(maxSalary),
-      experience: requiredExperienceDescription || null,
+      requiredDocuments,
+      minSalary: minSalary ? Number(minSalary) : null,
+      maxSalary: maxSalary ? Number(maxSalary) : null,
+      experience: experience || null,
       expiredAt: expiredAt ? new Date(expiredAt).toISOString() : null,
       locationId,
     };
 
     formData.append("data", JSON.stringify(payload));
-    images.forEach((file) => formData.append("images", file));
+    imageFiles.forEach((file) => formData.append("images", file));
+    documentFiles.forEach((file) => formData.append("documents", file));
+
+    console.log(formData.get("documents"));
 
     try {
       await createJobPosting(formData).unwrap();
       dispatch(
         addToast({
           type: "success",
-          title: "Tạo bài đăng thành công",
-          message: "Tạo bài đăng thành công (được ghi bản nháp)",
+          title: "Thành công",
+          message: "Tạo bài đăng thành công (đã lưu nháp)",
         })
       );
-      navigate("/recruiter/jobs");
+      // navigate("/recruiter/jobs");
     } catch (err: any) {
-      setError(
-        err?.data?.message || "Đã xảy ra lỗi không xác định khi tạo bài đăng."
+      dispatch(
+        addToast({
+          type: "error",
+          title: "Tạo bài đăng thất bại",
+          message: err.message || "Lỗi không xác định!",
+        })
       );
     }
   };
-
-  const handleImageChange = (
-    e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>
-  ) => {
-    let files: FileList | null = null;
-
-    if ("files" in e.target) {
-      files = e.target.files;
-    } else if ("dataTransfer" in e) {
-      files = e.dataTransfer.files;
-    }
-
-    if (files) {
-      const allowedFiles = Array.from(files).filter((file) =>
-        file.type.startsWith("image/")
-      );
-
-      const newFiles = allowedFiles.slice(0, 5 - images.length);
-      setImages((prev) => [...prev, ...newFiles]);
-
-      // Clear input value if it came from the input element
-      if ("target" in e && "value" in e.target) {
-        e.target.value = "";
-      }
-    }
-  };
-
-  const handleRemoveImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const maxImages = 5;
-  const canUpload = images.length < maxImages;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-4 lg:px-4">
+    <div className="min-h-screen bg-gray-50 py-6">
       <form
         onSubmit={handleSubmit}
-        className="max-w-6xl mx-auto sm:p-10 bg-white shadow-3xl space-y-10"
+        className="max-w-6xl mx-auto bg-white shadow-3xl rounded-xl p-6 sm:p-10 space-y-10"
       >
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-6 border-b border-gray-200 mb-8">
-          <div className="mb-4 sm:mb-0">
-            <h1 className="text-4xl font-extrabold text-gray-900 leading-tight flex items-center gap-3">
-              <Edit className="h-8 w-8 text-teal-600" />
+        <div className="flex items-center gap-3 pb-6 border-b">
+          <Edit className="h-8 w-8 text-teal-600" />
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
               Viết bài tuyển dụng
             </h1>
-            <p className="text-gray-500 mt-1.5 text-lg">
-              Điền đầy đủ thông tin để thu hút các ứng viên tìm năng.
-            </p>
+            <p className="text-gray-500">Điền đầy đủ để thu hút ứng viên</p>
           </div>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="p-4 bg-red-50 border border-red-300 text-red-700 rounded-lg font-medium flex items-center gap-2">
-            <XCircle size={20} className="flex-shrink-0" />
-            <span className="font-semibold">Lỗi:</span> {error}
-          </div>
-        )}
-
-        {/* 1. Thông tin cơ bản & Phân loại */}
+        {/* 1. Thông tin cơ bản */}
         <div className="space-y-6">
           <SectionTitle icon={<Briefcase />} title="Thông tin cơ bản" />
-
           <InputField
-            label="Tiêu đề Công việc"
+            label="Tiêu đề"
             value={title}
-            onChange={(
-              e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-            ) => setTitle(e.target.value)}
+            onChange={(e) => updateField("title", e.target.value)}
             placeholder="VD: Kỹ sư AI nhận diện bệnh cây trồng"
-            required={true}
+            required
           />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Loại công việc */}
+          <div className="grid sm:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Loại công việc <span className="text-red-500">*</span>
+              <label className="block text-sm font-semibold mb-1">
+                Loại công việc *
               </label>
               <select
                 value={type}
-                onChange={(e) => setType(e.target.value as JobType)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-800 transition duration-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm appearance-none bg-white pr-8"
+                onChange={(e) => updateField("type", e.target.value as JobType)}
+                className="w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-teal-500"
               >
-                <option value="FULL_TIME">Toàn thời gian (Full-time)</option>
-                <option value="PART_TIME">Bán thời gian (Part-time)</option>
-                <option value="INTERNSHIP">Thực tập (Internship)</option>
-                <option value="FREELANCE">Tự do (Freelance)</option>
-                <option value="CONTRACT">Hợp đồng (Contract)</option>
-                <option value="TEMPORARY">Tạm thời (Temporary)</option>
-                <option value="REMOTE">Làm việc từ xa (Remote)</option>
+                <option value="FULL_TIME">Toàn thời gian</option>
+                <option value="PART_TIME">Bán thời gian</option>
+                <option value="INTERNSHIP">Thực tập</option>
+                <option value="FREELANCE">Tự do</option>
+                <option value="CONTRACT">Hợp đồng</option>
+                <option value="TEMPORARY">Tạm thời</option>
+                <option value="REMOTE">Từ xa</option>
               </select>
             </div>
-
-            {/* Địa điểm làm việc */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Địa điểm làm việc <span className="text-red-500">*</span>
+              <label className="block text-sm font-semibold mb-1">
+                Địa điểm *
               </label>
               <select
                 value={locationId}
-                onChange={(e) => setLocationId(e.target.value)}
-                required
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-800 transition duration-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm appearance-none bg-white pr-8"
+                onChange={(e) => {
+                  const selectedId = e.target.value;
+                  const selectedLocation = locations.find(
+                    (loc) => loc.id === selectedId
+                  );
+                  updateField("locationId", selectedId);
+                  updateField("location", selectedLocation || {});
+                }}
+                className="w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-teal-500"
               >
                 <option value="">-- Chọn tỉnh/thành --</option>
-                {locations.map((loc: Location) => (
+                {locations.map((loc) => (
                   <option key={loc.id} value={loc.id}>
                     {loc.name}
                   </option>
@@ -204,161 +267,111 @@ const CreateJobPostForm = () => {
           </div>
         </div>
 
-        {/* 2. Nội dung chi tiết */}
+        {/* 2. Nội dung */}
         <div className="space-y-6">
           <SectionTitle icon={<ClipboardList />} title="Nội dung chi tiết" />
-
           <InputField
             label="Mô tả công việc"
             value={description}
-            onChange={(
-              e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-            ) => setDescription(e.target.value)}
-            placeholder="Mô tả chi tiết công việc, nhiệm vụ chính (Sử dụng dấu gạch đầu dòng để ứng viên dễ đọc)"
-            required={true}
+            onChange={(e) => updateField("description", e.target.value)}
+            placeholder="Nhiệm vụ chính..."
+            required
             rows={5}
           />
-
           <InputField
-            label="Yêu cầu Bắt buộc"
+            label="Yêu cầu"
             value={requirements}
-            onChange={(
-              e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-            ) => setRequirements(e.target.value)}
-            placeholder="Kinh nghiệm tối thiểu, kỹ năng chuyên môn, bằng cấp..."
-            required={true}
+            onChange={(e) => updateField("requirements", e.target.value)}
+            placeholder="Kinh nghiệm, kỹ năng..."
+            required
+            rows={4}
+          />
+          <InputField
+            label="Quyền lợi"
+            value={benefits}
+            onChange={(e) => updateField("benefits", e.target.value)}
+            placeholder="Lương, bảo hiểm..."
             rows={4}
           />
 
           <InputField
-            label="Quyền lợi & Phúc lợi"
-            value={benefits}
-            onChange={(
-              e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-            ) => setBenefits(e.target.value)}
-            placeholder="Mức lương, làm việc từ xa, bảo hiểm, thưởng, nghỉ phép..."
+            label="Hồ sơ yêu cầu"
+            value={requiredDocuments}
+            required={true}
+            onChange={(e) => updateField("requiredDocuments", e.target.value)}
+            placeholder="Hồ sơ xin việc, sơ yếu lý lịch, học bạ, ..."
             rows={4}
           />
         </div>
 
-        {/* 3. Thông tin tài chính, Kinh nghiệm & Thời hạn */}
-        <div className="space-y-6 border-t border-gray-100 pt-6">
-          <SectionTitle
-            icon={<Wallet />}
-            title="Tài chính, Kinh nghiệm & Thời hạn"
-          />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {/* Mức lương Tối thiểu */}
+        {/* 3. Tài chính & Thời hạn */}
+        <div className="space-y-6 border-t pt-6">
+          <SectionTitle icon={<Wallet />} title="Tài chính & Thời hạn" />
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
             <InputField
-              label="Mức lương Tối thiểu (VND)"
-              Icon={Wallet}
+              label="Lương tối thiểu (VND)"
               value={minSalary}
-              onChange={(
-                e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-              ) =>
-                setMinSalary(
-                  e.target.value === ""
-                    ? ""
-                    : e.target.value.replace(/[^0-9]/g, "")
-                )
+              onChange={(e) =>
+                updateField("minSalary", e.target.value.replace(/[^0-9]/g, ""))
               }
               type="number"
-              placeholder="VD: 25000000 (Để trống nếu không công khai)"
+              placeholder="25000000"
             />
-
-            {/* Mức lương Tối đa */}
             <InputField
-              label="Mức lương Tối đa (VND)"
-              Icon={Wallet}
+              label="Lương tối đa (VND)"
               value={maxSalary}
-              onChange={(
-                e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-              ) =>
-                setMaxSalary(
-                  e.target.value === ""
-                    ? ""
-                    : e.target.value.replace(/[^0-9]/g, "")
-                )
+              onChange={(e) =>
+                updateField("maxSalary", e.target.value.replace(/[^0-9]/g, ""))
               }
               type="number"
-              placeholder="VD: 35000000 (Để trống nếu không công khai)"
+              placeholder="35000000"
             />
-
-            {/* Mô tả Kinh nghiệm Yêu cầu */}
             <InputField
-              label="Mô tả Kinh nghiệm Yêu cầu"
-              Icon={Zap}
-              value={requiredExperienceDescription}
-              onChange={(
-                e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-              ) => setRequiredExperienceDescription(e.target.value)}
-              type="text"
-              placeholder="Ví dụ: Tối thiểu 3 năm kinh nghiệm lập trình React Native."
+              label="Kinh nghiệm yêu cầu"
+              value={experience}
+              onChange={(e) => updateField("experience", e.target.value)}
+              placeholder="3+ năm React"
             />
-
-            {/* Hạn nộp */}
             <InputField
-              label="Hạn chót nộp hồ sơ"
+              label="Hạn nộp"
               value={expiredAt}
-              onChange={(
-                e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-              ) => setExpiredAt(e.target.value)}
+              onChange={(e) => updateField("expiredAt", e.target.value)}
               type="datetime-local"
-              required={true}
+              required
             />
           </div>
         </div>
 
-        {/* 4. Tải ảnh & Preview */}
-        <div className="space-y-4 border-t border-gray-100 pt-6">
-          <SectionTitle icon={<Image />} title="Ảnh minh họa (Tùy chọn)" />
-
-          {/* Drag & Drop Area */}
+        {/* 4. Ảnh */}
+        <div className="space-y-4 border-t pt-6">
+          <SectionTitle icon={<Image />} title="Ảnh minh họa" />
           <div
             onDragOver={(e) => {
               e.preventDefault();
-              e.currentTarget.classList.add("border-teal-600", "bg-teal-50");
+              e.currentTarget.classList.add("border-teal-600");
             }}
-            onDragLeave={(e) => {
-              e.currentTarget.classList.remove("border-teal-600", "bg-teal-50");
-            }}
+            onDragLeave={(e) =>
+              e.currentTarget.classList.remove("border-teal-600")
+            }
             onDrop={(e) => {
               e.preventDefault();
-              e.currentTarget.classList.remove("border-teal-600", "bg-teal-50");
-              if (canUpload) {
-                handleImageChange(e);
-              }
+              e.currentTarget.classList.remove("border-teal-600");
+              if (canUploadImage) handleImageChange(e);
             }}
-            className={`w-full border-2 border-dashed ${
-              canUpload
-                ? "border-teal-400 hover:border-teal-500 cursor-pointer"
-                : "border-gray-300 cursor-not-allowed opacity-70"
-            } rounded-xl px-6 py-10 text-center transition bg-teal-50/30`}
+            className={`border-2 border-dashed rounded-xl p-8 text-center ${
+              canUploadImage
+                ? "border-teal-400 cursor-pointer"
+                : "border-gray-300 opacity-60"
+            }`}
             onClick={() =>
-              canUpload && document.getElementById("imageInput")?.click()
+              canUploadImage && document.getElementById("imageInput")?.click()
             }
           >
-            <LayoutGrid
-              size={32}
-              className={`mx-auto mb-2 ${
-                canUpload ? "text-teal-600" : "text-gray-400"
-              }`}
-            />
-            <p
-              className={`font-semibold mb-1 ${
-                canUpload ? "text-teal-700" : "text-gray-500"
-              }`}
-            >
-              {canUpload
-                ? `Kéo thả hoặc nhấn để chọn tối đa ${
-                    maxImages - images.length
-                  } ảnh`
-                : `Đã đạt giới hạn ${maxImages} ảnh`}
-            </p>
-            <p className="text-sm text-gray-500">
-              Hỗ trợ JPG, PNG (Dùng ảnh chất lượng cao để bài đăng chuyên nghiệp
-              hơn)
+            <LayoutGrid size={32} className="mx-auto mb-2 text-teal-600" />
+            <p className="font-semibold">
+              {canUploadImage
+                ? `Thêm tối đa ${maxImages - totalImages} ảnh`
+                : "Đủ ảnh"}
             </p>
             <input
               id="imageInput"
@@ -367,47 +380,117 @@ const CreateJobPostForm = () => {
               accept="image/*"
               onChange={handleImageChange}
               className="hidden"
-              disabled={!canUpload}
+              disabled={!canUploadImage}
             />
           </div>
 
-          {/* Image Preview Area */}
-          {images.length > 0 && (
-            <div className="mt-4">
-              <p className="text-sm font-medium text-gray-700 mb-3">
-                Ảnh đã chọn ({images.length} / {maxImages}):
-              </p>
-              <div className="flex flex-wrap gap-4">
-                {images.map((img, idx) => (
-                  <div
-                    key={idx}
-                    className="relative w-28 h-28 rounded-xl overflow-hidden border-2 border-gray-200 shadow-lg transform transition hover:scale-[1.03]"
+          {newImageUrls.length > 0 && (
+            <div className="flex flex-wrap gap-4">
+              {newImageUrls.map((url: string, i: number) => (
+                <div
+                  key={i}
+                  className="relative w-28 h-28 rounded-xl overflow-hidden border-2 border-teal-500"
+                >
+                  <img
+                    src={url}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(i)}
+                    className="absolute top-1 right-1 bg-red-600 text-white p-1.5 rounded-full"
                   >
-                    <img
-                      src={URL.createObjectURL(img)}
-                      alt={`Preview ${idx + 1}`}
-                      className="w-full h-full object-cover"
-                      onLoad={() =>
-                        URL.revokeObjectURL(URL.createObjectURL(img))
-                      } // Clean up memory
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(idx)}
-                      className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1.5 shadow-xl hover:bg-red-700 transition opacity-90"
-                      title="Xóa ảnh này"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                ))}
-              </div>
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>
 
-        {/* Footer & Submit Button */}
-        <div className="pt-8 border-t border-gray-200">
+        {/* 5. Tài liệu */}
+        <div className="space-y-4 border-t pt-6">
+          <SectionTitle
+            icon={<File />}
+            title="Tài liệu đính kèm (PDF, Word, Excel)"
+          />
+
+          {/* Upload Area */}
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.currentTarget.classList.add("border-teal-600");
+            }}
+            onDragLeave={(e) =>
+              e.currentTarget.classList.remove("border-teal-600")
+            }
+            onDrop={(e) => {
+              e.preventDefault();
+              e.currentTarget.classList.remove("border-teal-600");
+              if (canUploadDocument) handleDocumentChange(e);
+            }}
+            className={`border-2 border-dashed rounded-xl p-8 text-center transition ${
+              canUploadDocument
+                ? "border-teal-400 hover:border-teal-500 cursor-pointer"
+                : "border-gray-300 opacity-60"
+            }`}
+            onClick={() =>
+              canUploadDocument &&
+              document.getElementById("documentInput")?.click()
+            }
+          >
+            <File size={32} className="mx-auto mb-2 text-teal-600" />
+            <p className="font-semibold text-teal-700">
+              {canUploadDocument
+                ? `Thêm tối đa ${maxDocuments - documentFiles.length} tài liệu`
+                : `Đã đạt giới hạn ${maxDocuments} tài liệu`}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              PDF, Word, Excel (tối đa 5MB mỗi file)
+            </p>
+            <input
+              id="documentInput"
+              type="file"
+              multiple
+              accept=".pdf,.doc,.docx,.xls,.xlsx"
+              onChange={handleDocumentChange}
+              className="hidden"
+              disabled={!canUploadDocument}
+            />
+          </div>
+
+          {/* Danh sách tài liệu */}
+          {documentFiles.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-700">
+                Đã chọn ({documentFiles.length} / {maxDocuments}):
+              </p>
+              {documentFiles.map((file, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between bg-gray-50 px-4 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-100 transition"
+                >
+                  <div className="flex items-center gap-2 text-sm">
+                    {getFileIcon(file)}
+
+                    <span className="truncate max-w-xs">{file.name}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveDocument(i)}
+                    className="text-red-600 hover:text-red-700 text-xs font-medium"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Submit */}
+        <div className="pt-8 border-t">
           <button
             type="submit"
             disabled={
@@ -418,17 +501,9 @@ const CreateJobPostForm = () => {
               !expiredAt ||
               !locationId
             }
-            className="w-full bg-teal-600 text-white font-extrabold text-lg py-3.5 rounded-xl shadow-2xl shadow-teal-500/40 hover:bg-teal-700 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 transform hover:scale-[1.005]"
+            className="w-full bg-teal-600 text-white font-bold py-3.5 rounded-xl hover:bg-teal-700 disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {isLoading ? (
-              <>
-                <Loader className="animate-spin h-5 w-5" /> Đang tạo bài đăng...
-              </>
-            ) : (
-              <>
-                <Send size={20} /> Đăng bài tuyển dụng (Lưu Nháp)
-              </>
-            )}
+            {isLoading ? <>Đang tạo...</> : <>Đăng bài (Lưu nháp)</>}
           </button>
         </div>
       </form>
@@ -436,4 +511,4 @@ const CreateJobPostForm = () => {
   );
 };
 
-export default CreateJobPostForm;
+export default CreateJobPostView;

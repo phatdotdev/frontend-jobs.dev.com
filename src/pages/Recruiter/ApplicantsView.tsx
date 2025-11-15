@@ -11,49 +11,27 @@ import {
   RefreshCw,
   ChevronLeft,
   ChevronRight,
-  FileText,
   Filter,
-  Download,
-  Mail,
-  Phone,
+  Upload,
+  Edit2,
 } from "lucide-react";
 
 import DataLoader from "../../components/UI/DataLoader";
 import {
   useGetApplicantsByPostQuery,
   useUpdateApplicationStateMutation,
-} from "../../redux/api/applicationSlice";
+} from "../../redux/api/apiApplicationSlice";
 import { useGetJobPostingDetailQuery } from "../../redux/api/postApiSlice";
-import { formatDateTime } from "../../utils/helper";
-
-type ApplicationState =
-  | "SUBMITTED"
-  | "IN_REVIEW"
-  | "ACCEPTED"
-  | "REJECTED"
-  | "";
-
-interface ApplicationDetail {
-  id: string;
-  appliedAt: string;
-  state: ApplicationState;
-  resume: {
-    id: string;
-    title: string;
-    fileUrl: string;
-    firstname: string;
-    lastname: string;
-    objectCareer: string;
-    phone: string;
-    email?: string;
-  };
-  post: {
-    id: string;
-    title: string;
-    companyName: string;
-    description: string;
-  };
-}
+import type {
+  ApplicationDetail,
+  ApplicationState,
+} from "../../types/ApplicationProps";
+import ApplicantCard from "../../components/Application/ApplicationCard";
+import { FaArrowRight } from "react-icons/fa6";
+import {
+  getApplicationStateNote,
+  mapApplicationStateToVi,
+} from "../../utils/helper";
 
 interface PageData<T> {
   content: T[];
@@ -76,6 +54,12 @@ const STATE_OPTIONS = [
     gradient: "from-blue-500 to-cyan-500",
   },
   {
+    value: "REQUESTED",
+    label: "Thiếu tài liệu",
+    icon: Upload,
+    gradient: "from-purple-500 to-indigo-500",
+  },
+  {
     value: "IN_REVIEW",
     label: "Đang xem",
     icon: Eye,
@@ -94,41 +78,6 @@ const STATE_OPTIONS = [
     gradient: "from-red-500 to-pink-500",
   },
 ];
-
-const getStateConfig = (state: ApplicationState) => {
-  switch (state) {
-    case "SUBMITTED":
-      return {
-        label: "Mới nộp",
-        icon: Clock,
-        gradient: "from-blue-500 to-cyan-500",
-      };
-    case "IN_REVIEW":
-      return {
-        label: "Đang xem",
-        icon: Eye,
-        gradient: "from-yellow-500 to-orange-500",
-      };
-    case "ACCEPTED":
-      return {
-        label: "Chấp nhận",
-        icon: Check,
-        gradient: "from-green-500 to-emerald-500",
-      };
-    case "REJECTED":
-      return {
-        label: "Từ chối",
-        icon: X,
-        gradient: "from-red-500 to-pink-500",
-      };
-    default:
-      return {
-        label: "Không rõ",
-        icon: User,
-        gradient: "from-gray-400 to-gray-600",
-      };
-  }
-};
 
 const ApplicantsByPostView: React.FC = () => {
   const { id: postId } = useParams<{ id: string }>();
@@ -151,8 +100,10 @@ const ApplicantsByPostView: React.FC = () => {
     { skip: !postId }
   );
 
-  const [updateState, { isLoading: isUpdating }] =
-    useUpdateApplicationStateMutation();
+  const [currentId, setCurrentId] = useState<string | null>(null);
+  const [currentState, setCurrentState] = useState<string | null>(null);
+  const [newState, setNewState] = useState<string | null>(null);
+  const [content, setContent] = useState<string>("");
 
   const applicationsData: PageData<ApplicationDetail> | undefined =
     response?.data;
@@ -161,22 +112,6 @@ const ApplicantsByPostView: React.FC = () => {
   const handleFilterChange = (state: ApplicationState) => {
     setFilterState(state);
     setPage(0);
-  };
-
-  const handleChangeAppState = async (
-    applicationId: string,
-    newState: "IN_REVIEW" | "ACCEPTED" | "REJECTED"
-  ) => {
-    try {
-      await updateState({
-        id: applicationId,
-        payload: { state: newState, content: "Trạng thái đã được cập nhật!" },
-      }).unwrap();
-      refetch();
-    } catch (error) {
-      console.error("Lỗi cập nhật trạng thái:", error);
-      alert("Cập nhật thất bại. Vui lòng thử lại.");
-    }
   };
 
   const handleNextPage = () => {
@@ -189,135 +124,32 @@ const ApplicantsByPostView: React.FC = () => {
     if (page > 0) setPage((prev) => prev - 1);
   };
 
-  const ApplicantCard: React.FC<{ application: ApplicationDetail }> = ({
-    application,
-  }) => {
-    const config = getStateConfig(application.state as ApplicationState);
-    const fullName =
-      `${application.resume.firstname} ${application.resume.lastname}`.trim();
+  const setApplicationChange = (
+    id: string,
+    newState: string,
+    currentState: string
+  ) => {
+    setCurrentId(id);
+    setNewState(newState);
+    setCurrentState(currentState);
+    setContent(getApplicationStateNote(newState));
+  };
 
-    return (
-      <div className="group relative bg-white/90 backdrop-blur-xl rounded-3xl shadow-xl hover:shadow-2xl border border-white/50 overflow-hidden transition-all duration-500 hover:-translate-y-2">
-        {/* Glow hover effect */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-400/20 to-teal-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-xl" />
+  const cancelUpdateState = () => {
+    setCurrentId(null);
+    setCurrentState(null);
+    setContent("");
+  };
 
-        <div className="relative z-10 p-6 md:p-8">
-          <div className="flex flex-col lg:flex-row justify-between gap-6">
-            {/* Left: Candidate Info */}
-            <div className="flex-1 space-y-5">
-              <div className="flex items-start gap-5">
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-teal-500 p-0.5">
-                    <div className="w-full h-full rounded-2xl bg-white flex items-center justify-center">
-                      <User className="w-9 h-9 text-purple-600" />
-                    </div>
-                  </div>
-                </div>
+  const [updateState] = useUpdateApplicationStateMutation();
 
-                <div className="flex-1">
-                  <h3 className="text-2xl font-extrabold bg-gradient-to-r from-purple-600 to-teal-600 bg-clip-text text-transparent">
-                    {fullName || "Ứng viên"}
-                  </h3>
-                  <p className="text-sm font-medium text-gray-600 mt-1">
-                    <span className="font-bold text-purple-600">
-                      {application.resume.objectCareer || "Chưa xác định"}
-                    </span>{" "}
-                    • Ứng tuyển lúc: {formatDateTime(application.appliedAt)}
-                  </p>
-                  <div className="flex flex-wrap gap-3 mt-3">
-                    {application.resume.email && (
-                      <a
-                        href={`mailto:${application.resume.email}`}
-                        className="flex items-center gap-2 text-sm text-gray-600 hover:text-teal-600 transition"
-                      >
-                        <Mail size={16} /> {application.resume.email}
-                      </a>
-                    )}
-                    <a
-                      href={`tel:${application.resume.phone}`}
-                      className="flex items-center gap-2 text-sm text-gray-600 hover:text-teal-600 transition"
-                    >
-                      <Phone size={16} /> {application.resume.phone}
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pl-20 space-y-3">
-                <div className="flex items-center gap-3">
-                  <FileText className="w-5 h-5 text-teal-600" />
-                  <span className="font-semibold text-gray-800">
-                    CV: {application.resume.title}
-                  </span>
-                </div>
-                <a
-                  href={application.resume.fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-bold rounded-2xl hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                >
-                  <Download size={18} /> Tải CV ngay
-                </a>
-              </div>
-            </div>
-
-            {/* Right: Status + Actions */}
-            <div className="flex flex-col items-end gap-5">
-              {/* Current Status Badge */}
-              <div className="text-right">
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                  Trạng thái hiện tại
-                </p>
-                <div
-                  className={`inline-flex items-center gap-2 px-5 py-3 rounded-full bg-gradient-to-r ${config.gradient} text-white font-bold shadow-lg`}
-                >
-                  <config.icon size={20} />
-                  {config.label}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-wrap justify-end gap-3">
-                {application.state === "SUBMITTED" && (
-                  <button
-                    onClick={() =>
-                      handleChangeAppState(application.id, "IN_REVIEW")
-                    }
-                    disabled={isUpdating}
-                    className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 disabled:opacity-70"
-                  >
-                    <Eye size={20} /> Nhận hồ sơ
-                  </button>
-                )}
-
-                {application.state === "IN_REVIEW" && (
-                  <>
-                    <button
-                      onClick={() =>
-                        handleChangeAppState(application.id, "ACCEPTED")
-                      }
-                      disabled={isUpdating}
-                      className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 disabled:opacity-70"
-                    >
-                      <Check size={20} /> Duyệt
-                    </button>
-                    <button
-                      onClick={() =>
-                        handleChangeAppState(application.id, "REJECTED")
-                      }
-                      disabled={isUpdating}
-                      className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 disabled:opacity-70"
-                    >
-                      <X size={20} /> Từ chối
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  const updateApplicationState = async () => {
+    await updateState({
+      id: currentId,
+      payload: { state: newState, content },
+    }).unwrap();
+    setCurrentId(null);
+    refetch();
   };
 
   return (
@@ -332,10 +164,10 @@ const ApplicantsByPostView: React.FC = () => {
           {postTitle}
         </h2>
         <p className="mt-3 text-xl font-bold text-gray-600">
-          Tổng:{" "}
+          Tổng:
           <span className="font-bold text-purple-600">
             {applicationsData?.totalElements ?? "..."}
-          </span>{" "}
+          </span>
           ứng viên
         </p>
       </div>
@@ -399,7 +231,7 @@ const ApplicantsByPostView: React.FC = () => {
           <div className="text-center py-20 bg-yellow-50 rounded-3xl border-2 border-yellow-200">
             <User className="w-20 h-20 text-yellow-600 mx-auto mb-4" />
             <p className="text-2xl font-bold text-gray-700">
-              Chưa có ứng viên nào{" "}
+              Chưa có ứng viên nào
               {filterState &&
                 `với trạng thái "${
                   STATE_OPTIONS.find((o) => o.value === filterState)?.label
@@ -408,7 +240,11 @@ const ApplicantsByPostView: React.FC = () => {
           </div>
         ) : (
           applicationsData?.content.map((app) => (
-            <ApplicantCard key={app.id} application={app} />
+            <ApplicantCard
+              key={app.id}
+              application={app as ApplicationDetail}
+              setApplicationChange={setApplicationChange}
+            />
           ))
         )}
       </div>
@@ -437,6 +273,61 @@ const ApplicantsByPostView: React.FC = () => {
           >
             Trang sau <ChevronRight size={24} />
           </button>
+        </div>
+      )}
+      {currentId && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="relative bg-white text-gray-500 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 p-8 w-full max-w-lg transform transition-all duration-300 scale-100 opacity-100">
+            {/* Nút Đóng */}
+            <X
+              onClick={cancelUpdateState}
+              className="absolute right-4 top-4 cursor-pointer text-gray-400 hover:text-red-500 transition-colors duration-200"
+              size={24}
+            />
+            {/* Tiêu đề */}
+            <div className="mb-6 border-b pb-2 border-gray-100">
+              <h2 className="flex gap-2 items-center text-xl font-bold text-gray-800">
+                <Edit2 /> Ghi Chú Cập Nhật Trạng Thái
+              </h2>
+              <div className="flex items-center justify-center gap-3 mt-4 mb-2">
+                <span className="flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 font-semibold rounded-full text-sm shadow-inner transition-colors duration-300">
+                  {mapApplicationStateToVi(currentState as string)}
+                </span>
+
+                <ChevronRight
+                  size={20}
+                  className="text-gray-400 flex-shrink-0"
+                />
+
+                <span className="flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-700 font-bold rounded-full text-md shadow-md transform scale-[1.05] transition-all duration-300">
+                  {mapApplicationStateToVi(newState as string)}
+                </span>
+              </div>
+            </div>
+            {/* Textarea */}
+            <textarea
+              name="content"
+              id="content"
+              rows={5}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Nhập lý do hoặc ghi chú chi tiết cho thay đổi trạng thái này..."
+              className="w-full border border-gray-300 rounded-lg p-4 resize-none focus:outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-500 transition-shadow duration-200 placeholder-gray-500 text-base"
+            ></textarea>
+            {/* Nút hành động */}
+            <div className="mt-6 flex justify-end space-x-3">
+              <button className="px-6 py-2 border bg-white text-gray-700 font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200">
+                Hủy
+              </button>
+
+              <button
+                onClick={updateApplicationState}
+                className="px-6 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-700 shadow-md hover:shadow-lg transition-all duration-200"
+              >
+                Cập nhật
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

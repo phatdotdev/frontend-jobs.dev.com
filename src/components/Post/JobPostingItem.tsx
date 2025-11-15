@@ -1,5 +1,5 @@
 import { Briefcase, Building2, Clock, DollarSign, MapPin } from "lucide-react";
-import { getImageUrl, timeAgo } from "../../utils/helper";
+import { getImageUrl, mapJobTypeVietnamese, timeAgo } from "../../utils/helper";
 import { useNavigate } from "react-router-dom";
 import { useViewJobPostingMutation } from "../../redux/api/postApiSlice";
 
@@ -16,20 +16,21 @@ type JobPosting = {
 };
 
 const JobPostingItem = ({ job }: { job: JobPosting }) => {
-  const formatSalary = (min: number, max: number) => {
+  const formatSalary = (min: number | null, max: number | null) => {
     const formatNumber = (num: number) => num.toLocaleString("en-US");
-    return `${formatNumber(min)} - ${formatNumber(max)} USD`;
+    return `${min ? formatNumber(min) : "Chưa xác định"} - ${
+      max ? formatNumber(max) : "Chưa xác định"
+    } USD`;
   };
-
-  console.log(job);
 
   const [viewJobPost] = useViewJobPostingMutation();
 
   const navigate = useNavigate();
 
   const handleViewJob = async () => {
-    const res = await viewJobPost(job.id).unwrap();
-    console.log(res);
+    try {
+      await viewJobPost(job.id).unwrap();
+    } catch (error) {}
     navigate(`/jobs/${job.id}`);
   };
 
@@ -59,7 +60,7 @@ const JobPostingItem = ({ job }: { job: JobPosting }) => {
         <span
           className={`px-2 py-0.5 text-xs font-semibold rounded-full ${typeStyle} whitespace-nowrap`}
         >
-          {job.type.replace("_", " ").toLowerCase()}
+          {mapJobTypeVietnamese(job.type)}
         </span>
       </div>
 

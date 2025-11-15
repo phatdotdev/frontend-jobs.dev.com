@@ -10,9 +10,9 @@ import {
   ChevronDown,
   Filter,
 } from "lucide-react";
-import { useSearchJobPostingsQuery } from "../redux/api/postApiSlice";
-import DataLoader from "../components/UI/DataLoader";
-import JobPostingItem from "../components/Post/JobPostingItem";
+import { useSearchJobPostingsQuery } from "../../redux/api/postApiSlice";
+import DataLoader from "../../components/UI/DataLoader";
+import JobPostingItem from "../../components/Post/JobPostingCard";
 
 // Đổi tên Loader để tránh xung đột và dùng cho animation
 const LoaderIcon = Loader;

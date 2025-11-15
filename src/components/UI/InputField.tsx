@@ -54,14 +54,13 @@ const InputField: React.FC<InputFieldProps> = ({
             required={required}
             rows={rows}
             className={`w-full px-4 py-2.5 ${
-              // Áp dụng left padding nếu có icon
               hasIcon ? "pl-10" : ""
             } bg-white rounded-lg focus:outline-none placeholder-gray-500 text-sm resize-y text-gray-800`}
           />
         ) : (
           <input
             type={type}
-            value={value}
+            value={value ?? ""}
             onChange={onChange}
             placeholder={placeholder}
             required={required}

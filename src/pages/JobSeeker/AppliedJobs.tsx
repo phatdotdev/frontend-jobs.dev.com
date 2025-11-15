@@ -10,107 +10,22 @@ import {
   History,
 } from "lucide-react";
 
-import { useNavigate } from "react-router-dom";
-import { formatDateTime, getImageUrl } from "../../utils/helper";
-import ApplicationInfo from "../../components/Application/ApplicationInfo";
 import DataLoader from "../../components/UI/DataLoader";
-import { useGetMyApplicationsQuery } from "../../redux/api/applicationSlice";
-
-// Định nghĩa kiểu dữ liệu cơ bản cho Application và Paging (lặp lại từ giả định để code độc lập hơn)
-interface ApplicationDetail {
-  id: string;
-  appliedAt: string;
-  state: "SUBMITTED" | "REVIEWING" | "ACCEPTED" | "REJECTED";
-  resume: {
-    id: string;
-    title?: string;
-  };
-  post: {
-    id: string;
-    title: string;
-    companyName: string;
-    avatarUrl: string;
-  };
-}
+import { useGetMyApplicationsQuery } from "../../redux/api/apiApplicationSlice";
+import AppliedJobCard from "../../components/Application/AppliedJobCard";
+import type { ApplicationDetail } from "../../types/ApplicationProps";
 
 interface PageData<T> {
   content: T[];
   totalPages: number;
   totalElements: number;
-  number: number; // current page (0-based)
+  number: number;
   size: number;
 }
 
-// Card hiển thị thông tin ứng tuyển
-const AppliedJobCard: React.FC<{ application: ApplicationDetail }> = ({
-  application,
-}) => {
-  const navigate = useNavigate();
-
-  const handleNavigateToDetail = () => {
-    navigate(`/job/${application.post.id}`);
-  };
-
-  return (
-    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition duration-300 flex flex-col md:flex-row gap-6">
-      {/* Cột thông tin công việc */}
-      <div className="flex-1 space-y-4">
-        <div className="flex items-center gap-4 border-b pb-4">
-          <img
-            src={getImageUrl(application.post.avatarUrl)}
-            alt={application.post.companyName}
-            className="w-14 h-14 rounded-lg object-cover border border-gray-200 flex-shrink-0"
-          />
-          <div>
-            <h3
-              className="text-xl font-bold text-gray-800 hover:text-teal-600 cursor-pointer transition duration-150"
-              onClick={handleNavigateToDetail}
-            >
-              {application.post.title}
-            </h3>
-            <p className="text-sm text-gray-600 font-medium">
-              {application.post.companyName}
-            </p>
-          </div>
-        </div>
-
-        {/* Thông tin nộp hồ sơ */}
-        <div className="space-y-2 text-sm text-gray-600">
-          <div className="flex items-center gap-3">
-            <Clock size={16} className="text-teal-500 flex-shrink-0" />
-            <span>
-              **Thời gian nộp:** {formatDateTime(application.appliedAt)}
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Inbox size={16} className="text-teal-500 flex-shrink-0" />
-            <span>
-              **CV đã dùng:**{" "}
-              {application.resume.title ||
-                `(ID: ${application.resume.id.substring(0, 8)}...)`}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Cột trạng thái (Sử dụng component đã cải tiến ApplicationInfo) */}
-      {/* Lưu ý: ApplicationInfo mong đợi một object application đơn giản hơn, ta cần cung cấp đúng cấu trúc. */}
-      <div className="w-full md:w-80 flex-shrink-0">
-        <ApplicationInfo
-          application={{
-            appliedAt: application.appliedAt,
-            state: application.state,
-            resume: application.resume,
-          }}
-        />
-      </div>
-    </div>
-  );
-};
-
 const AppliedJobsView: React.FC = () => {
   const [page, setPage] = useState(0);
-  const pageSize = 5; // Số lượng đơn ứng tuyển mỗi trang
+  const pageSize = 5;
 
   const {
     data: response,

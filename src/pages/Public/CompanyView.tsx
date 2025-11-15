@@ -1,19 +1,8 @@
 import React, { useState, useMemo, useEffect } from "react";
-import {
-  Building2,
-  Mail,
-  MapPin,
-  Phone,
-  ShieldCheck,
-  ShieldX,
-  User,
-  Search,
-  RotateCw,
-  Loader,
-} from "lucide-react";
-import DataLoader from "../components/UI/DataLoader";
-import CompanyItem from "../components/Recruiter/CompanyItem";
-import { useSearchCompaniesQuery } from "../redux/api/userApiSlice";
+import { Building2, Search, RotateCw, Loader } from "lucide-react";
+import { useSearchCompaniesQuery } from "../../redux/api/userApiSlice";
+import DataLoader from "../../components/UI/DataLoader";
+import CompanyItem from "../../components/Recruiter/CompanyItem";
 
 // --- Type Definitions ---
 type Company = {
@@ -32,7 +21,7 @@ type Company = {
   avatarUrl?: string;
 };
 
-const CompanyList: React.FC = () => {
+const CompanyView: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
@@ -152,4 +141,4 @@ const CompanyList: React.FC = () => {
   );
 };
 
-export default CompanyList;
+export default CompanyView;

@@ -11,25 +11,33 @@ import {
   Send,
   Loader2,
   Calendar,
-  type LucideIcon,
   Layers,
+  FileText,
+  Download,
 } from "lucide-react";
-import { useGetJobPostingDetailQuery } from "../redux/api/postApiSlice";
+import { useGetJobPostingDetailQuery } from "../../redux/api/postApiSlice";
 import { useNavigate, useParams } from "react-router-dom";
-import DataLoader from "../components/UI/DataLoader";
-import { formatDateTime, getImageUrl } from "../utils/helper";
-import ImageCarousel from "../components/UI/ImageCarosel";
-import { useGetUserInfoQuery } from "../redux/api/userApiSlice";
-import { useLazyGetAllResumesQuery } from "../redux/api/apiResumeSlice";
+import DataLoader from "../../components/UI/DataLoader";
+import {
+  formatDateTime,
+  getImageUrl,
+  mapJobTypeVietnamese,
+} from "../../utils/helper";
+import ImageCarousel from "../../components/UI/ImageCarosel";
+import { useGetUserInfoQuery } from "../../redux/api/userApiSlice";
+import { useLazyGetAllResumesQuery } from "../../redux/api/apiResumeSlice";
 
-import CvSelectionModal from "../components/Post/CvSelectModal";
+import CvSelectionModal from "../../components/Modal/CvSelectModal";
 import {
   useApplyJobMutation,
   useSearchApplyQuery,
-} from "../redux/api/applicationSlice";
-import ApplicationInfo from "../components/Application/ApplicationInfo"; // Component đã cải tiến
-import InteractionItem from "../components/Post/InteractionItem";
-import type { PostingProps } from "../types/PostingProps";
+} from "../../redux/api/apiApplicationSlice";
+import ApplicationInfo from "../../components/Application/ApplicationInfo"; // Component đã cải tiến
+import InteractionItem from "../../components/Post/InteractionItem";
+import type { PostingProps } from "../../types/PostingProps";
+import { getFileIconFromName, renderTabContent } from "../../utils/helpRender";
+import { useDispatch } from "react-redux";
+import { addToast } from "../../redux/features/toastSlice";
 
 // Định nghĩa lại Icon Loader cho đồng bộ
 const Loader = Loader2;
@@ -38,23 +46,6 @@ const formatSalary = (min: number, max: number) => {
   const formatNumber = (num: number) => num.toLocaleString("en-US");
   return `${formatNumber(min)} - ${formatNumber(max)} USD`;
 };
-
-interface JobDetailListItemProps {
-  text: string;
-  Icon: LucideIcon;
-  iconClassName: string;
-}
-
-const JobDetailListItem: React.FC<JobDetailListItemProps> = ({
-  text,
-  Icon,
-  iconClassName,
-}) => (
-  <li className="flex items-start text-gray-700 leading-relaxed">
-    <Icon size={18} className={`flex-shrink-0 mt-1 mr-3 ${iconClassName}`} />
-    <span className="text-base">{text}</span>
-  </li>
-);
 
 const JobDetailView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -80,11 +71,14 @@ const JobDetailView: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Sử dụng useSearchApplyQuery để kiểm tra application
-  const { data: { data: application } = {} } = useSearchApplyQuery({
-    postId: id,
-  });
+  const { data: { data: application } = {}, refetch: refetchApply } =
+    useSearchApplyQuery({
+      postId: id,
+    });
 
   const [applyJob, { isLoading: isApplyingApi }] = useApplyJobMutation();
+
+  const dispatch = useDispatch();
 
   const currentPathEncoded = encodeURIComponent(
     location.pathname + location.search
@@ -101,35 +95,6 @@ const JobDetailView: React.FC = () => {
     }
   };
 
-  const renderTabContent = (
-    content: string,
-    Icon: LucideIcon,
-    iconClass: string
-  ) => {
-    const items = content.split("\n").filter((line) => line.trim().length > 0);
-
-    if (items.length <= 1) {
-      return (
-        <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-          {content}
-        </p>
-      );
-    }
-
-    return (
-      <ul className="space-y-4 pt-4">
-        {items.map((item, index) => (
-          <JobDetailListItem
-            key={index}
-            text={item.trim()}
-            Icon={Icon}
-            iconClassName={iconClass}
-          />
-        ))}
-      </ul>
-    );
-  };
-
   const handleApply = async () => {
     if (isProcessing) return;
 
@@ -141,23 +106,40 @@ const JobDetailView: React.FC = () => {
     setIsProcessing(true);
     setShowCvModal(true);
 
-    // 3. Thực hiện fetch CV
     await fetchResumes();
 
     setIsProcessing(false);
   };
 
-  const handleConfirmApply = async (resumeId: string) => {
+  const handleConfirmApply = async (resumeId: string, files: File[]) => {
     if (!job?.id) return;
-
     try {
-      await applyJob({ postId: job.id, resumeId }).unwrap();
-      alert("Ứng tuyển thành công!");
-      // Sau khi nộp thành công, Modal đóng và useSearchApplyQuery sẽ tự động refetch (nếu invalidate tag đúng)
+      const formData = new FormData();
+      formData.append("postId", job.id);
+      formData.append("resumeId", resumeId);
+      console.log(files);
+      files.forEach((file) => {
+        formData.append("documents", file);
+      });
+
+      await applyJob(formData).unwrap();
+      dispatch(
+        addToast({
+          type: "success",
+          title: "Ứng tuyển thành công!",
+          message: "Hồ sơ của bạn đã được ghi nhận.",
+        })
+      );
       setShowCvModal(false);
+      refetchApply();
     } catch (error) {
-      alert("Lỗi khi nộp hồ sơ. Vui lòng kiểm tra lại.");
-      console.error("Apply error:", error);
+      dispatch(
+        addToast({
+          type: "error",
+          title: "Ứng tuyển thất bại!",
+          message: "Lỗi khi ứng tuyển!",
+        })
+      );
     }
   };
 
@@ -227,10 +209,10 @@ const JobDetailView: React.FC = () => {
       {/* --- */}
 
       {/* 2. Main Content and Sidebar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 grid grid-cols-1 lg:grid-cols-2 gap-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 grid grid-cols-1 lg:grid-cols-9 gap-10">
         {/* LEFT COLUMN - Job Tabs */}
-        <div className="lg:col-span-1  space-y-8">
-          <ImageCarousel images={job.imageNames} />
+        <div className="lg:col-span-5  space-y-8">
+          <ImageCarousel images={job.imageUrls.map(getImageUrl)} />
 
           <div className="bg-white p-6 md:p-10 rounded-2xl shadow-2xl border border-gray-100">
             <div className="border-b border-gray-200">
@@ -294,9 +276,9 @@ const JobDetailView: React.FC = () => {
         {/* --- */}
 
         {/* RIGHT COLUMN - Sidebar */}
-        <div className="lg:col-span-1 space-y-8">
+        <div className="lg:col-span-4 space-y-8">
           {/* Job Info Card */}
-          <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100 space-y-5">
+          <div className="bg-white p-4 rounded-2xl shadow-xl border border-gray-100 space-y-5">
             <h3 className="text-xl font-bold text-gray-800 border-b pb-4 mb-3 flex items-center gap-2">
               <Building2 size={24} className="text-teal-600" />
               Thông tin công việc
@@ -321,7 +303,22 @@ const JobDetailView: React.FC = () => {
                   <p className="font-semibold text-sm text-gray-500">
                     Loại hình
                   </p>
-                  <p className="text-base font-medium">{job.type}</p>
+                  <p className="text-base font-medium">
+                    {mapJobTypeVietnamese(job.type)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Loại hình */}
+              <div className="flex items-center gap-4">
+                <FileText size={22} className="text-teal-500 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-sm text-gray-500">
+                    Hồ sơ yêu cầu
+                  </p>
+                  <p className="text-base font-medium">
+                    {job?.requiredDocuments}
+                  </p>
                 </div>
               </div>
 
@@ -343,6 +340,41 @@ const JobDetailView: React.FC = () => {
                 views={job?.views as number}
               />
             </div>
+          </div>
+
+          {/* Files đã thêm */}
+          <div className="bg-white p-4 pb-6">
+            {job.documents?.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="text-sm font-medium text-gray-700">
+                  Tài liệu đã thêm ({job.documents.length}/5):
+                </p>
+                {job.documents?.map((document, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between bg-gray-50 px-4 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-100 transition"
+                  >
+                    <div className="flex items-center gap-2 px-2 text-sm">
+                      {getFileIconFromName(document.originalName)}
+                      <span className="truncate max-w-xs font-medium">
+                        {document.originalName}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      className="text-blue-500 hover:text-blue-600 hover:scale-110 cursor-pointer text-xs font-medium"
+                    >
+                      <a
+                        href={getImageUrl(document.fileName as string)}
+                        target="_blank"
+                      >
+                        <Download size={18} />
+                      </a>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Quick Apply Button / Applied Info - Sticky */}
@@ -384,7 +416,6 @@ const JobDetailView: React.FC = () => {
       {/* --- */}
 
       {/* CvSelectionModal */}
-      {/* Modal chỉ hiện khi application == null (Chưa nộp) và showCvModal == true */}
       {application == null && showCvModal && (
         <CvSelectionModal
           jobId={job.id}
@@ -392,7 +423,7 @@ const JobDetailView: React.FC = () => {
           onClose={() => setShowCvModal(false)}
           onCreateNewCv={handleCreateCvRedirect}
           onConfirmApply={handleConfirmApply}
-          isResumesLoading={isResumesFetching} // Trạng thái loading
+          isResumesLoading={isResumesFetching}
         />
       )}
     </div>
