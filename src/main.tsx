@@ -50,6 +50,7 @@ import EditAndPreviewJobPostingView from "./pages/Recruiter/EditAndPreviewJobPos
 import CreateAndPreviewJobPostingView from "./pages/Recruiter/CreateAndPreviewJobPostingView.tsx";
 import AppliedJobDetail from "./pages/JobSeeker/AppliedJobDetail.tsx";
 import CompanyDetailPage from "./pages/Public/CompanyDetailView.tsx";
+import CandidateDetailPage from "./pages/Public/CandidateDetailView.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -63,6 +64,7 @@ const router = createBrowserRouter(
         <Route path="jobs/:id" element={<JobDetailView />} />
         <Route path="companies" element={<CompanyView />} />
         <Route path="companies/:id" element={<CompanyDetailPage />} />
+        <Route path="candidates/:id" element={<CandidateDetailPage />} />
         <Route path="chat" element={<ChatView />} />
       </Route>
 

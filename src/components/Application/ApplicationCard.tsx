@@ -16,6 +16,7 @@ import type {
 import { formatDateTime, getImageUrl } from "../../utils/helper";
 import { getFileIconFromName } from "../../utils/helpRender";
 import { FaFileWord } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const getStateConfig = (state: ApplicationState) => {
   switch (state) {
@@ -94,9 +95,22 @@ const ApplicantCard: React.FC<{
               {/* Name & Title - Giữ lại gradient cho tên để nổi bật (hoặc có thể thay bằng màu text đơn sắc nếu cần) */}
 
               <div className="flex-1">
-                <h3 className="text-3xl font-extrabold bg-gradient-to-r from-purple-600 to-teal-600 bg-clip-text text-transparent leading-snug">
-                  {fullName || "Ứng viên"}
-                </h3>
+                <div className="flex justify-between flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+                  {/* Tên ứng viên - nổi bật với gradient */}
+                  <h3 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-purple-600 to-teal-600 bg-clip-text text-transparent leading-tight">
+                    {fullName || "Ứng viên"}
+                  </h3>
+
+                  {/* Nút xem thông tin - kiểu badge hiện đại */}
+                  <Link
+                    to={`/candidates/${application.id}`}
+                    target="_blank"
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm sm:text-base font-semibold text-purple-700 bg-purple-50 border border-purple-300 rounded-full hover:bg-purple-100 hover:border-purple-400 hover:scale-105 transition-all duration-200 ease-out shadow-sm hover:shadow-md"
+                  >
+                    <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
+                    Xem thông tin ứng viên
+                  </Link>
+                </div>
 
                 <p className="text-base font-semibold text-gray-700 mt-1">
                   <span className="text-purple-600">
@@ -183,7 +197,7 @@ const ApplicantCard: React.FC<{
             {/* Current Status Badge - Đã thay đổi để sử dụng colorClass (màu đơn sắc) */}
 
             <div className="text-right w-full">
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">
+              <p className="text-xs text-center font-bold text-gray-500 uppercase tracking-widest mb-3">
                 Trạng thái hiện tại
               </p>
 

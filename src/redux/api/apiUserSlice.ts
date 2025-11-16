@@ -90,6 +90,11 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
     }),
     // GET USERS BY ID
+    getJobSeekerById: builder.query<ResponseProps<any>, any>({
+      query: (id) => ({
+        url: `${USER_URL}/job-seeker/${id}`,
+      }),
+    }),
     getRecruiterById: builder.query<ResponseProps<any>, any>({
       query: (id) => ({
         url: `${USER_URL}/recruiter/${id}`,
@@ -137,4 +142,5 @@ export const {
   useChangePasswordMutation,
   // GET USERS BY ID
   useGetRecruiterByIdQuery,
+  useGetJobSeekerByIdQuery,
 } = userApiSlice;

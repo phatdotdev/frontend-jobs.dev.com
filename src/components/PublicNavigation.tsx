@@ -176,9 +176,26 @@ const PublicNavigation = () => {
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <div className="text-3xl font-extrabold text-gray-800 tracking-tight">
-            <Link to="/">
-              <span className="text-teal-600">WorkNest</span>
-              <span className="text-black text-xl font-bold">.vn</span>
+            <Link to="/" className="flex items-center gap-1 group">
+              <span className="relative text-2xl md:text-3xl font-extrabold tracking-tight">
+                {/* Gradient Text */}
+                <span className="bg-gradient-to-r from-teal-600 via-emerald-400 to-teal-600 bg-clip-text text-transparent">
+                  WorkNest
+                </span>
+
+                {/* Shine Effect */}
+                <span
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-40 blur-sm transition-opacity duration-700 pointer-events-none translate-x-[-100%] group-hover:translate-x-[100%] animate-shine"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)",
+                  }}
+                ></span>
+              </span>
+
+              <span className="text-gray-700 text-2xl md:text-3xl font-extrabold tracking-tighter">
+                .vn
+              </span>
             </Link>
           </div>
 

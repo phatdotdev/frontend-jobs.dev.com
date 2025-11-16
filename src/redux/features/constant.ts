@@ -26,3 +26,5 @@ export const MSG_URL = "/api/v1/messages";
 export const NOTI_URL = "/api/v1/notifications";
 // FEEDBACK
 export const FB_URL = "/api/v1/feedback";
+// STATISTICS
+export const STATIS_URL = "/api/v1/statistics";

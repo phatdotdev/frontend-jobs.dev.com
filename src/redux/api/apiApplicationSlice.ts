@@ -51,6 +51,12 @@ export const applicationSlice = apiSlice.injectEndpoints({
         method: "PUT",
       }),
     }),
+    // GET JS BY APPLICATION ID
+    getJobSeekerByApplicationId: builder.query<ResponseProps<any>, any>({
+      query: (id) => ({
+        url: `${APP_URL}/${id}/job-seeker`,
+      }),
+    }),
   }),
 });
 export const {
@@ -63,4 +69,6 @@ export const {
   // RECRUITER
   useGetApplicantsByPostQuery,
   useUpdateApplicationStateMutation,
+  // CANDIDATE
+  useGetJobSeekerByApplicationIdQuery,
 } = applicationSlice;
