@@ -17,6 +17,7 @@ import {
   Users,
   Star,
   HeartPlus,
+  CheckCircle2,
 } from "lucide-react";
 
 import type {
@@ -37,7 +38,11 @@ import ProjectItem from "../../components/JobSeeker/ProjectItem";
 import CertificationItem from "../../components/JobSeeker/CertificationItem";
 import AwardItem from "../../components/JobSeeker/AwardItem";
 import ActivityItem from "../../components/JobSeeker/ActivityItem";
-import { formatDate, mapGenderToVietnamese } from "../../utils/helper";
+import {
+  formatDate,
+  getImageUrl,
+  mapGenderToVietnamese,
+} from "../../utils/helper";
 import { useCreateFeedbackRequestMutation } from "../../redux/api/apiReviewSlice";
 import FeedbackRequestModal from "../../components/Modal/FeedbackRequestModal";
 
@@ -54,6 +59,8 @@ const ResumeViewer: FC = () => {
 
   const resume: ResumeProps | undefined = response?.data;
   const userAvatarUrl: string | undefined = undefined;
+
+  console.log(resume);
 
   const [isRequesting, setIsRequesting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false); // Thêm state quản lý loading khi submit
@@ -105,24 +112,41 @@ const ResumeViewer: FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto my-8 bg-white shadow-2xl rounded-xl overflow-hidden">
-      <header className="p-8 bg-teal-600 text-white flex items-center justify-between">
-        <div className="flex-grow">
-          <h1 className="text-4xl font-extrabold mb-1">{fullName}</h1>
-          <p className="text-xl font-medium opacity-90">{resume.title}</p>
+      {/* Header: Cover + Avatar + Tên */}
+      <div className="relative bg-white rounded-xl shadow overflow-hidden mb-10">
+        {/* Cover */}
+        <div className="h-28 sm:h-36 relative">
+          <div className="w-full h-full bg-teal-500" />
         </div>
-        {/* Avatar Section */}
-        <div className="flex-shrink-0 ml-6">
-          {userAvatarUrl ? (
-            <img
-              src={userAvatarUrl}
-              alt={fullName}
-              className="w-24 h-24 object-cover rounded-full border-4 border-white shadow-lg"
-            />
-          ) : (
-            <User className="w-24 h-24 p-2 bg-teal-700/50 rounded-full border-4 border-white" />
-          )}
+
+        {/* Avatar + Info */}
+        <div className="relative -mt-20 sm:-mt-32 px-6 pb-10">
+          <div className="flex flex-col sm:flex-row items-center sm:items-end gap-8">
+            {/* Avatar */}
+            <div className="relative group">
+              <div className="absolute -inset-2 rounded-full transition" />
+              <img
+                src={getImageUrl(resume.avatarUrl) || "/default-avatar.png"}
+                alt={fullName}
+                className="relative w-36 h-36 sm:w-48 sm:h-48 object-cover rounded-full border-8 border-white shadow-2xl"
+              />
+              <div className="absolute bottom-3 right-3 w-12 h-12 bg-green-500 rounded-full border-4 border-white flex items-center justify-center">
+                <CheckCircle2 size={28} className="text-white" />
+              </div>
+            </div>
+
+            {/* Tên + Role */}
+            <div className="flex-1 text-center sm:text-left">
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-white drop-shadow-lg pb-8">
+                {fullName}
+              </h1>
+              <div className="text-2xl sm:text-3xl font-extrabold text-teal-600 drop-shadow-lg pb-3">
+                {resume.title}
+              </div>
+            </div>
+          </div>
         </div>
-      </header>
+      </div>
 
       <div className="px-8 py-4 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-6">
@@ -202,10 +226,7 @@ const ResumeViewer: FC = () => {
             <div className="space-y-4">
               {resume.experiences?.length > 0 ? (
                 resume.experiences.map((exp) => (
-                  <ExperienceItem
-                    key={exp.id}
-                    experience={exp as ExperienceProps}
-                  />
+                  <ExperienceItem key={exp.id} experience={exp as any} />
                 ))
               ) : (
                 <p className="text-sm text-gray-500 italic">
@@ -253,46 +274,45 @@ const ResumeViewer: FC = () => {
           </div>
 
           {/* Chứng chỉ và Giải thưởng */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* HIỂN THỊ CHỨNG CHỈ */}
-            <div className="mb-6 p-4 border border-gray-200 rounded-lg shadow-sm">
-              <h3 className="flex items-center text-xl font-bold text-teal-700 mb-3 border-b pb-2">
-                <Award className="w-5 h-5 mr-2" /> Chứng chỉ
-              </h3>
-              <div className="space-y-4">
-                {resume.certifications?.length > 0 ? (
-                  // Dữ liệu chứng chỉ phải là type CertificationProps
-                  resume.certifications.map((cert) => (
-                    <CertificationItem
-                      key={cert.id}
-                      certification={cert as CertificationProps}
-                    />
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-500 italic">
-                    Không có chứng chỉ nào được liệt kê.
-                  </p>
-                )}
-              </div>
-            </div>
-            {/* HIỂN THỊ GIẢI THƯỞNG */}
 
-            <div className="mb-6 p-4 border border-gray-200 rounded-lg shadow-sm">
-              <h3 className="flex items-center text-xl font-bold text-teal-700 mb-3 border-b pb-2">
-                <Award className="w-5 h-5 mr-2" /> Giải thưởng
-              </h3>
-              <div className="space-y-4">
-                {resume.awards?.length > 0 ? (
-                  // Dữ liệu giải thưởng phải là type AwardProps
-                  resume.awards.map((item) => (
-                    <AwardItem key={item.id} award={item as AwardProps} />
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-500 italic">
-                    Không có giải thưởng nào được liệt kê.
-                  </p>
-                )}
-              </div>
+          {/* HIỂN THỊ CHỨNG CHỈ */}
+          <div className="mb-6 p-4 border border-gray-200 rounded-lg shadow-sm">
+            <h3 className="flex items-center text-xl font-bold text-teal-700 mb-3 border-b pb-2">
+              <Award className="w-5 h-5 mr-2" /> Chứng chỉ
+            </h3>
+            <div className="space-y-4">
+              {resume.certifications?.length > 0 ? (
+                // Dữ liệu chứng chỉ phải là type CertificationProps
+                resume.certifications.map((cert) => (
+                  <CertificationItem
+                    key={cert.id}
+                    certification={cert as CertificationProps}
+                  />
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 italic">
+                  Không có chứng chỉ nào được liệt kê.
+                </p>
+              )}
+            </div>
+          </div>
+          {/* HIỂN THỊ GIẢI THƯỞNG */}
+
+          <div className="mb-6 p-4 border border-gray-200 rounded-lg shadow-sm">
+            <h3 className="flex items-center text-xl font-bold text-teal-700 mb-3 border-b pb-2">
+              <Award className="w-5 h-5 mr-2" /> Giải thưởng
+            </h3>
+            <div className="space-y-4">
+              {resume.awards?.length > 0 ? (
+                // Dữ liệu giải thưởng phải là type AwardProps
+                resume.awards.map((item) => (
+                  <AwardItem key={item.id} award={item as any} />
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 italic">
+                  Không có giải thưởng nào được liệt kê.
+                </p>
+              )}
             </div>
           </div>
 

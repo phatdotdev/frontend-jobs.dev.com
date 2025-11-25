@@ -20,8 +20,14 @@ import {
   Loader2,
   User,
   Clock,
+  MapPin,
+  UserCheck,
+  Info,
 } from "lucide-react";
 import InputWithIcon from "../UI/InputWithIcon";
+import { useDispatch } from "react-redux";
+import { addToast } from "../../redux/features/toastSlice";
+import { formatDate } from "../../utils/helper";
 
 const ActivityManager = () => {
   const {
@@ -71,6 +77,8 @@ const ActivityManager = () => {
     setShowForm(false);
   };
 
+  const dispatch = useDispatch();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload = {
@@ -87,13 +95,21 @@ const ActivityManager = () => {
       } else {
         await createActivity(payload).unwrap();
       }
+      dispatch(
+        addToast({
+          type: "success",
+          message: "Cập nhật hoạt động thành công!",
+        })
+      );
 
       resetForm();
       refetch();
     } catch (err) {
-      console.error(
-        `Lỗi khi ${isEditing ? "cập nhật" : "tạo"} hoạt động:`,
-        err
+      dispatch(
+        addToast({
+          type: "error",
+          message: "Lỗi khi cập nhật hoạt động!",
+        })
       );
     }
   };
@@ -109,29 +125,31 @@ const ActivityManager = () => {
   const handleDelete = async (id: string) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa hoạt động này không?")) {
       try {
-        console.log("Xóa hoạt động:", id);
         await deleteActivity(id).unwrap();
+        dispatch(
+          addToast({
+            type: "success",
+            message: "Cập nhật hoạt động thành công!",
+          })
+        );
         refetch();
       } catch (err) {
-        console.error("Lỗi khi xóa hoạt động:", err);
+        dispatch(
+          addToast({
+            type: "error",
+            message: "Không thể xóa hoạt động!",
+          })
+        );
       }
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return "Hiện tại";
-    return new Date(dateStr).toLocaleDateString("vi-VN", {
-      year: "numeric",
-      month: "short",
-    });
-  };
-
   return (
     <div className="p-0 bg-white rounded-xl shadow-lg mt-6">
-      {/* 1. Header & Nút Thêm/Đóng (Màu Teal) */}
+      {/* 1. Header & Nút Thêm/Đóng (Màu blue) */}
       <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100">
         <h1 className="flex items-center text-xl font-bold text-gray-800">
-          <MdGroups className="mr-3 text-2xl text-teal-600" /> Quản lý Hoạt động
+          <MdGroups className="mr-3 text-2xl text-blue-600" /> Quản lý Hoạt động
           Ngoại khóa
         </h1>
         <button
@@ -139,7 +157,7 @@ const ActivityManager = () => {
           className={`flex items-center text-sm font-semibold transition py-1.5 px-3 rounded-md border ${
             showForm
               ? "bg-white text-gray-600 hover:bg-red-50 hover:text-red-600 border-gray-300"
-              : "bg-teal-600 text-white hover:bg-teal-700 border-teal-600 shadow-md"
+              : "bg-blue-500 text-white hover:bg-blue-700 border-blue-600 shadow-md"
           }`}
         >
           {showForm ? (
@@ -151,80 +169,98 @@ const ActivityManager = () => {
         </button>
       </div>
 
-      {/* 2. Form Thêm/Chỉnh sửa (Màu nền Teal) */}
+      {/* 2. Form Thêm/Chỉnh sửa (Màu nền blue) */}
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="bg-teal-50/50 p-6 shadow-inner transition-all duration-300 ease-in-out"
+          className="bg-blue-50/50 p-6 shadow-inner transition-all duration-300 ease-in-out"
         >
+          {/* Nhóm 1: Thông tin hoạt động */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-            {/* Tên hoạt động */}
-            <InputWithIcon
-              Icon={Users}
-              name="name"
-              placeholder="Tên hoạt động (*)"
-              value={form.name}
-              onChange={handleChange}
-              required
-            />
-            {/* Tổ chức */}
-            <InputWithIcon
-              Icon={Building}
-              name="organization"
-              placeholder="Tổ chức (*)"
-              value={form.organization}
-              onChange={handleChange}
-              required
-            />
-            {/* Vai trò */}
-            <InputWithIcon
-              Icon={User}
-              name="role"
-              placeholder="Vai trò (Trưởng nhóm, Thành viên...)"
-              value={form.role}
-              onChange={handleChange}
-            />
-            {/* Ngày bắt đầu */}
-            <InputWithIcon
-              Icon={Calendar}
-              name="startDate"
-              type="date"
-              placeholder="Ngày bắt đầu (*)"
-              value={form.startDate}
-              onChange={handleChange}
-              required
-            />
-            {/* Ngày kết thúc */}
-            <InputWithIcon
-              Icon={Clock}
-              name="endDate"
-              type="date"
-              placeholder="Ngày kết thúc (*)"
-              value={form.endDate}
-              onChange={handleChange}
-              required
-            />
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Tên hoạt động <span className="text-red-500">*</span>
+              </label>
+              <InputWithIcon
+                Icon={Users}
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Tổ chức <span className="text-red-500">*</span>
+              </label>
+              <InputWithIcon
+                Icon={Building}
+                name="organization"
+                value={form.organization}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Vai trò
+              </label>
+              <InputWithIcon
+                Icon={User}
+                name="role"
+                value={form.role}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Ngày bắt đầu <span className="text-red-500">*</span>
+              </label>
+              <InputWithIcon
+                Icon={Calendar}
+                name="startDate"
+                type="date"
+                value={form.startDate}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Ngày kết thúc <span className="text-red-500">*</span>
+              </label>
+              <InputWithIcon
+                Icon={Clock}
+                name="endDate"
+                type="date"
+                value={form.endDate}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
 
           {/* Mô tả */}
           <div className="relative mt-4">
-            <MdOutlineDescription className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+            <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+              Mô tả hoạt động
+            </label>
+            <MdOutlineDescription className="absolute left-3 top-9 w-4 h-4 text-gray-400" />
             <textarea
               name="description"
               placeholder="Mô tả hoạt động, nhiệm vụ, kết quả và đóng góp cá nhân..."
               value={form.description}
               onChange={handleChange}
-              // Focus màu Teal
-              className="border border-gray-300 p-2.5 pl-9 text-sm rounded-lg w-full focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition duration-150"
+              className="border border-gray-300 p-2.5 pl-9 text-sm rounded-lg w-full focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
               rows={3}
             />
           </div>
 
-          {/* Nút Submit/Update (Màu Teal) */}
+          {/* Nút Submit/Update */}
           <button
             type="submit"
             disabled={isLoading}
-            className="mt-4 bg-teal-600 hover:bg-teal-700 transition text-white font-semibold text-sm px-6 py-2.5 rounded-lg shadow disabled:opacity-50 disabled:cursor-wait"
+            className="mt-4 bg-blue-500 hover:bg-blue-700 transition text-white font-semibold text-sm px-6 py-2.5 rounded-lg shadow disabled:opacity-50 disabled:cursor-wait"
           >
             {isLoading ? (
               <>
@@ -271,10 +307,10 @@ const ActivityManager = () => {
               <div
                 key={activity.id}
                 className={`relative group border-l-4 p-4 pl-5 shadow-sm bg-gray-50/70 rounded-lg hover:shadow-md transition duration-300 ${
-                  // Viền Teal
+                  // Viền blue
                   activity.id === editingId
                     ? "border-red-500 ring-2 ring-red-300 bg-red-50"
-                    : "border-teal-500"
+                    : "border-blue-500"
                 }`}
               >
                 {/* Action Buttons: Edit/Delete */}
@@ -295,25 +331,57 @@ const ActivityManager = () => {
                   </button>
                 </div>
 
-                <h3 className="text-lg font-bold text-teal-700 leading-snug pr-20">
-                  {activity.name}
-                </h3>
+                {/* Tên hoạt động và Tổ chức */}
+                <div className="flex justify-between items-start mb-3 border-b pb-2 border-cyan-200">
+                  <div>
+                    <h4 className="text-xl font-extrabold text-cyan-800">
+                      <Users size={20} className="inline mr-2 text-cyan-600" />
+                      {activity.name}
+                    </h4>
+                    <p className="text-base font-semibold text-gray-700 mt-0.5 flex items-center">
+                      <MapPin size={16} className="mr-2 text-cyan-600" />
+                      {activity.organization}
+                    </p>
+                  </div>
+                </div>
 
-                <p className="text-sm font-semibold text-gray-700 mt-1">
-                  Tổ chức: **{activity.organization}** | Vai trò: *
-                  {activity.role}*
-                </p>
-
-                <p className="mt-1 text-xs font-medium text-gray-500 flex items-center gap-1">
-                  <Clock className="w-3 h-3 mr-1" />
-                  Thời gian: **{formatDate(activity.startDate)} →{" "}
-                  {formatDate(activity.endDate)}**
-                </p>
-
-                {activity.description && (
-                  <p className="text-sm text-gray-600 mt-2 border-t border-gray-200 pt-2 whitespace-pre-line">
-                    {activity.description}
+                {/* Thông tin Vai trò và Thời gian */}
+                <div className="text-sm text-gray-700 space-y-2">
+                  {/* Vai trò */}
+                  <p className="flex items-center font-semibold">
+                    <UserCheck size={14} className="mr-2 text-cyan-500" />
+                    Vai trò:{" "}
+                    <span className="ml-1 font-medium text-teal-700">
+                      {activity.role}
+                    </span>
                   </p>
+
+                  {/* Thời gian */}
+                  <p className="flex items-center font-medium">
+                    <Calendar size={14} className="mr-2 text-cyan-500" />
+                    Thời gian:{" "}
+                    <span className="ml-1 font-semibold">
+                      {formatDate(activity.startDate)}
+                    </span>{" "}
+                    đến{" "}
+                    <span className="ml-1 font-semibold">
+                      {formatDate(activity.endDate)}
+                    </span>
+                  </p>
+                </div>
+
+                {/* Mô tả chi tiết */}
+                {activity.description && (
+                  <div className="pt-3 mt-3 border-t border-cyan-100">
+                    <p className="font-semibold text-gray-700 mb-1 flex items-center">
+                      <Info size={14} className="mr-2 text-gray-500" />
+                      Mô tả hoạt động:
+                    </p>
+                    {/* Sử dụng whitespace-pre-line để giữ định dạng xuống dòng */}
+                    <p className="text-sm text-gray-700 whitespace-pre-line border-l-2 border-cyan-300 pl-3 ml-1">
+                      {activity.description}
+                    </p>
+                  </div>
                 )}
               </div>
             ))}

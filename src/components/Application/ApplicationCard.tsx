@@ -1,13 +1,20 @@
 import {
-  Check,
-  Clock,
   Download,
   Eye,
   Mail,
   Phone,
-  RotateCw,
   User,
-  X,
+  FileText,
+  ArrowBigRight,
+  Clock,
+  EyeIcon,
+  RotateCw,
+  Mic, // Phỏng vấn
+  CheckCircle,
+  UserCheck,
+  XCircle,
+  NotebookPen,
+  Calendar,
 } from "lucide-react";
 import type {
   ApplicationDetail,
@@ -17,305 +24,272 @@ import { formatDateTime, getImageUrl } from "../../utils/helper";
 import { getFileIconFromName } from "../../utils/helpRender";
 import { FaFileWord } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { addToast } from "../../redux/features/toastSlice";
+import { generateResumeFile } from "../../utils/getResumeDocument";
+import { useDispatch } from "react-redux";
 
+// CẬP NHẬT ĐẦY ĐỦ 7 TRẠNG THÁI + ICON + MÀU ĐẸP
 const getStateConfig = (state: ApplicationState) => {
   switch (state) {
     case "SUBMITTED":
       return {
-        label: "Mới nộp",
+        label: "Đã nộp",
         icon: Clock,
-        colorClass: "bg-blue-500", // Màu đơn sắc
+        color: "bg-blue-500",
+        ring: "ring-blue-300",
       };
     case "REVIEWING":
       return {
-        label: "Đang xem",
-        icon: Eye,
-        colorClass: "bg-orange-500", // Màu đơn sắc
-      };
-    case "ACCEPTED":
-      return {
-        label: "Chấp nhận",
-        icon: Check,
-        colorClass: "bg-green-500", // Màu đơn sắc
-      };
-    case "REJECTED":
-      return {
-        label: "Từ chối",
-        icon: X,
-        colorClass: "bg-red-500", // Màu đơn sắc
+        label: "Đang xem xét",
+        icon: EyeIcon,
+        color: "bg-orange-500",
+        ring: "ring-orange-300",
       };
     case "REQUESTED":
       return {
         label: "Yêu cầu bổ sung",
         icon: RotateCw,
-        colorClass: "bg-purple-500", // Màu đơn sắc
+        color: "bg-purple-500",
+        ring: "ring-purple-300",
+      };
+    case "INTERVIEW":
+      return {
+        label: "Phỏng vấn",
+        icon: Mic,
+        color: "bg-indigo-500",
+        ring: "ring-indigo-300",
+      };
+    case "ACCEPTED":
+      return {
+        label: "Được chấp nhận",
+        icon: CheckCircle,
+        color: "bg-emerald-500",
+        ring: "ring-emerald-300",
+      };
+    case "HIRED":
+      return {
+        label: "Được tuyển dụng",
+        icon: UserCheck,
+        color: "bg-green-600",
+        ring: "ring-green-400",
+      };
+    case "REJECTED":
+      return {
+        label: "Bị từ chối",
+        icon: XCircle,
+        color: "bg-red-600",
+        ring: "ring-red-400",
       };
     default:
       return {
-        label: "Không rõ",
+        label: "Không xác định",
         icon: User,
-        colorClass: "bg-gray-500", // Màu đơn sắc
+        color: "bg-gray-500",
+        ring: "ring-gray-300",
       };
   }
 };
 
 const ApplicantCard: React.FC<{
   application: ApplicationDetail;
-  setApplicationChange: (
+  setApplicationChange?: (
     id: string,
     newState: string,
     currentState: string
   ) => void;
-}> = ({ application, setApplicationChange }) => {
-  const config = getStateConfig(application.state as ApplicationState);
-  const fullName =
-    `${application.resume.firstname} ${application.resume.lastname}`.trim();
+}> = ({ application }) => {
+  const { state, resume, appliedAt, documents } = application;
+  const config = getStateConfig(state as ApplicationState);
+  const fullName = `${resume.firstname} ${resume.lastname}`.trim();
+  const StateIcon = config.icon;
+
+  const dispatch = useDispatch();
+
+  const handleDownload = async (resume: any) => {
+    try {
+      console.log(resume);
+      const file = await generateResumeFile(
+        resume,
+        getImageUrl(resume?.avatarUrl as string)
+      );
+
+      const url = URL.createObjectURL(file);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = file.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      dispatch(
+        addToast({
+          type: "success",
+          message: "Xuất file thành công!",
+        })
+      );
+    } catch (err) {
+      dispatch(
+        addToast({
+          type: "error",
+          message: "Lỗi khi tạo file!",
+        })
+      );
+    }
+  };
 
   return (
-    <div className="group relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl hover:shadow-3xl border border-gray-100 overflow-hidden transition-all duration-500 hover:-translate-y-1 hover:border-blue-300">
-      {/* Glow hover effect (Tối ưu - Sử dụng màu nền đơn giản cho hiệu ứng hover) */}
+    <div className="group relative bg-white rounded-2xl shadow-md hover:shadow-xl border border-gray-200 overflow-hidden transition-all duration-400 hover:-translate-y-1 hover:border-gray-300">
+      {/* Hiệu ứng nền nhẹ khi hover */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/60 via-purple-50/40 to-emerald-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-      <div className="absolute inset-0 bg-blue-100/30 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-xl pointer-events-none" />
-
-      <div className="relative z-10 p-6 md:p-8">
-        <div className="flex flex-col lg:flex-row justify-between gap-8">
-          {/* Left: Candidate Info */}
-          <div className="flex-1 space-y-6">
+      <div className="relative p-6">
+        <div className="grid lg:grid-cols-4 gap-6">
+          {/* CỘT CHÍNH: Thông tin ứng viên */}
+          <div className="lg:col-span-3 space-y-5">
             <div className="flex items-start gap-5">
-              {/* Avatar - Đã loại bỏ gradient, sử dụng màu tím đơn giản */}
-
-              <div className="relative flex-shrink-0">
-                <div className="w-16 h-16 rounded-2xl bg-purple-500 p-0.5 shadow-md">
+              {/* Avatar */}
+              <div className="flex-shrink-0">
+                <div className="w-16 h-16 border border-purple-600 rounded-lg">
                   <div className="w-full h-full rounded-2xl bg-white flex items-center justify-center">
-                    <User className="w-8 h-8 text-purple-600" />
+                    <img
+                      src={`${getImageUrl(application.resume?.avatarUrl)}`}
+                    />
                   </div>
                 </div>
               </div>
 
-              {/* Name & Title - Giữ lại gradient cho tên để nổi bật (hoặc có thể thay bằng màu text đơn sắc nếu cần) */}
-
-              <div className="flex-1">
-                <div className="flex justify-between flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
-                  {/* Tên ứng viên - nổi bật với gradient */}
-                  <h3 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-purple-600 to-teal-600 bg-clip-text text-transparent leading-tight">
+              {/* Thông tin */}
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap justify-between items-center gap-4 mb-2 mr-4">
+                  <h3 className="text-2xl font-bold text-gray-900 truncate">
                     {fullName || "Ứng viên"}
                   </h3>
 
-                  {/* Nút xem thông tin - kiểu badge hiện đại */}
-                  <Link
-                    to={`/candidates/${application.id}`}
-                    target="_blank"
-                    className="inline-flex items-center gap-2 px-4 py-2 text-sm sm:text-base font-semibold text-purple-700 bg-purple-50 border border-purple-300 rounded-full hover:bg-purple-100 hover:border-purple-400 hover:scale-105 transition-all duration-200 ease-out shadow-sm hover:shadow-md"
+                  {/* Badge trạng thái - nổi bật, có icon */}
+                  <div
+                    className={`flex items-center gap-2.5 px-4 py-2 rounded-full ${config.color} text-white font-bold text-sm shadow-lg ring-4 ${config.ring} ring-opacity-40`}
                   >
-                    <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
-                    Xem thông tin ứng viên
-                  </Link>
+                    <StateIcon className="w-4.5 h-4.5" />
+                    <span>{config.label}</span>
+                  </div>
                 </div>
 
-                <p className="text-base font-semibold text-gray-700 mt-1">
-                  <span className="text-purple-600">
-                    {application.resume.objectCareer || "Chưa xác định"}
+                <p className="text-lg font-semibold text-purple-600 w-[60%]">
+                  {resume.objectCareer || "Chưa xác định vị trí"}
+                </p>
+
+                <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3 text-sm text-gray-600">
+                  {resume.email && (
+                    <a
+                      href={`mailto:${resume.email}`}
+                      className="flex items-center gap-2 hover:text-blue-600 transition"
+                    >
+                      <Mail className="w-4 h-4 text-blue-500" />
+                      <span className="truncate max-w-xs">{resume.email}</span>
+                    </a>
+                  )}
+                  {resume.phone && (
+                    <a
+                      href={`tel:${resume.phone}`}
+                      className="flex items-center gap-2 hover:text-orange-600 transition"
+                    >
+                      <Phone className="w-4 h-4 text-orange-500" />
+                      {resume.phone}
+                    </a>
+                  )}
+                </div>
+
+                <p className="flex items-center gap-2 text-sm text-gray-500 mt-3">
+                  <Calendar className="w-4 h-4 text-blue-500" />
+                  Nộp hồ sơ lúc:{" "}
+                  <span className="text-purple-600 font-bold">
+                    {formatDateTime(appliedAt)}
                   </span>
                 </p>
-
-                <p className="text-sm text-gray-500 mt-1">
-                  Ứng tuyển lúc:
-                  {formatDateTime(application.appliedAt)}
-                </p>
               </div>
             </div>
-            {/* Contact Info */}
-            <div className="pl-20 flex flex-wrap gap-x-6 border-t pt-4 border-gray-100">
-              {application.resume.email && (
-                <a
-                  href={`mailto:${application.resume.email}`}
-                  className="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 transition font-medium"
-                >
-                  <Mail size={16} className="text-blue-500" />
-                  {application.resume.email}
-                </a>
-              )}
 
-              <a
-                href={`tel:${application.resume.phone}`}
-                className="flex items-center gap-2 text-sm text-gray-700 hover:text-orange-600 transition font-medium"
+            {/* Nút hành động */}
+            <div className="ml-20 flex flex-wrap gap-3 pt-4 border-t border-gray-200">
+              <Link
+                to={`/candidates/${application.id}`}
+                target="_blank"
+                className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-purple-600 text-white font-medium rounded-xl hover:bg-purple-700 transition shadow-md text-sm"
               >
-                <Phone size={16} className="text-orange-500" />
-                {application.resume.phone}
-              </a>
+                <Eye className="w-4.5 h-4.5" />
+                Xem hồ sơ ứng viên
+              </Link>
+
+              <Link
+                target="_blank"
+                to={`${application.id}`}
+                className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-xl hover:opacity-90 transition shadow-md text-sm"
+              >
+                <ArrowBigRight className="w-4.5 h-4.5" />
+                Xem chi tiết ứng tuyển
+              </Link>
             </div>
-            {/* Resume and Documents */}
-            <div className="pl-20 space-y-4">
-              {/* CV Link */}
-              <p className="text-sm font-semibold text-gray-600 mt-2">
-                Tài liệu chính:
-              </p>
+          </div>
 
-              {/* Đã loại bỏ border-2 và dùng border-1 đơn giản hơn */}
-
-              <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-200">
-                <FaFileWord size={24} className="text-blue-500" />
-
-                <span className="font-bold text-gray-800 flex-1">
-                  {application.resume.title}
+          {/* CỘT TÀI LIỆU */}
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm font-bold text-gray-700 mb-3">CV chính</p>
+              <div className="flex items-center gap-3 p-3.5 bg-blue-50 rounded-xl border border-blue-200 hover:bg-blue-100 transition cursor-pointer">
+                <FaFileWord className="w-8 h-8 text-blue-600 flex-shrink-0" />
+                <span className="text-sm font-semibold text-gray-800 truncate flex-1">
+                  {resume.title}
                 </span>
+                <button
+                  onClick={() => handleDownload(resume)}
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  <Download className="w-5 h-5" />
+                </button>
               </div>
-              {/* Additional Documents */}
-              {application.documents.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-sm font-semibold text-gray-600 mt-2">
-                    Tài liệu đính kèm ({application.documents.length}):
-                  </p>
+            </div>
 
-                  {application.documents.map((document, i) => (
+            {documents.length > 0 ? (
+              <div>
+                <p className="text-sm font-bold text-gray-700 mb-2">
+                  Đính kèm ({documents.length})
+                </p>
+                <div className="space-y-2.5">
+                  {documents.slice(0, 2).map((doc, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition"
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition group/file"
                     >
-                      {getFileIconFromName(document.originalName)}
-
-                      <span className="ml-2 text-sm font-medium text-gray-700 truncate flex-1">
-                        {document.originalName}
-                      </span>
-
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        {getFileIconFromName(doc.originalName)}
+                        <span className="text-xs font-medium text-gray-700 truncate">
+                          {doc.originalName}
+                        </span>
+                      </div>
                       <a
-                        href={getImageUrl(document.fileName)}
+                        href={getImageUrl(doc.fileName)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 transition flex items-center gap-1 ml-4"
+                        className="text-blue-600 opacity-0 group-hover/file:opacity-100 transition ml-2"
                       >
-                        <Download size={18} />
+                        <Download className="w-4 h-4" />
                       </a>
                     </div>
                   ))}
+                  {documents.length > 2 && (
+                    <p className="text-xs text-gray-500 text-right mt-2">
+                      + {documents.length - 2} tệp khác
+                    </p>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-          {/* Right: Status + Actions */}
-          <div className="flex flex-col items-end gap-5 lg:w-64 flex-shrink-0 pt-1">
-            {/* Current Status Badge - Đã thay đổi để sử dụng colorClass (màu đơn sắc) */}
-
-            <div className="text-right w-full">
-              <p className="text-xs text-center font-bold text-gray-500 uppercase tracking-widest mb-3">
-                Trạng thái hiện tại
-              </p>
-
-              <div
-                className={`inline-flex items-center justify-center w-full gap-3 px-5 py-3.5 rounded-xl ${config.colorClass} text-white font-extrabold shadow-lg transition-all duration-300 transform scale-100`}
-              >
-                <config.icon size={22} className="flex-shrink-0" />
-                <span className="text-lg">{config.label}</span>
               </div>
-            </div>
-
-            {/* Action Buttons - Giữ nguyên các thay đổi màu đơn sắc và style nút đã thống nhất */}
-
-            <div className="flex flex-wrap justify-end gap-3 w-full pt-2">
-              <p className="text-xs text-center font-bold text-gray-500 uppercase tracking-widest mb-1 w-full">
-                Các hành động
-              </p>
-
-              {application.state === "SUBMITTED" && (
-                <>
-                  <button
-                    onClick={() =>
-                      setApplicationChange(
-                        application.id,
-                        "REVIEWING",
-                        application.state
-                      )
-                    }
-                    className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-orange-500 text-white font-bold rounded-xl shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-70"
-                  >
-                    <Eye size={20} /> Nhận hồ sơ (Đang xem)
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      setApplicationChange(
-                        application.id,
-                        "REQUESTED",
-                        application.state
-                      )
-                    }
-                    className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-blue-500 text-white font-bold rounded-xl shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-70"
-                  >
-                    <RotateCw size={20} /> Yêu cầu bổ sung
-                  </button>
-                </>
-              )}
-              {application.state === "REVIEWING" && (
-                <>
-                  <button
-                    onClick={() =>
-                      setApplicationChange(
-                        application.id,
-                        "REQUESTED",
-                        application.state
-                      )
-                    }
-                    className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-blue-500 text-white font-bold rounded-xl shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-70"
-                  >
-                    <RotateCw size={20} /> Yêu cầu bổ sung
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      setApplicationChange(
-                        application.id,
-                        "ACCEPTED",
-                        application.state
-                      )
-                    }
-                    className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-green-500 text-white font-bold rounded-xl shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-70"
-                  >
-                    <Check size={20} /> Duyệt hồ sơ (Accepted)
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      setApplicationChange(
-                        application.id,
-                        "REJECTED",
-                        application.state
-                      )
-                    }
-                    className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-red-500 text-white font-bold rounded-xl shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-70"
-                  >
-                    <X size={20} /> Từ chối
-                  </button>
-                </>
-              )}
-              {application.state === "REQUESTED" && (
-                <>
-                  <button
-                    onClick={() =>
-                      setApplicationChange(
-                        application.id,
-                        "REQUESTED",
-                        application.state
-                      )
-                    }
-                    className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-blue-500 text-white font-bold rounded-xl shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-70"
-                  >
-                    <RotateCw size={20} /> Yêu cầu bổ sung
-                  </button>
-                  <button
-                    onClick={() =>
-                      setApplicationChange(
-                        application.id,
-                        "REVIEWING",
-                        application.state
-                      )
-                    }
-                    className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-orange-500 text-white font-bold rounded-xl shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-70"
-                  >
-                    <Eye size={20} /> Nhận hồ sơ (Đang xem)
-                  </button>
-                </>
-              )}
-            </div>
+            ) : (
+              <div className="text-center py-8 text-gray-400 border border-dashed border-gray-200 rounded-xl">
+                <FileText className="w-9 h-9 mx-auto mb-2 opacity-50" />
+                <p className="text-xs">Không có tài liệu đính kèm</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

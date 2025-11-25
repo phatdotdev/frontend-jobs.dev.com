@@ -145,7 +145,11 @@ const InteractionItem: React.FC<InteractionItemProps> = ({
         {/* Icon: ThumbsUp → Heart */}
         <motion.div
           animate={isLiked ? { scale: [1, 1.6, 1.1] } : { scale: 1 }}
-          transition={{ duration: 0.35, type: "spring", stiffness: 400 }}
+          transition={{
+            duration: 0.6,
+            ease: [0.34, 1.56, 0.64, 1], // easeOutBack – giống spring bounce
+            times: [0, 0.4, 1], // điều khiển timing cho 3 keyframe
+          }}
         >
           {isLiked ? (
             <Heart className="w-6 h-6 fill-white text-white drop-shadow-md" />

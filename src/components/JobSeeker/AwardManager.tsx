@@ -19,8 +19,14 @@ import {
   Trash2,
   Loader2,
   Sparkles,
+  Info,
+  Star,
+  Building2,
+  Gem,
 } from "lucide-react";
 import InputWithIcon from "../UI/InputWithIcon";
+import { useDispatch } from "react-redux";
+import { addToast } from "../../redux/features/toastSlice";
 
 const AwardManager = () => {
   const {
@@ -68,6 +74,8 @@ const AwardManager = () => {
     setShowForm(false);
   };
 
+  const dispatch = useDispatch();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload = {
@@ -85,12 +93,21 @@ const AwardManager = () => {
         await createAward(payload).unwrap();
       }
 
+      dispatch(
+        addToast({
+          type: "success",
+          message: "Cập nhật giải thưởng thành công!",
+        })
+      );
+
       resetForm();
       refetch();
     } catch (err) {
-      console.error(
-        `Lỗi khi ${isEditing ? "cập nhật" : "tạo"} giải thưởng:`,
-        err
+      dispatch(
+        addToast({
+          type: "error",
+          message: "Cập nhật giải thưởng thất bại!",
+        })
       );
     }
   };
@@ -106,27 +123,31 @@ const AwardManager = () => {
   const handleDelete = async (id: string) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa giải thưởng này không?")) {
       try {
-        console.log("Xóa giải thưởng:", id);
         await deleteAward(id).unwrap();
+        dispatch(
+          addToast({
+            type: "success",
+            message: "Cập nhật giải thưởng thành công!",
+          })
+        );
         refetch();
       } catch (err) {
-        console.error("Lỗi khi xóa giải thưởng:", err);
+        dispatch(
+          addToast({
+            type: "error",
+            message: "Không thể xóa giải thưởng!",
+          })
+        );
       }
     }
   };
 
-  const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString("vi-VN", {
-      year: "numeric",
-      month: "short",
-    });
-
   return (
     <div className="p-0 bg-white rounded-xl shadow-lg mt-6">
-      {/* 1. Header & Nút Thêm/Đóng (Màu Teal) */}
+      {/* 1. Header & Nút Thêm/Đóng (Màu blue) */}
       <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100">
         <h1 className="flex items-center text-xl font-bold text-gray-800">
-          <FaMedal className="mr-3 text-2xl text-teal-600" /> Quản lý Giải
+          <FaMedal className="mr-3 text-2xl text-blue-600" /> Quản lý Giải
           thưởng
         </h1>
         <button
@@ -134,7 +155,7 @@ const AwardManager = () => {
           className={`flex items-center text-sm font-semibold transition py-1.5 px-3 rounded-md border ${
             showForm
               ? "bg-white text-gray-600 hover:bg-red-50 hover:text-red-600 border-gray-300"
-              : "bg-teal-600 text-white hover:bg-teal-700 border-teal-600 shadow-md"
+              : "bg-blue-500 text-white hover:bg-blue-700 border-blue-600 shadow-md"
           }`}
         >
           {showForm ? (
@@ -146,73 +167,89 @@ const AwardManager = () => {
         </button>
       </div>
 
-      {/* 2. Form Thêm/Chỉnh sửa (Màu nền Teal) */}
+      {/* 2. Form Thêm/Chỉnh sửa (Màu nền blue) */}
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="bg-teal-50/50 p-6 shadow-inner transition-all duration-300 ease-in-out"
+          className="bg-blue-50/50 p-6 shadow-inner transition-all duration-300 ease-in-out"
         >
+          {/* Nhóm 1: Tên giải thưởng & Tổ chức */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-            {/* Tên giải thưởng */}
-            <InputWithIcon
-              Icon={Award}
-              name="name"
-              placeholder="Tên giải thưởng (*)"
-              value={form.name}
-              onChange={handleChange}
-              required
-            />
-            {/* Tổ chức trao giải */}
-            <InputWithIcon
-              Icon={Building}
-              name="organization"
-              placeholder="Tổ chức trao giải (*)"
-              value={form.organization}
-              onChange={handleChange}
-              required
-            />
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Tên giải thưởng <span className="text-red-500">*</span>
+              </label>
+              <InputWithIcon
+                Icon={Award}
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Tổ chức trao giải <span className="text-red-500">*</span>
+              </label>
+              <InputWithIcon
+                Icon={Building}
+                name="organization"
+                value={form.organization}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
 
+          {/* Nhóm 2: Ngày nhận & Thành tích */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-            {/* Ngày nhận */}
-            <InputWithIcon
-              Icon={Calendar}
-              name="receivedDate"
-              type="date"
-              placeholder="Ngày nhận giải (*)"
-              value={form.receivedDate}
-              onChange={handleChange}
-              required
-            />
-            {/* Thành tích */}
-            <InputWithIcon
-              Icon={Sparkles}
-              name="achievement"
-              placeholder="Thành tích (ví dụ: Giải Nhất toàn quốc)"
-              value={form.achievement}
-              onChange={handleChange}
-            />
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Ngày nhận giải <span className="text-red-500">*</span>
+              </label>
+              <InputWithIcon
+                Icon={Calendar}
+                name="receivedDate"
+                type="date"
+                value={form.receivedDate}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Thành tích
+              </label>
+              <InputWithIcon
+                Icon={Sparkles}
+                name="achievement"
+                value={form.achievement}
+                onChange={handleChange}
+              />
+            </div>
           </div>
 
           {/* Mô tả */}
-          <div className="relative">
-            <MdOutlineDescription className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+          <div className="relative mb-3">
+            <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+              Mô tả thêm
+            </label>
+            <MdOutlineDescription className="absolute left-3 top-9 w-4 h-4 text-gray-400" />
             <textarea
               name="description"
               placeholder="Mô tả thêm về giải thưởng, nội dung thi, ý nghĩa..."
               value={form.description}
               onChange={handleChange}
-              // Focus màu Teal
-              className="border border-gray-300 p-2.5 pl-9 text-sm rounded-lg w-full focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition duration-150"
+              className="border border-gray-300 p-2.5 pl-9 text-sm rounded-lg w-full focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
               rows={3}
             />
           </div>
 
-          {/* Nút Submit/Update (Màu Teal) */}
+          {/* Nút Submit/Update */}
           <button
             type="submit"
             disabled={isLoading}
-            className="mt-4 bg-teal-600 hover:bg-teal-700 transition text-white font-semibold text-sm px-6 py-2.5 rounded-lg shadow disabled:opacity-50 disabled:cursor-wait"
+            className="mt-4 bg-blue-500 hover:bg-blue-700 transition text-white font-semibold text-sm px-6 py-2.5 rounded-lg shadow disabled:opacity-50 disabled:cursor-wait"
           >
             {isLoading ? (
               <>
@@ -259,10 +296,9 @@ const AwardManager = () => {
               <div
                 key={award.id}
                 className={`relative group border-l-4 p-4 pl-5 shadow-sm bg-gray-50/70 rounded-lg hover:shadow-md transition duration-300 ${
-                  // Viền Teal
                   award.id === editingId
                     ? "border-red-500 ring-2 ring-red-300 bg-red-50"
-                    : "border-teal-500"
+                    : "border-blue-500"
                 }`}
               >
                 {/* Action Buttons: Edit/Delete */}
@@ -283,30 +319,55 @@ const AwardManager = () => {
                   </button>
                 </div>
 
-                <h3 className="text-lg font-bold text-teal-700 leading-snug pr-20">
-                  {award.name}
-                </h3>
-
-                <p className="text-sm font-semibold text-gray-700 mt-1">
-                  Tổ chức: {award.organization}
-                </p>
-
-                <div className="mt-1 text-xs font-medium text-gray-500 flex items-center gap-4">
-                  <span className="flex items-center gap-1">
-                    <FaCalendarAlt className="text-teal-500" />
-                    Ngày nhận: {formatDate(award.receivedDate)}
-                  </span>
-                  {award.achievement && (
-                    <span className="flex items-center gap-1">
-                      — Thành tích: **{award.achievement}**
-                    </span>
-                  )}
+                {/* Tên giải thưởng và Tổ chức trao giải */}
+                <div className="flex justify-between items-start mb-3 border-b pb-2 border-purple-200">
+                  <div>
+                    <h4 className="text-xl font-extrabold text-purple-800">
+                      <Gem size={20} className="inline mr-2 text-purple-600" />
+                      {award.name}
+                    </h4>
+                    <p className="text-base font-semibold text-gray-700 mt-0.5 flex items-center">
+                      <Building2 size={16} className="mr-2 text-purple-600" />
+                      {award.organization}
+                    </p>
+                  </div>
                 </div>
 
+                <div className="flex items-center justify-between">
+                  {/* Thành tựu chính */}
+                  <div className="text-sm text-gray-700 space-y-2">
+                    <p className="flex items-start font-semibold border-l-2 border-purple-400 pl-3 pt-1">
+                      <Star
+                        size={16}
+                        className="mr-2 mt-0.5 text-purple-500 flex-shrink-0"
+                      />
+                      <span className="font-bold text-gray-800">
+                        Thành tựu chính:
+                      </span>
+                      <span className="ml-1 font-medium">
+                        {award.achievement}
+                      </span>
+                    </p>
+                  </div>
+                  {/* Ngày nhận giải */}
+                  <div className="flex items-center text-sm font-bold px-3 py-1.5 rounded-full bg-purple-100 text-purple-700 shadow-inner">
+                    <Calendar size={14} className="mr-1.5" />
+                    {award.receivedDate}
+                  </div>
+                </div>
+
+                {/* Mô tả chi tiết */}
                 {award.description && (
-                  <p className="text-sm text-gray-600 mt-2 border-t border-gray-200 pt-2 whitespace-pre-line">
-                    {award.description}
-                  </p>
+                  <div className="pt-3 mt-3 border-t border-purple-100">
+                    <p className="font-semibold text-gray-700 mb-1 flex items-center">
+                      <Info size={14} className="mr-2 text-gray-500" />
+                      Mô tả thêm:
+                    </p>
+                    {/* Sử dụng whitespace-pre-line để giữ định dạng xuống dòng */}
+                    <p className="text-sm text-gray-700 whitespace-pre-line border-l-2 border-purple-300 pl-3 ml-1">
+                      {award.description}
+                    </p>
+                  </div>
                 )}
               </div>
             ))}

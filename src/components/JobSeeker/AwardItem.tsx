@@ -1,6 +1,6 @@
 // AwardItem.tsx
-import React, { type FC } from "react";
-import { Award, Building2, Calendar, Gem, Info, Star } from "lucide-react";
+import { type FC } from "react";
+import { Building2, Calendar, Gem, Info, Star } from "lucide-react";
 import type { AwardProps } from "../../types/ResumeProps"; // Giả định đường dẫn type
 
 interface AwardItemProps {

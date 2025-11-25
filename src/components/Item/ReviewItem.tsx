@@ -9,7 +9,8 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import { useState, type JSX } from "react"; // Quan trọng: Import useState
+import { useState, type JSX } from "react";
+import { Link } from "react-router-dom";
 
 type CommentSectionProps = {
   icon: JSX.Element;
@@ -63,8 +64,10 @@ const ReviewItem = ({ review }: ReviewItemProps) => {
         <div className="flex items-center gap-4">
           <div className="text-2xl">⭐️</div>
           <div>
-            <p className="font-bold text-lg text-gray-900">
-              {review.reviewerName || "Người đánh giá ẩn danh"}
+            <p className="py-2 text-purple-600 hover:underline hover:cursor-pointer font-bold text-lg text-gray-900">
+              <Link to={`/reviewers/${review.expertId}`}>
+                {review.reviewerName || "Người đánh giá ẩn danh"}
+              </Link>
             </p>
             <p className="text-sm text-gray-500">
               Đánh giá ngày: **
@@ -78,7 +81,7 @@ const ReviewItem = ({ review }: ReviewItemProps) => {
           <span className="text-3xl font-extrabold text-yellow-600">
             {review.score ?? "N/A"}
           </span>
-          <span className="text-sm text-gray-500">/ 5 Điểm</span>
+          <span className="text-sm text-gray-500">/ 100 Điểm</span>
         </div>
       </div>
 

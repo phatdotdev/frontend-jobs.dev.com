@@ -1,20 +1,20 @@
 import { useEffect, useState } from "react";
-import ChatBox from "../components/ChatBox";
 import { FaRegUserCircle } from "react-icons/fa";
 import { HiMenu } from "react-icons/hi";
 import { IoArrowBack } from "react-icons/io5";
-import { useGetChatUsersQuery } from "../redux/api/apiCommunication";
-import { getImageUrl } from "../utils/helper";
 import { motion, AnimatePresence } from "framer-motion";
-import ErrorAlert from "../components/UI/ErrorAlert";
-import DataLoader from "../components/UI/DataLoader";
-import type { UserResponseProps } from "../types/UserProps";
 import { useDispatch, useSelector } from "react-redux";
-import type { RootState } from "../redux/features/store";
-import { markAsRead, setMessages } from "../redux/features/messageSlice";
-import { useGetAllMessagesQuery } from "../redux/api/messageApiSlice";
-import { useSocketContext } from "../context/SocketContext";
-import { useGetUserInfoQuery } from "../redux/api/apiUserSlice";
+import ChatBox from "../../components/ChatBox";
+import { useGetChatUsersQuery } from "../../redux/api/apiCommunication";
+import { useGetUserInfoQuery } from "../../redux/api/apiUserSlice";
+import { useSocketContext } from "../../context/SocketContext";
+import { useGetAllMessagesQuery } from "../../redux/api/messageApiSlice";
+import { markAsRead, setMessages } from "../../redux/features/messageSlice";
+import type { RootState } from "../../redux/features/store";
+import type { UserResponseProps } from "../../types/UserProps";
+import DataLoader from "../../components/UI/DataLoader";
+import ErrorAlert from "../../components/UI/ErrorAlert";
+import { getImageUrl } from "../../utils/helper";
 
 const ChatView = () => {
   const { data: { data: userInfo } = {} } = useGetUserInfoQuery();

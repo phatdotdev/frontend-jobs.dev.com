@@ -5,6 +5,7 @@ import { useRegisterMutation } from "../../redux/api/authenticationApiSlice";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addToast } from "../../redux/features/toastSlice";
+import LoadingModal from "../../components/Modal/LoadingModal";
 
 interface FormErrors {
   username?: string;
@@ -25,10 +26,8 @@ const Register = () => {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [register, { isLoading, isSuccess, isError, error, data }] =
-    useRegisterMutation();
+  const [register, { isLoading }] = useRegisterMutation();
 
-  // Reset errors khi người dùng nhập
   useEffect(() => {
     setErrors({});
   }, [username, email, password, confirmPassword]);
@@ -96,6 +95,7 @@ const Register = () => {
 
   return (
     <>
+      {isLoading && <LoadingModal />}
       {/* Main Container */}
       <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 flex items-center justify-center p-4">
         <div className="w-full max-w-2xl">

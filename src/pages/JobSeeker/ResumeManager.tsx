@@ -13,6 +13,8 @@ import {
   Eye,
   X,
   CheckSquare,
+  Download,
+  Calendar,
 } from "lucide-react";
 import {
   useCreateResumeMutation,
@@ -28,9 +30,13 @@ import {
   useUpdateResumeMutation,
 } from "../../redux/api/apiResumeSlice";
 import CheckboxGroupField from "../../components/UI/CheckBoxGroupField";
-import type { ResumeFormProps } from "../../types/ResumeProps";
+import type { ResumeFormProps, ResumeProps } from "../../types/ResumeProps";
 import TextAreaField from "../../components/UI/TextAreaField";
-import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { generateResumeFile } from "../../utils/getResumeDocument";
+import { formatDate, getImageUrl } from "../../utils/helper";
+import { useDispatch } from "react-redux";
+import { addToast } from "../../redux/features/toastSlice";
 
 const emptyResume: ResumeFormProps = {
   title: "",
@@ -100,6 +106,7 @@ const ResumeManager = () => {
     })) ?? [];
 
   const { data: resumeResponse, refetch } = useGetAllResumesQuery();
+  const resumeData = resumeResponse?.data || [];
   const resumes =
     resumeResponse?.data?.map((resume) => ({
       ...resume,
@@ -117,6 +124,8 @@ const ResumeManager = () => {
   const [deleteResume] = useDeleteResumeMutation();
 
   const isEditing = !!editingId;
+
+  const dispatch = useDispatch();
 
   const resetForm = () => {
     setForm(emptyResume);
@@ -199,6 +208,43 @@ const ResumeManager = () => {
     });
   };
 
+  const handleDownload = async (resumeId: string) => {
+    const resume = resumeData.filter((resume) => resume.id === resumeId)[0];
+    try {
+      console.log(resume);
+      setIsLoading(true);
+      const file = await generateResumeFile(
+        resume,
+        getImageUrl(resume?.avatarUrl as string)
+      );
+
+      const url = URL.createObjectURL(file);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = file.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      dispatch(
+        addToast({
+          type: "success",
+          message: "Xuất file thành công!",
+        })
+      );
+    } catch (err) {
+      dispatch(
+        addToast({
+          type: "error",
+          message: "Lỗi khi tạo file!",
+        })
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="sm:mx-[100px] mt-4 p-4 bg-white shadow-2xl">
       <div className="flex justify-between items-center mb-4">
@@ -211,7 +257,7 @@ const ResumeManager = () => {
           className={`flex items-center text-sm font-semibold transition py-2 px-4 rounded-xl border ${
             showForm
               ? "bg-white text-gray-600 hover:bg-red-50 hover:text-red-600 border-gray-300"
-              : "bg-blue-500 text-white hover:bg-blue-600 border-teal-600 shadow-md"
+              : "bg-blue-500 text-white hover:bg-blue-600 border-blue-600 shadow-md"
           }`}
           disabled={isLoading}
         >
@@ -226,8 +272,8 @@ const ResumeManager = () => {
 
       {/* HIỂN THỊ FORM TẠO/CHỈNH SỬA */}
       {showForm && (
-        <div className="mb-8 p-6 bg-teal-50/50 rounded-xl shadow-inner">
-          <h2 className="text-2xl font-bold text-teal-800 mb-4">
+        <div className="mb-8 p-6 bg-blue-50/50 rounded-xl shadow-inner">
+          <h2 className="text-2xl font-bold text-blue-800 mb-4">
             {isEditing ? `Chỉnh Sửa: ${form.title}` : "Tạo Resume Mới"}
           </h2>
           <form onSubmit={handleCreateOrUpdate}>
@@ -236,7 +282,7 @@ const ResumeManager = () => {
                 htmlFor="title"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                <Briefcase className="inline w-4 h-4 mr-2 text-teal-600" /> Tiêu
+                <Briefcase className="inline w-4 h-4 mr-2 text-blue-600" /> Tiêu
                 đề Resume (*)
               </label>
               <input
@@ -247,7 +293,7 @@ const ResumeManager = () => {
                 value={form.title}
                 onChange={handleChange}
                 required
-                className="border border-gray-300 p-2.5 text-base rounded-lg w-full focus:ring-teal-500 focus:border-teal-500 transition duration-150"
+                className="border border-gray-300 p-2.5 text-base rounded-lg w-full focus:ring-blue-500 focus:border-blue-500 transition duration-150"
                 disabled={isLoading}
               />
             </div>
@@ -280,7 +326,7 @@ const ResumeManager = () => {
 
             {/* CHỌN MỤC LIÊN KẾT (Dùng Checkbox) */}
             <h3 className="flex items-center text-xl font-bold text-gray-700 mb-3">
-              <CheckSquare className="w-5 h-5 mr-2 text-teal-600" /> Chọn các
+              <CheckSquare className="w-5 h-5 mr-2 text-blue-600" /> Chọn các
               Mục Chi tiết
             </h3>
             <p className="text-sm text-gray-500 mb-4 italic">
@@ -358,7 +404,7 @@ const ResumeManager = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="flex items-center bg-teal-600 hover:bg-teal-700 transition text-white font-semibold text-base px-6 py-2.5 rounded-lg shadow disabled:opacity-50 disabled:cursor-wait"
+                className="flex items-center bg-blue-600 hover:bg-blue-700 transition text-white font-semibold text-base px-6 py-2.5 rounded-lg shadow disabled:opacity-50 disabled:cursor-wait"
               >
                 {isLoading ? (
                   <Loader2 className="animate-spin h-5 w-5 mr-3" />
@@ -386,8 +432,7 @@ const ResumeManager = () => {
 
       {/* HIỂN THỊ DANH SÁCH RESUME (Giữ nguyên) */}
       <h2 className="flex items-center text-2xl font-bold text-gray-800 mb-4">
-        <List className="w-5 h-5 mr-2 text-teal-600" /> Danh sách Resumes của
-        bạn ({resumes.length})
+        Danh sách Resumes của bạn ({resumes.length})
       </h2>
 
       {resumes.length === 0 ? (
@@ -399,47 +444,98 @@ const ResumeManager = () => {
           {resumes.map((resume) => (
             <div
               key={resume.id}
-              className={`flex justify-between items-center p-4 border-l-4 rounded-lg shadow-sm transition duration-300 ${
+              className={`group relative overflow-hidden rounded-2xl shadow-md hover:shadow-2xl transition-all duration-500 border-2 ${
                 resume.id === editingId
-                  ? "border-red-500 bg-red-50/50 ring-2 ring-red-300"
-                  : "border-teal-500 bg-gray-50 hover:shadow-md"
+                  ? "border-red-500 bg-red-50/70 ring-4 ring-red-200"
+                  : "border-transparent bg-white hover:border-blue-400"
               }`}
             >
-              <div>
-                <h3 className="text-lg font-bold text-teal-700">
-                  {resume.title}
-                </h3>
-                <p className="text-sm text-gray-600 italic mt-1">
-                  {resume?.objectCareer?.substring(0, 80)}...
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Link to={`/job-seeker/resume/${resume.id}`}>
+              {/* Hiệu ứng nền gradient khi hover */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-blue-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+              {/* Nội dung */}
+              <div className="relative p-6 flex items-center justify-between gap-6">
+                {/* Thông tin CV */}
+                <div className="flex items-center gap-5 flex-1 min-w-0">
+                  {/* Icon CV đẹp */}
+                  <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <FileText className="w-8 h-8 text-white" />
+                  </div>
+
+                  <div className="min-w-0">
+                    <h3 className="text-xl font-extrabold text-gray-900 truncate">
+                      {resume.title}
+                    </h3>
+                    {resume.objectCareer && (
+                      <p className="text-sm text-gray-600 mt-1 line-clamp-2 leading-relaxed">
+                        {resume.objectCareer}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5" />
+                        Cập nhật: {formatDate(resume.updatedAt)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Nút hành động - chỉ hiện khi hover hoặc đang chỉnh sửa */}
+                <div
+                  className={`flex items-center gap-2 transition-all duration-500 ${
+                    resume.id === editingId
+                      ? "opacity-100"
+                      : "opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0"
+                  }`}
+                >
                   <button
-                    className="text-gray-500 hover:text-blue-600 p-2 rounded-full hover:bg-white transition"
+                    onClick={() => {
+                      {
+                        navigate(`${resume.id}`);
+                      }
+                    }}
+                    className="p-3 bg-blue-100 text-blue-600 rounded-xl hover:bg-blue-200 hover:shadow-md transition-all transform hover:scale-110"
                     title="Xem chi tiết"
-                    disabled={isLoading}
                   >
-                    <Eye size={18} />
+                    <Eye className="w-5 h-5" />
                   </button>
-                </Link>
-                <button
-                  onClick={() => handleEdit(resume)}
-                  className="text-gray-500 hover:text-orange-600 p-2 rounded-full hover:bg-white transition"
-                  title="Chỉnh sửa"
-                  disabled={isLoading}
-                >
-                  <Edit3 size={18} />
-                </button>
-                <button
-                  onClick={() => handleDelete(resume.id as string)}
-                  className="text-gray-500 hover:text-red-600 p-2 rounded-full hover:bg-white transition"
-                  title="Xóa"
-                  disabled={isLoading}
-                >
-                  <Trash2 size={18} />
-                </button>
+
+                  <button
+                    onClick={() => handleEdit(resume as any)}
+                    className="p-3 bg-orange-100 text-orange-600 rounded-xl hover:bg-orange-200 hover:shadow-md transition-all transform hover:scale-110"
+                    title="Chỉnh sửa"
+                  >
+                    <Edit3 className="w-5 h-5" />
+                  </button>
+
+                  <button
+                    onClick={() => handleDownload(resume.id as string)}
+                    className="p-3 bg-emerald-100 text-emerald-600 rounded-xl hover:bg-emerald-200 hover:shadow-md transition-all transform hover:scale-110"
+                    title="Tải xuống"
+                  >
+                    <Download className="w-5 h-5" />
+                  </button>
+
+                  <button
+                    onClick={() => handleDelete(resume.id as string)}
+                    className={`p-3 rounded-xl hover:shadow-md transition-all transform hover:scale-110 ${
+                      resume.id === editingId
+                        ? "bg-red-500 text-white hover:bg-red-600"
+                        : "bg-red-100 text-red-600 hover:bg-red-200"
+                    }`}
+                    title="Xóa CV"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
+
+              {/* Tag "Đang chỉnh sửa" nếu đang edit */}
+              {resume.id === editingId && (
+                <div className="absolute top-4 right-4 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-pulse">
+                  Đang chỉnh sửa
+                </div>
+              )}
             </div>
           ))}
         </div>

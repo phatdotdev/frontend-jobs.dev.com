@@ -10,10 +10,9 @@ import {
   Save,
   Edit2,
   File,
-  PenIcon,
   PenBoxIcon,
 } from "lucide-react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useUpdateJobPostingMutation } from "../../redux/api/apiPostSlice";
 import { useGetAllLocationsQuery } from "../../redux/api/apiAdminSlice";
 import type { JobType, Location } from "../../types/PostingProps";
@@ -266,7 +265,6 @@ const EditJobPostingView = () => {
             </div>
           </div>
         </div>
-
         {/* 1. Thông tin cơ bản */}
         <div className="space-y-6">
           <SectionTitle icon={<Briefcase />} title="Thông tin cơ bản" />
@@ -318,7 +316,6 @@ const EditJobPostingView = () => {
             </div>
           </div>
         </div>
-
         {/* 2. Nội dung chi tiết */}
         <div className="space-y-6">
           <SectionTitle icon={<ClipboardList />} title="Nội dung chi tiết" />
@@ -358,7 +355,6 @@ const EditJobPostingView = () => {
             rows={4}
           />
         </div>
-
         {/* 3. Tài chính & Thời hạn */}
         <div className="space-y-6 border-t pt-6">
           <SectionTitle icon={<Wallet />} title="Tài chính & Thời hạn" />
@@ -400,7 +396,6 @@ const EditJobPostingView = () => {
             />
           </div>
         </div>
-
         {/* 4. Ảnh */}
         <div className="space-y-4 border-t pt-6">
           <SectionTitle icon={<Image />} title="Ảnh minh họa" />
@@ -497,7 +492,6 @@ const EditJobPostingView = () => {
             />
           </div>
         </div>
-
         {/* 5. Tài liệu */}
         <div className="space-y-4 border-t pt-6">
           <SectionTitle
@@ -605,7 +599,6 @@ const EditJobPostingView = () => {
             </div>
           )}
         </div>
-
         {/* Nút hành động */}
         <div className="pt-8 border-t flex flex-col-reverse sm:flex-row justify-end gap-3">
           <button
@@ -640,13 +633,14 @@ const EditJobPostingView = () => {
           {state === "PUBLISHED" && (
             <button
               type="button"
-              onClick={() => navigate(`/recruiter/applicants/${jobId}`)}
+              onClick={() => navigate(`/recruiter/jobs/${jobId}/applicants`)}
               className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 flex items-center gap-2"
             >
               <ClipboardList size={20} /> Xem ứng viên
             </button>
           )}
         </div>
+        ;
       </form>
     </div>
   );

@@ -28,6 +28,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
       query: () => ({
         url: `${USER_URL}/info`,
       }),
+      providesTags: ["UserInfo"],
     }),
     // jobseeker profile
     getJobSeekerProfile: builder.query<any, void>({
@@ -100,6 +101,17 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: `${USER_URL}/recruiter/${id}`,
       }),
     }),
+    getExpertById: builder.query<ResponseProps<any>, any>({
+      query: (id) => ({
+        url: `${USER_URL}/expert/${id}`,
+      }),
+    }),
+    // get expertise by expert id
+    getExpertisesByExpertId: builder.query<ResponseProps<any>, any>({
+      query: (id) => ({
+        url: `${USER_URL}/expert/${id}/expertises`,
+      }),
+    }),
     // upload
     uploadUserAvatar: builder.mutation<any, FormData>({
       query: (formData) => ({
@@ -113,6 +125,32 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: `${UPLOAD_URL}/background`,
         method: "POST",
         body: formData,
+      }),
+    }),
+    // EXPERTISES
+    getAllExpertises: builder.query<ResponseProps<any>, void>({
+      query: () => ({
+        url: `${USER_URL}/expert/expertises`,
+      }),
+    }),
+    createExpertise: builder.mutation<ResponseProps<any>, any>({
+      query: (formData) => ({
+        url: `${USER_URL}/expert/expertises`,
+        method: "POST",
+        body: formData,
+      }),
+    }),
+    updateExpertise: builder.mutation<ResponseProps<any>, any>({
+      query: (formData) => ({
+        url: `${USER_URL}/expert/expertises/${formData.id}`,
+        method: "PUT",
+        body: formData,
+      }),
+    }),
+    deleteExpertise: builder.mutation<ResponseProps<any>, any>({
+      query: (id) => ({
+        url: `${USER_URL}/expert/expertises/${id}`,
+        method: "DELETE",
       }),
     }),
   }),
@@ -143,4 +181,12 @@ export const {
   // GET USERS BY ID
   useGetRecruiterByIdQuery,
   useGetJobSeekerByIdQuery,
+  useGetExpertByIdQuery,
+  // expertises
+  useGetExpertisesByExpertIdQuery,
+  // EXPERTISES
+  useGetAllExpertisesQuery,
+  useCreateExpertiseMutation,
+  useUpdateExpertiseMutation,
+  useDeleteExpertiseMutation,
 } = userApiSlice;

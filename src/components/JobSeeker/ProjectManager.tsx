@@ -10,9 +10,23 @@ import {
 import { MdOutlineAddCircle, MdOutlineDescription } from "react-icons/md";
 import { IoMdCloseCircle } from "react-icons/io";
 import { FaLaptopCode } from "react-icons/fa6";
-// Import icons từ lucide-react cho gọn gàng và hiện đại
-import { Code, Edit3, Trash2, Loader2, User, Zap, Link } from "lucide-react";
+import {
+  Code,
+  Edit3,
+  Trash2,
+  Loader2,
+  User,
+  Zap,
+  Link,
+  Info,
+  TrendingUp,
+  UserCheck,
+  Layers,
+} from "lucide-react";
 import InputWithIcon from "../UI/InputWithIcon";
+import { formatDate, formatDateTime } from "../../utils/helper";
+import { useDispatch } from "react-redux";
+import { addToast } from "../../redux/features/toastSlice";
 
 const ProjectManager = () => {
   const {
@@ -37,7 +51,6 @@ const ProjectManager = () => {
     role: "",
     result: "",
     description: "",
-    // Thêm trường URL (giả định) để tiện quản lý dự án
     projectUrl: "",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -46,7 +59,7 @@ const ProjectManager = () => {
   const [form, setForm] = useState<ProjectProps>(initialState);
 
   const isEditing = !!editingId;
-  const isLoading = isCreating; // Cần thêm || isUpdating || isDeleting khi có API
+  const isLoading = isCreating;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -61,30 +74,42 @@ const ProjectManager = () => {
     setShowForm(false);
   };
 
+  const dispatch = useDispatch();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Tạo payload chỉ chứa các field cần thiết
     const payload = {
       name: form.name,
       role: form.role,
       result: form.result,
       description: form.description,
+      projectUrl: form.projectUrl,
     };
-
-    console.log(payload);
 
     try {
       if (isEditing) {
         await updateProject({ id: editingId, ...payload }).unwrap();
       } else {
-        await createProject(payload).unwrap();
+        await createProject(payload as any).unwrap();
       }
+
+      dispatch(
+        addToast({
+          type: "success",
+          message: "Cập nhật dự án thành công!",
+        })
+      );
 
       resetForm();
       refetch();
     } catch (err) {
-      console.error(`Lỗi khi ${isEditing ? "cập nhật" : "tạo"} dự án:`, err);
+      dispatch(
+        addToast({
+          type: "error",
+          message: "Đã có lỗi xảy ra!",
+        })
+      );
     }
   };
 
@@ -99,34 +124,38 @@ const ProjectManager = () => {
   const handleDelete = async (id: string) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa dự án này không?")) {
       try {
-        console.log("Xóa dự án:", id);
         await deleteProject(id).unwrap();
+        dispatch(
+          addToast({
+            type: "success",
+            message: "Cập nhật dự án thành công!",
+          })
+        );
         refetch();
       } catch (err) {
-        console.error("Lỗi khi xóa dự án:", err);
+        dispatch(
+          addToast({
+            type: "error",
+            message: "Không thể xóa dự án!",
+          })
+        );
       }
     }
   };
 
-  const formatDate = (date: Date) =>
-    new Date(date).toLocaleDateString("vi-VN", {
-      year: "numeric",
-      month: "short",
-    });
-
   return (
     <div className="p-0 bg-white rounded-xl shadow-lg mt-6">
-      {/* 1. Header & Nút Thêm/Đóng (Màu Teal) */}
+      {/* 1. Header & Nút Thêm/Đóng (Màu blue) */}
       <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100">
         <h1 className="flex items-center text-xl font-bold text-gray-800">
-          <FaLaptopCode className="mr-3 text-2xl text-teal-600" /> Quản lý Dự án
+          <FaLaptopCode className="mr-3 text-2xl text-blue-600" /> Quản lý Dự án
         </h1>
         <button
           onClick={() => (showForm ? resetForm() : setShowForm(true))}
           className={`flex items-center text-sm font-semibold transition py-1.5 px-3 rounded-md border ${
             showForm
               ? "bg-white text-gray-600 hover:bg-red-50 hover:text-red-600 border-gray-300"
-              : "bg-teal-600 text-white hover:bg-teal-700 border-teal-600 shadow-md"
+              : "bg-blue-500 text-white hover:bg-blue-700 border-blue-600 shadow-md"
           }`}
         >
           {showForm ? (
@@ -138,71 +167,87 @@ const ProjectManager = () => {
         </button>
       </div>
 
-      {/* 2. Form Thêm/Chỉnh sửa (Màu nền Teal) */}
+      {/* 2. Form Thêm/Chỉnh sửa (Màu nền blue) */}
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="bg-teal-50/50 p-6 shadow-inner transition-all duration-300 ease-in-out"
+          className="bg-blue-50/50 p-6 shadow-inner transition-all duration-300 ease-in-out"
         >
+          {/* Nhóm 1: Tên dự án & Vai trò */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-            {/* Tên dự án */}
-            <InputWithIcon
-              Icon={Code}
-              name="name"
-              placeholder="Tên dự án (*)"
-              value={form.name}
-              onChange={handleChange}
-              required
-            />
-            {/* Vai trò */}
-            <InputWithIcon
-              Icon={User}
-              name="role"
-              placeholder="Vai trò (*)"
-              value={form.role}
-              onChange={handleChange}
-              required
-            />
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Tên dự án <span className="text-red-500">*</span>
+              </label>
+              <InputWithIcon
+                Icon={Code}
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Vai trò <span className="text-red-500">*</span>
+              </label>
+              <InputWithIcon
+                Icon={User}
+                name="role"
+                value={form.role}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
 
+          {/* Nhóm 2: Kết quả & Link dự án */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-            {/* Kết quả/Thành tựu */}
-            <InputWithIcon
-              Icon={Zap}
-              name="result"
-              placeholder="Kết quả/Thành tựu (Tùy chọn)"
-              value={form.result}
-              onChange={handleChange}
-            />
-            {/* URL Dự án (Giả định thêm) */}
-            <InputWithIcon
-              Icon={Link}
-              name="projectUrl"
-              placeholder="Link dự án/GitHub (Tùy chọn)"
-              value={form.projectUrl}
-              onChange={handleChange}
-            />
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Kết quả / Thành tựu
+              </label>
+              <InputWithIcon
+                Icon={Zap}
+                name="result"
+                value={form.result}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Link dự án / GitHub
+              </label>
+              <InputWithIcon
+                Icon={Link}
+                name="projectUrl"
+                value={form.projectUrl ?? ""}
+                onChange={handleChange}
+              />
+            </div>
           </div>
 
           {/* Mô tả */}
-          <div className="relative">
-            <MdOutlineDescription className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+          <div className="relative mb-3">
+            <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+              Mô tả dự án
+            </label>
+            <MdOutlineDescription className="absolute left-3 top-9 w-4 h-4 text-gray-400" />
             <textarea
               name="description"
               placeholder="Mô tả dự án, công nghệ sử dụng, quy mô, đóng góp cá nhân..."
               value={form.description}
               onChange={handleChange}
-              // Focus màu Teal
-              className="border border-gray-300 p-2.5 pl-9 text-sm rounded-lg w-full focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition duration-150"
+              className="border border-gray-300 p-2.5 pl-9 text-sm rounded-lg w-full focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
               rows={4}
             />
           </div>
 
-          {/* Nút Submit/Update (Màu Teal) */}
+          {/* Nút Submit/Update */}
           <button
             type="submit"
             disabled={isLoading}
-            className="mt-4 bg-teal-600 hover:bg-teal-700 transition text-white font-semibold text-sm px-6 py-2.5 rounded-lg shadow disabled:opacity-50 disabled:cursor-wait"
+            className="mt-4 bg-blue-500 hover:bg-blue-700 transition text-white font-semibold text-sm px-6 py-2.5 rounded-lg shadow disabled:opacity-50 disabled:cursor-wait"
           >
             {isLoading ? (
               <>
@@ -249,10 +294,10 @@ const ProjectManager = () => {
               <div
                 key={project.id}
                 className={`relative group border-l-4 p-4 pl-5 shadow-sm bg-gray-50/70 rounded-lg hover:shadow-md transition duration-300 ${
-                  // Viền Teal
+                  // Viền blue
                   project.id === editingId
                     ? "border-red-500 ring-2 ring-red-300 bg-red-50"
-                    : "border-teal-500"
+                    : "border-blue-500"
                 }`}
               >
                 {/* Action Buttons: Edit/Delete */}
@@ -265,7 +310,7 @@ const ProjectManager = () => {
                     <Edit3 size={16} />
                   </button>
                   <button
-                    onClick={() => handleDelete(project.id)}
+                    onClick={() => handleDelete(project.id as string)}
                     className="text-gray-500 hover:text-red-600 transition p-1 rounded hover:bg-white"
                     disabled={isLoading}
                   >
@@ -273,40 +318,46 @@ const ProjectManager = () => {
                   </button>
                 </div>
 
-                <h3 className="text-lg font-bold text-teal-700 leading-snug pr-20">
-                  {project.name}
-                </h3>
+                {/* Tiêu đề chính */}
+                <div className="flex justify-between items-start mb-3 border-b pb-2 border-orange-200">
+                  <h4 className="text-xl font-extrabold text-orange-700">
+                    <Layers size={20} className="inline mr-2 text-orange-600" />
+                    {project.name}
+                  </h4>
+                </div>
 
-                <p className="text-sm font-semibold text-gray-700 mt-1">
-                  Vai trò: **{project.role}**
-                </p>
-
-                {project.result && (
-                  <p className="text-sm text-gray-600">
-                    Thành tựu: *{project.result}*
+                {/* Thông tin Vai trò và Kết quả */}
+                <div className="text-sm text-gray-700 space-y-2">
+                  {/* Vai trò */}
+                  <p className="flex items-center font-semibold">
+                    <UserCheck size={14} className="mr-2 text-orange-500" />
+                    Vai trò:{" "}
+                    <span className="ml-1 font-medium">{project.role}</span>
                   </p>
-                )}
 
+                  {/* Kết quả */}
+                  <p className="flex items-center font-semibold">
+                    <TrendingUp size={14} className="mr-2 text-orange-500" />
+                    Kết quả đạt được:{" "}
+                    <span className="ml-1 font-medium text-teal-700">
+                      {project.result}
+                    </span>
+                  </p>
+                </div>
+
+                {/* Mô tả chi tiết */}
                 {project.description && (
-                  <p className="text-sm text-gray-600 mt-2 border-t border-gray-200 pt-2 whitespace-pre-line">
-                    {project.description}
-                  </p>
+                  <div className="pt-3 mt-3 border-t border-orange-100">
+                    <p className="font-semibold text-gray-700 mb-1 flex items-center">
+                      <Info size={14} className="mr-2 text-gray-500" />
+                      Mô tả dự án:
+                    </p>
+                    {/* Sử dụng whitespace-pre-line để giữ định dạng xuống dòng */}
+                    <p className="text-sm text-gray-700 whitespace-pre-line border-l-2 border-orange-300 pl-3 ml-1">
+                      {project.description}
+                    </p>
+                  </div>
                 )}
-
-                {project.projectUrl && (
-                  <a
-                    href={project.projectUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-teal-500 hover:text-teal-700 flex items-center mt-2 font-medium"
-                  >
-                    <Link className="inline w-3 h-3 mr-1" /> Xem dự án
-                  </a>
-                )}
-
-                <p className="text-xs text-gray-400 italic mt-1">
-                  Tạo lúc: {formatDate(project.createdAt)}
-                </p>
               </div>
             ))}
           </div>

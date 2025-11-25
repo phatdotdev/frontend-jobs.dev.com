@@ -10,8 +10,10 @@ import {
   Mail,
   Globe,
   ArrowBigLeft,
+  ShieldCheck,
 } from "lucide-react";
 import { getImageUrl } from "../../utils/helper";
+import { FaCertificate } from "react-icons/fa6";
 
 const defaultAvatar = "https://placehold.co/100x100/10b981/ffffff?text=Logo";
 const defaultBackground =
@@ -43,6 +45,12 @@ const ExpertPageHeader = () => {
       label: "Hồ sơ đã hoàn thành",
       Icon: CheckCircle,
       exact: false,
+    },
+    {
+      path: "/expert/expertises",
+      label: "Cập nhật chuyên môn",
+      Icon: ShieldCheck,
+      exact: true,
     },
   ];
 

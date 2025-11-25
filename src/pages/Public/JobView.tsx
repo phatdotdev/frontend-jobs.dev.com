@@ -13,6 +13,7 @@ import {
 import { useSearchJobPostingsQuery } from "../../redux/api/apiPostSlice";
 import DataLoader from "../../components/UI/DataLoader";
 import JobPostingItem from "../../components/Post/JobPostingCard";
+import JobPostingCard from "../../components/Post/JobPostingCard";
 
 // Đổi tên Loader để tránh xung đột và dùng cho animation
 const LoaderIcon = Loader;
@@ -236,7 +237,7 @@ const JobView: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
           {data?.data.content.map((job: JobPosting) => (
-            <JobPostingItem key={job.id} job={job} />
+            <JobPostingCard key={job.id} job={job} />
           ))}
         </div>
       )}

@@ -9,6 +9,7 @@ import type {
 import {
   CERT_URL,
   LOC_URL,
+  POST_URL,
   SCH_URL,
   TAG_URL,
   USER_URL,
@@ -80,6 +81,75 @@ export const apiAdminSlice = apiSlice.injectEndpoints({
       query: (userId) => ({
         url: `${USER_URL}/${userId}`,
         method: "DELETE",
+      }),
+    }),
+    /* GET ALL USERS*/
+    getAllJobSeekersByFilter: builder.query<
+      any,
+      {
+        page?: number;
+        size?: number;
+        username?: string;
+        email?: string;
+        phone?: string;
+      }
+    >({
+      query: (params) => ({
+        url: `${USER_URL}/job-seekers`,
+        params,
+      }),
+    }),
+    getAllRecruitersByFilter: builder.query<
+      any,
+      {
+        page?: number;
+        size?: number;
+        username?: string;
+        email?: string;
+        phone?: string;
+      }
+    >({
+      query: (params) => ({
+        url: `${USER_URL}/recruiters`,
+        params,
+      }),
+    }),
+    getAllExpertsByFilter: builder.query<
+      any,
+      {
+        page?: number;
+        size?: number;
+        username?: string;
+        email?: string;
+        phone?: string;
+      }
+    >({
+      query: (params) => ({
+        url: `${USER_URL}/experts`,
+        params,
+      }),
+    }),
+    verifyRecruiter: builder.mutation<any, any>({
+      query: (id) => ({
+        url: `${USER_URL}/recruiters/${id}/verified`,
+        method: "PUT",
+      }),
+    }),
+    /* POST MANAGEMENT */
+    getPostsByFilter: builder.query<
+      any,
+      {
+        state?: string;
+        type?: string;
+        companyName?: string;
+        title?: string;
+        page?: number;
+        size?: number;
+      }
+    >({
+      query: (params) => ({
+        url: `${POST_URL}`,
+        params,
       }),
     }),
     /* RESOURCE MANAGEMENT */
@@ -207,10 +277,18 @@ export const {
   useGetUsersByFilterQuery,
   useUpdateUserStatusMutation,
   useDeleteUserMutation,
+  // get users
+  useGetAllJobSeekersByFilterQuery,
+  useGetAllRecruitersByFilterQuery,
+  useGetAllExpertsByFilterQuery,
+  // verified
+  useVerifyRecruiterMutation,
   // create users
   useCreateJobSeekerMutation,
   useCreateRecruiterMutation,
   useCreateExpertMutation,
+  // posts
+  useGetPostsByFilterQuery,
   // tags
   useGetAllTagsQuery,
   useCreateTagMutation,

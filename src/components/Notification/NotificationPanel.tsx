@@ -7,7 +7,14 @@ import { useGetAllMyNotificationQuery } from "../../redux/api/apiCommunication";
 import { setNotifications } from "../../redux/features/notificationSlice";
 
 function NotificationPanel() {
-  const { data: notificationsResponse } = useGetAllMyNotificationQuery();
+  const { data: notificationsResponse, isError } = useGetAllMyNotificationQuery(
+    undefined,
+    { refetchOnMountOrArgChange: true }
+  );
+  let notificationsData = notificationsResponse?.data;
+  if (isError) {
+    notificationsData = [];
+  }
   const notifications = useSelector((state: RootState) => state.notifications);
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -18,6 +25,7 @@ function NotificationPanel() {
     if (notificationsResponse?.data) {
       dispatch(setNotifications(notificationsResponse?.data));
     }
+    dispatch(setNotifications(notificationsData));
   }, [notificationsResponse, dispatch]);
 
   return (
@@ -26,7 +34,9 @@ function NotificationPanel() {
         unreadCount={unreadCount}
         onClick={() => setShowDropdown(!showDropdown)}
       />
-      {showDropdown && <NotificationDropdown notifications={notifications} />}
+      {showDropdown && (
+        <NotificationDropdown notifications={notifications as any} />
+      )}
     </div>
   );
 }

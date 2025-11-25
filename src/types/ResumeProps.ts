@@ -51,6 +51,7 @@ export type ProjectProps = {
   role: string;
   result: string;
   description: string;
+  projectUrl: string;
   createdAt?: Date;
   updatedAt?: Date;
 };
@@ -93,6 +94,7 @@ export interface ResumeFormProps {
 }
 
 export interface ResumeProps {
+  avatarUrl: string;
   id?: string;
   firstname: string;
   lastname: string;

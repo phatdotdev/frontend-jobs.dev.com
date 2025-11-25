@@ -16,7 +16,6 @@ import { Provider } from "react-redux";
 import JobSeekerRoute from "./components/Authentication/JobSeekerRoute.tsx";
 import HomeView from "./pages/Public/HomeView.tsx";
 import PublicLayout from "./components/Layout/PublicLayout.tsx";
-import ChatView from "./pages/ChatView.tsx";
 import JobSeekerPageView from "./pages/JobSeeker/JobSeekerPageView.tsx";
 import RecruiterPageView from "./pages/Recruiter/RecruiterPageView.tsx";
 import RecruiterRoute from "./components/Authentication/RecruiterRoute.tsx";
@@ -37,7 +36,7 @@ import AppliedJobs from "./pages/JobSeeker/AppliedJobs.tsx";
 import ApplicantsByPostView from "./pages/Recruiter/ApplicantsView.tsx";
 import AccountInfo from "./components/Info/AccountInfo.tsx";
 import ActivitiesView from "./pages/JobSeeker/ActivitiesView.tsx";
-import HistoryView from "./pages/Recruiter/HistoryView.tsx";
+import HistoryView from "./pages/Recruiter/JobHistoryView.tsx";
 import ExpertRoute from "./components/Authentication/ExpertRoute.tsx";
 import FeedbackRequestView from "./pages/Expert/FeedbackRequestView.tsx";
 import DetailedReviewForm from "./pages/Expert/DetailReviewFormView.tsx";
@@ -51,6 +50,15 @@ import CreateAndPreviewJobPostingView from "./pages/Recruiter/CreateAndPreviewJo
 import AppliedJobDetail from "./pages/JobSeeker/AppliedJobDetail.tsx";
 import CompanyDetailPage from "./pages/Public/CompanyDetailView.tsx";
 import CandidateDetailPage from "./pages/Public/CandidateDetailView.tsx";
+import ExpertiseManagerView from "./pages/Expert/ExpertiseManagerView.tsx";
+import ApplicantDetailView from "./pages/Recruiter/ApplicantDetailView.tsx";
+import ChatView from "./pages/Protected/ChatView.tsx";
+import NotificationView from "./pages/Protected/NotificationView.tsx";
+import ManageJobSeekerPage from "./pages/Admin/ManageJobSeekerPage.tsx";
+import ManageRecruiterPage from "./pages/Admin/ManageRecruiterPage.tsx";
+import ManageExpertPage from "./pages/Admin/ManageExpertPage.tsx";
+import ManagePostPage from "./pages/Admin/ManagePostPage.tsx";
+import ReviewerDetailView from "./pages/Public/ReviewerDetailView.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -65,7 +73,9 @@ const router = createBrowserRouter(
         <Route path="companies" element={<CompanyView />} />
         <Route path="companies/:id" element={<CompanyDetailPage />} />
         <Route path="candidates/:id" element={<CandidateDetailPage />} />
+        <Route path="reviewers/:id" element={<ReviewerDetailView />} />
         <Route path="chat" element={<ChatView />} />
+        <Route path="notifications" element={<NotificationView />} />
       </Route>
 
       {/* protected routes */}
@@ -88,7 +98,11 @@ const router = createBrowserRouter(
         <Route path="post" element={<CreateAndPreviewJobPostingView />} />
         <Route path="jobs" element={<JobPostingListView />} />
         <Route path="jobs/:id" element={<EditAndPreviewJobPostingView />} />
-        <Route path="applicants/:id" element={<ApplicantsByPostView />} />
+        <Route path="jobs/:id/applicants" element={<ApplicantsByPostView />} />
+        <Route
+          path="jobs/:postId/applicants/:id"
+          element={<ApplicantDetailView />}
+        />
         <Route path="history" element={<HistoryView />} />
       </Route>
 
@@ -98,12 +112,19 @@ const router = createBrowserRouter(
         <Route path="requests/:id" element={<DetailedReviewForm />} />
         <Route path="reviews" element={<ReviewHistoryPage />} />
         <Route path="reviews/:id" element={<DetailHistoryReviewView />} />
+        <Route path="expertises" element={<ExpertiseManagerView />} />
       </Route>
 
       {/* admin routes */}
       <Route path="/admin" element={<AdminPage />}>
         <Route path="" element={<AdminDashboard />} />
         <Route path="users" element={<ManageUserPage />} />
+        <Route path="users/jobseeker" element={<ManageJobSeekerPage />} />
+        <Route path="users/recruiter" element={<ManageRecruiterPage />} />
+        <Route path="users/expert" element={<ManageExpertPage />} />
+
+        <Route path="posts" element={<ManagePostPage />} />
+
         <Route path="resource" element={<ManageResourcePage />}>
           <Route path="tags" element={<ManageTagPage />} />
           <Route path="schools" element={<ManageSchoolPage />} />

@@ -1,92 +1,111 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
+// src/components/JobSeeker/AppliedJobCard.tsx
+import { Link, useParams } from "react-router-dom";
 import { formatDateTime, getImageUrl } from "../../utils/helper";
-import { Clock, Eye, Inbox } from "lucide-react";
+import { Clock, Inbox, Eye } from "lucide-react";
 import ApplicationInfo from "./ApplicationInfo";
-import type { ApplicationDetail } from "../../types/ApplicationProps";
 import Timeline from "./TimeLine";
+import ApplicationStatusBadge from "./ApplicationStatusBadge";
+import type { ApplicationDetail } from "../../types/ApplicationProps";
 
 const AppliedJobCard: React.FC<{
   application: ApplicationDetail;
   refetch?: () => void;
 }> = ({ application, refetch }) => {
-  const navigate = useNavigate();
-  const { id } = useParams();
-
-  const handleNavigateToDetail = () => {
-    navigate(`/jobs/${application.post.id}`);
-  };
+  const { id } = useParams<{ id?: string }>();
+  const isDetailPage = !!id;
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-      <div className="p-6 flex flex-col lg:flex-row gap-8">
-        {/* Left Section */}
-        <div className="flex-1 space-y-6">
-          {/* Job Header */}
-          <div className="flex items-center gap-4 border-b border-gray-100 pb-5">
-            <img
-              src={getImageUrl(application.post.avatarUrl)}
-              alt={application.post.companyName}
-              className="w-14 h-14 rounded-lg object-cover border border-gray-200 shrink-0"
-            />
-            <div>
-              <h3
-                onClick={handleNavigateToDetail}
-                className="text-xl font-bold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors"
-              >
-                {application.post.title}
-              </h3>
-              <p className="text-sm font-medium text-gray-600 mt-0.5">
-                {application.post.companyName}
-              </p>
+    <div className="group bg-white rounded-3xl shadow-lg border border-gray-100 hover:shadow-2xl hover:border-gray-200 transition-all duration-500 overflow-hidden">
+      {/* Gradient hover effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-emerald-50/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+      <div className="relative p-7 lg:p-8">
+        <div className="grid lg:grid-cols-12 gap-8 items-start">
+          {/* CỘT TRÁI: Thông tin công việc + hành động */}
+          <div className="lg:col-span-8 space-y-6">
+            {/* Header công việc */}
+            <div className="flex items-center gap-5">
+              <img
+                src={getImageUrl(application.post.avatarUrl)}
+                alt={application.post.companyName}
+                className="w-16 h-16 rounded-xl object-cover border-2 border-white shadow-md flex-shrink-0"
+              />
+              <div className="flex-1 min-w-0">
+                <h3
+                  onClick={() =>
+                    window.open(`/jobs/${application.post.id}`, "_blank")
+                  }
+                  className="text-2xl font-extrabold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors line-clamp-2"
+                >
+                  {application.post.title}
+                </h3>
+                <p className="text-lg font-semibold text-gray-700 mt-1">
+                  {application.post.companyName}
+                </p>
+              </div>
+            </div>
+
+            {/* Thông tin nộp hồ sơ - gọn nhẹ khi ở danh sách */}
+            <div
+              className={`grid grid-cols-1 ${
+                isDetailPage ? "md:grid-cols-2" : "sm:grid-cols-2"
+              } gap-5 text-sm`}
+            >
+              <div className="flex items-center gap-3 text-gray-600">
+                <Clock className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                <div>
+                  <span className="font-medium">Nộp ngày:</span>
+                  <p className="font-bold text-gray-900">
+                    {formatDateTime(application.appliedAt)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 text-gray-600">
+                <Inbox className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                <div>
+                  <span className="font-medium">CV đã dùng:</span>
+                  <p className="font-bold text-emerald-700 truncate max-w-xs">
+                    {application.resume.title || "CV mặc định"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Hành động */}
+            <div className="pt-4 border-t border-gray-100">
+              {!isDetailPage ? (
+                <Link
+                  to={`/job-seeker/applied-jobs/${application.id}`}
+                  className="inline-flex items-center gap-3 px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl hover:shadow-xl transform hover:scale-105 transition-all duration-300 shadow-lg"
+                >
+                  <Eye className="w-5 h-5" />
+                  Xem chi tiết ứng tuyển
+                </Link>
+              ) : (
+                <div className="space-y-8">
+                  {/* Timeline chỉ hiện ở trang chi tiết */}
+                  <Timeline application={application} />
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Application Info */}
-          <div
-            className={`space-y-3 ${
-              id ? "text-lg font-bold" : "text-sm"
-            } text-gray-800`}
-          >
-            <div className="flex items-center gap-3">
-              <Clock className="w-4 h-4 text-blue-500 shrink-0" />
-              <span>
-                Thời gian nộp:{" "}
-                <span className="font-semibold text-blue-600">
-                  {formatDateTime(application.appliedAt)}
-                </span>
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Inbox className="w-4 h-4 text-blue-500 shrink-0" />
-              <span>
-                Hồ sơ đã dùng:{" "}
-                <span className="font-semibold text-blue-600">
-                  {application.resume.title ||
-                    `(ID: ${application.resume.id.substring(0, 8)}...)`}
-                </span>
-              </span>
-            </div>
-          </div>
-
-          {/* Action Button or Timeline */}
-          <div className="pt-2">
-            {!id ? (
-              <Link
-                to={`/job-seeker/applied-jobs/${application.id}`}
-                className="inline-flex items-center gap-2.5 bg-blue-600 text-white font-medium px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Eye className="w-4 h-4" />
-                Xem chi tiết
-              </Link>
+          {/* CỘT PHẢI: Trạng thái */}
+          <div className="lg:col-span-4 flex justify-center lg:justify-end">
+            {isDetailPage ? (
+              <div className="w-full max-w-sm">
+                <ApplicationInfo application={application} refetch={refetch} />
+              </div>
             ) : (
-              <Timeline application={application} />
+              <div className="flex flex-col items-center gap-4">
+                <ApplicationStatusBadge state={application.state} size="lg" />
+                <p className="text-sm text-gray-500 text-center">
+                  Cập nhật gần nhất
+                </p>
+              </div>
             )}
           </div>
-        </div>
-
-        {/* Right Section - Status */}
-        <div className="lg:w-120 shrink-0">
-          <ApplicationInfo refetch={refetch} application={application} />
         </div>
       </div>
     </div>

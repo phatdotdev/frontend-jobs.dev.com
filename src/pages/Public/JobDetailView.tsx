@@ -15,7 +15,10 @@ import {
   FileText,
   Download,
 } from "lucide-react";
-import { useGetJobPostingDetailQuery } from "../../redux/api/apiPostSlice";
+import {
+  useGetJobPostingDetailQuery,
+  useGetSimilarJobsQuery,
+} from "../../redux/api/apiPostSlice";
 import { useNavigate, useParams } from "react-router-dom";
 import DataLoader from "../../components/UI/DataLoader";
 import {
@@ -39,7 +42,6 @@ import { getFileIconFromName, renderTabContent } from "../../utils/helpRender";
 import { useDispatch } from "react-redux";
 import { addToast } from "../../redux/features/toastSlice";
 
-// Định nghĩa lại Icon Loader cho đồng bộ
 const Loader = Loader2;
 
 const formatSalary = (min: number, max: number) => {
@@ -69,6 +71,11 @@ const JobDetailView: React.FC = () => {
   const [activeTab, setActiveTab] = useState("description");
   const [showCvModal, setShowCvModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const { data: similarJobsData } = useGetSimilarJobsQuery(id as string, {
+    skip: !id,
+  });
+  const similarJobs = similarJobsData?.data;
 
   // Sử dụng useSearchApplyQuery để kiểm tra application
   const { data: { data: application } = {}, refetch: refetchApply } =
@@ -414,6 +421,51 @@ const JobDetailView: React.FC = () => {
       </div>
 
       {/* --- */}
+
+      {/* Similar Jobs Section */}
+      {similarJobs && similarJobs.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
+          <h2 className="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-3">
+            <Layers size={28} className="text-teal-600" />
+            Công việc tương tự
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {similarJobs.map((sJob: PostingProps) => (
+              <div
+                key={sJob.id}
+                className="bg-white rounded-xl shadow-lg border border-gray-200 p-5 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col cursor-pointer"
+                onClick={() => navigate(`/jobs/${sJob.id}`)}
+              >
+                <div className="flex items-start gap-4">
+                  <img
+                    src={getImageUrl(sJob.avatarUrl)}
+                    alt={sJob.companyName}
+                    className="w-14 h-14 rounded-lg object-cover border-2 border-gray-100"
+                  />
+                  <div className="flex-1">
+                    <h4 className="font-bold text-lg text-gray-800 hover:text-teal-600 transition-colors duration-200 leading-tight">
+                      {sJob.title}
+                    </h4>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {sJob.companyName}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4 pt-4 border-t border-gray-100 space-y-2 text-sm">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <MapPin size={16} className="text-gray-400" />
+                    <span>{sJob.location.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2 font-semibold text-red-600">
+                    <DollarSign size={16} className="text-red-500" />
+                    <span>{formatSalary(sJob.minSalary, sJob.maxSalary)}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* CvSelectionModal */}
       {application == null && showCvModal && (

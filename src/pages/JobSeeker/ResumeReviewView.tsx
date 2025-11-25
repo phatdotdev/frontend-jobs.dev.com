@@ -9,7 +9,6 @@ import type {
   FeedbackReviewProps,
 } from "../../types/FeedbackProps";
 import ReviewItem from "../../components/Item/ReviewItem";
-import { useState } from "react";
 
 const ResumeReviewView = () => {
   const { id } = useParams();
@@ -17,8 +16,6 @@ const ResumeReviewView = () => {
     useGetRequestByResumeQuery(id);
   const { data: { data: resume } = {}, isLoading: resumeLoading } =
     useGetResumeByIdQuery(id);
-
-  const [review, setReview] = useState<null | string>(null);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -121,10 +118,6 @@ const ResumeReviewView = () => {
 
             {/* DANH SÁCH REVIEWS LỒNG VÀO */}
             <div className="pt-4 border-t border-gray-200">
-              <h4 className="text-xl font-bold text-gray-800 mb-3 flex items-center gap-2">
-                ⭐ Danh sách đánh giá ({request.reviews?.length || 0}):
-              </h4>
-
               {request.reviews && request.reviews.length > 0 ? (
                 <div className="space-y-3">
                   {request.reviews.map((review: FeedbackReviewProps) => (

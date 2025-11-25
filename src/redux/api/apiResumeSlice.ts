@@ -235,6 +235,17 @@ export const apiResumeSlice = apiSlice.injectEndpoints({
         method: "DELETE",
       }),
     }),
+    // PUBLIC
+    getEducationsByJobSeekerId: builder.query<ResponseProps<any>, string>({
+      query: (id) => ({
+        url: `job-seeker/${id}/educations`,
+      }),
+    }),
+    getExperiencesByJobSeekerId: builder.query<ResponseProps<any>, string>({
+      query: (id) => ({
+        url: `job-seeker/${id}/experiences`,
+      }),
+    }),
   }),
 });
 
@@ -277,4 +288,7 @@ export const {
   useDeleteCertificationMutation,
   useDeleteProjectMutation,
   useDeleteResumeMutation,
+  // PUBLIC
+  useGetEducationsByJobSeekerIdQuery,
+  useGetExperiencesByJobSeekerIdQuery,
 } = apiResumeSlice;

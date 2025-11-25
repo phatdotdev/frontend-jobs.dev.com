@@ -1,5 +1,5 @@
 // SkillItem.tsx
-import React, { type FC } from "react";
+import { type FC } from "react";
 import {
   Zap,
   TrendingUp,
@@ -16,7 +16,6 @@ interface SkillItemProps {
   skill: SkillProps;
 }
 
-// Hàm tiện ích để xác định màu và biểu tượng dựa trên Level
 const getLevelDisplay = (level: SkillProps["level"]) => {
   switch (level) {
     case "EXPERT":

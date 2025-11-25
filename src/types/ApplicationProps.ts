@@ -4,6 +4,8 @@ export type ApplicationState =
   | "REQUESTED"
   | "ACCEPTED"
   | "REJECTED"
+  | "HIRED"
+  | "INTERVIEW"
   | "";
 
 export interface DocumentProps {
@@ -27,6 +29,7 @@ export interface ApplicationDetail {
   appliedAt: string;
   state: "SUBMITTED" | "REVIEWING" | "REQUESTED" | "ACCEPTED" | "REJECTED";
   resume: {
+    avatarUrl: string;
     id: string;
     title?: string;
     objectCareer: string;

@@ -12,17 +12,15 @@ import {
   PhoneCall,
   CheckCircle,
   AlertCircle,
-  Home,
   ArrowBigLeft,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useGetRecruiterProfileQuery } from "../../redux/api/apiUserSlice";
 import { getImageUrl } from "../../utils/helper";
-import { FaBackward } from "react-icons/fa6";
+import NotificationPanel from "../Notification/NotificationPanel";
 
-const defaultAvatar = "https://placehold.co/100x100/10b981/ffffff?text=Logo";
-const defaultBackground =
-  "https://placehold.co/1200x250/374151/ffffff?text=Company+Banner";
+const defaultAvatar = "https://placehold.co/100x100/10b981/ffffff";
+const defaultBackground = "https://placehold.co/1200x250/374151/ffffff";
 
 const RecruiterPageHeader = () => {
   const { data: response, isLoading, isError } = useGetRecruiterProfileQuery();
@@ -49,13 +47,10 @@ const RecruiterPageHeader = () => {
 
   const recruiterInfo = response.data;
 
-  // Custom hook/function to check active state, allowing partial matches for nested routes
   const isActive = (path: string) => {
-    // Check if current path starts with the navigation path
     return currentPath.startsWith(path);
   };
 
-  // Navigation Links definition
   const navLinks = [
     {
       path: "/recruiter",
@@ -84,7 +79,7 @@ const RecruiterPageHeader = () => {
   ];
 
   return (
-    <header className="bg-white shadow-xl rounded-b-xl overflow-hidden">
+    <header className="bg-white shadow-xl rounded-b-xl overflow">
       {/* 1. Cover Image and Avatar Section */}
       <div className="relative">
         <Link
@@ -146,11 +141,11 @@ const RecruiterPageHeader = () => {
               </span>
             )}
           </h1>
-          <p className="text-md text-gray-600 mt-1 truncate">
+          <p className="text-md my-2 line-clamp-3 px-4">
             {recruiterInfo.description || "Chưa có mô tả công ty chi tiết."}
           </p>
 
-          <div className="hidden font-bold gap-4 md:flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-500 mt-3">
+          <div className="hidden font-bold gap-4 md:flex flex-wrap items-center gap-x-6 gap-y-2 text text-gray-700 mt-3">
             <span className="flex items-center gap-1.5">
               <MapPin size={16} className="text-teal-600" />
               {recruiterInfo.address || "Chưa cập nhật địa chỉ"}
@@ -170,10 +165,16 @@ const RecruiterPageHeader = () => {
           </div>
         </div>
 
-        <button className="flex items-center gap-1.5 bg-gray-100 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-200 transition duration-150 text-sm flex-shrink-0">
-          <Building2 size={18} />
-          Chỉnh sửa hồ sơ
-        </button>
+        <div className="flex items-center gap-3">
+          <Link to="/account">
+            <button className="flex items-center gap-1.5 bg-gray-100 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-200 transition duration-150 text-sm flex-shrink-0">
+              <Building2 size={18} />
+              Chỉnh sửa hồ sơ
+            </button>
+          </Link>
+
+          <NotificationPanel />
+        </div>
       </div>
       {/* NAV LINKS */}
       <nav className="border-t border-gray-100 bg-gray-50/70 backdrop-blur-sm sticky top-0 z-20">

@@ -1,6 +1,7 @@
 import { Briefcase, Building2, Clock, DollarSign, MapPin } from "lucide-react";
 import { getImageUrl, mapJobTypeVietnamese, timeAgo } from "../../utils/helper";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useViewJobPostingMutation } from "../../redux/api/apiPostSlice";
 
 type JobPosting = {
   id: string;
@@ -14,10 +15,19 @@ type JobPosting = {
   avatarUrl: string;
 };
 
-const JobPostingItem = ({ job }: { job: JobPosting }) => {
+const JobPostingCard = ({ job }: { job: JobPosting }) => {
   const formatSalary = (min: number, max: number) => {
     const formatNumber = (num: number) => num.toLocaleString("en-US");
     return `${formatNumber(min)} - ${formatNumber(max)} USD`;
+  };
+  const navigate = useNavigate();
+  const [viewJobPost] = useViewJobPostingMutation();
+
+  const handleViewJob = async () => {
+    try {
+      await viewJobPost(job.id).unwrap();
+    } catch (error) {}
+    navigate(`/jobs/${job.id}`);
   };
 
   const typeStyle =
@@ -71,13 +81,14 @@ const JobPostingItem = ({ job }: { job: JobPosting }) => {
         </div>
       </div>
 
-      <Link to={`/jobs/${job.id}`}>
-        <button className="block w-full bg-teal-500 text-white py-2 mt-2 rounded-lg font-bold hover:bg-teal-600 transition duration-200">
-          Xem chi tiết
-        </button>
-      </Link>
+      <button
+        onClick={handleViewJob}
+        className="block w-full bg-teal-500 text-white py-2 mt-2 rounded-lg font-bold hover:bg-teal-600 transition duration-200"
+      >
+        Xem chi tiết
+      </button>
     </div>
   );
 };
 
-export default JobPostingItem;
+export default JobPostingCard;

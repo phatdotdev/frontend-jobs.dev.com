@@ -1,5 +1,5 @@
 import type { ResponseProps } from "../../types/ResponseProps";
-import { MESSAGE_URL } from "../features/constant";
+import { MSG_URL } from "../features/constant";
 import { apiSlice } from "./apiSlice";
 
 export const messageApiSlice = apiSlice.injectEndpoints({
@@ -7,12 +7,12 @@ export const messageApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAllMessages: builder.query<ResponseProps<any>, void>({
       query: () => ({
-        url: `${MESSAGE_URL}/mine`,
+        url: `${MSG_URL}/mine`,
       }),
     }),
     getMessagesWithOtherUser: builder.query({
       query: (otherUserId: string) => ({
-        url: `${MESSAGE_URL}/with/${otherUserId}`,
+        url: `${MSG_URL}/with/${otherUserId}`,
       }),
     }),
   }),

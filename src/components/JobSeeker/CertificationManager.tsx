@@ -12,16 +12,22 @@ import { IoMdCloseCircle } from "react-icons/io";
 import { FaCertificate, FaCalendarAlt } from "react-icons/fa";
 import {
   Award,
-  Building, // Sử dụng Building cho Issuer/Tổ chức cấp
+  Building,
   Edit3,
   Trash2,
   Loader2,
   Calendar,
   Link, // Icon cho URL
-  CreditCard, // Icon cho ID
+  CreditCard,
+  Info,
+  ClipboardCheck,
+  Clock,
+  ShieldCheck, // Icon cho ID
 } from "lucide-react";
 // Giả định InputWithIcon là component chung bạn đang sử dụng
 import InputWithIcon from "../UI/InputWithIcon";
+import { useDispatch } from "react-redux";
+import { addToast } from "../../redux/features/toastSlice";
 
 const CertificationManager = () => {
   const {
@@ -75,10 +81,10 @@ const CertificationManager = () => {
     setShowForm(false);
   };
 
+  const dispatch = useDispatch();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Payload sử dụng tên trường 'issuer'
     const payload = {
       name: form.name,
       issuer: form.issuer,
@@ -96,12 +102,21 @@ const CertificationManager = () => {
         await createCertification(payload).unwrap();
       }
 
+      dispatch(
+        addToast({
+          type: "success",
+          message: "Cập nhật chứng chỉ thành công!",
+        })
+      );
+
       resetForm();
       refetch();
     } catch (err) {
-      console.error(
-        `Lỗi khi ${isEditing ? "cập nhật" : "tạo"} chứng chỉ:`,
-        err
+      dispatch(
+        addToast({
+          type: "error",
+          message: "Lỗi khi cập nhật chứng chỉ!",
+        })
       );
     }
   };
@@ -118,25 +133,22 @@ const CertificationManager = () => {
         await deleteCertification(id).unwrap();
         refetch();
       } catch (err) {
-        console.error("Lỗi khi xóa chứng chỉ:", err);
+        dispatch(
+          addToast({
+            type: "error",
+            message: "Không thể xóa chứng chỉ!",
+          })
+        );
       }
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return "N/A";
-    return new Date(dateStr).toLocaleDateString("vi-VN", {
-      year: "numeric",
-      month: "short",
-    });
-  };
-
   return (
     <div className="p-0 bg-white rounded-xl shadow-lg mt-6">
-      {/* 1. Header & Nút Thêm/Đóng (Màu Teal) */}
+      {/* 1. Header & Nút Thêm/Đóng (Màu blue) */}
       <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100">
         <h1 className="flex items-center text-xl font-bold text-gray-800">
-          <FaCertificate className="mr-3 text-2xl text-teal-600" /> Quản lý
+          <FaCertificate className="mr-3 text-2xl text-blue-600" /> Quản lý
           Chứng chỉ
         </h1>
         <button
@@ -144,7 +156,7 @@ const CertificationManager = () => {
           className={`flex items-center text-sm font-semibold transition py-1.5 px-3 rounded-md border ${
             showForm
               ? "bg-white text-gray-600 hover:bg-red-50 hover:text-red-600 border-gray-300"
-              : "bg-teal-600 text-white hover:bg-teal-700 border-teal-600 shadow-md"
+              : "bg-blue-500 text-white hover:bg-blue-700 border-blue-600 shadow-md"
           }`}
           disabled={isDeleting}
         >
@@ -157,90 +169,116 @@ const CertificationManager = () => {
         </button>
       </div>
 
-      {/* 2. Form Thêm/Chỉnh sửa (Màu nền Teal) */}
+      {/* 2. Form Thêm/Chỉnh sửa (Màu nền blue) */}
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="bg-teal-50/50 p-6 shadow-inner transition-all duration-300 ease-in-out"
+          className="bg-blue-50/50 p-6 shadow-inner transition-all duration-300 ease-in-out"
         >
           {/* Nhóm 1: Tên & Tổ chức (issuer) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-            <InputWithIcon
-              Icon={Award}
-              name="name"
-              placeholder="Tên chứng chỉ (*)"
-              value={form.name}
-              onChange={handleChange}
-              required
-            />
-
-            <InputWithIcon
-              Icon={Building}
-              name="issuer"
-              placeholder="Tổ chức cấp (*)"
-              value={form.issuer}
-              onChange={handleChange}
-              required
-            />
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Tên chứng chỉ <span className="text-red-500">*</span>
+              </label>
+              <InputWithIcon
+                Icon={Award}
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Tổ chức cấp <span className="text-red-500">*</span>
+              </label>
+              <InputWithIcon
+                Icon={Building}
+                name="issuer"
+                value={form.issuer}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
 
           {/* Nhóm 2: Ngày cấp & Ngày hết hạn */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-            <InputWithIcon
-              Icon={Calendar}
-              name="issueDate"
-              type="date"
-              placeholder="Ngày cấp (*)"
-              value={form.issueDate}
-              onChange={handleChange}
-              required
-            />
-            <InputWithIcon
-              Icon={Calendar}
-              name="expirationDate"
-              type="date"
-              placeholder="Ngày hết hạn (tùy chọn)"
-              value={form.expirationDate}
-              onChange={handleChange}
-            />
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Ngày cấp <span className="text-red-500">*</span>
+              </label>
+              <InputWithIcon
+                Icon={Calendar}
+                name="issueDate"
+                type="date"
+                value={form.issueDate}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Ngày hết hạn (tùy chọn)
+              </label>
+              <InputWithIcon
+                Icon={Calendar}
+                name="expirationDate"
+                type="date"
+                value={form.expirationDate}
+                onChange={handleChange}
+              />
+            </div>
           </div>
 
           {/* Nhóm 3: Credential ID & URL */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-            <InputWithIcon
-              Icon={CreditCard}
-              name="credentialId"
-              placeholder="ID chứng chỉ (tùy chọn)"
-              value={form.credentialId}
-              onChange={handleChange}
-            />
-            <InputWithIcon
-              Icon={Link}
-              name="credentialUrl"
-              placeholder="URL chứng chỉ (tùy chọn)"
-              value={form.credentialUrl}
-              onChange={handleChange}
-            />
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Credential ID (tùy chọn)
+              </label>
+              <InputWithIcon
+                Icon={CreditCard}
+                name="credentialId"
+                value={form.credentialId}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Credential URL (tùy chọn)
+              </label>
+              <InputWithIcon
+                Icon={Link}
+                name="credentialUrl"
+                value={form.credentialUrl}
+                onChange={handleChange}
+              />
+            </div>
           </div>
 
           {/* Mô tả */}
-          <div className="relative">
-            <MdOutlineDescription className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+          <div className="relative mb-3">
+            <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+              Mô tả chứng chỉ
+            </label>
+            <MdOutlineDescription className="absolute left-3 top-9 w-4 h-4 text-gray-400" />
             <textarea
               name="description"
               placeholder="Mô tả nội dung chứng chỉ, phạm vi, kỹ năng đạt được..."
               value={form.description}
               onChange={handleChange}
-              className="border border-gray-300 p-2.5 pl-9 text-sm rounded-lg w-full focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition duration-150"
+              className="border border-gray-300 p-2.5 pl-9 text-sm rounded-lg w-full focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
               rows={3}
             />
           </div>
 
-          {/* Nút Submit/Update (Màu Teal) */}
+          {/* Nút Submit/Update */}
           <button
             type="submit"
             disabled={isLoading}
-            className="mt-4 bg-teal-600 hover:bg-teal-700 transition text-white font-semibold text-sm px-6 py-2.5 rounded-lg shadow disabled:opacity-50 disabled:cursor-wait"
+            className="mt-4 bg-blue-500 hover:bg-blue-700 transition text-white font-semibold text-sm px-6 py-2.5 rounded-lg shadow disabled:opacity-50 disabled:cursor-wait"
           >
             {isLoading ? (
               <>
@@ -289,7 +327,7 @@ const CertificationManager = () => {
                 className={`relative group border-l-4 p-4 pl-5 shadow-sm bg-gray-50/70 rounded-lg hover:shadow-md transition duration-300 ${
                   cert.id === editingId
                     ? "border-red-500 ring-2 ring-red-300 bg-red-50"
-                    : "border-teal-500"
+                    : "border-blue-500"
                 }`}
               >
                 {/* Action Buttons: Edit/Delete */}
@@ -310,46 +348,90 @@ const CertificationManager = () => {
                   </button>
                 </div>
 
-                <h3 className="text-lg font-bold text-teal-700 leading-snug pr-20">
-                  {cert.name}
-                </h3>
-                <p className="text-sm font-semibold text-gray-700">
-                  {/* HIỂN THỊ: Sử dụng 'issuer' */}
-                  {cert.issuer}
-                </p>
+                {/* Tên chứng chỉ và Đơn vị cấp */}
+                <div className="flex justify-between items-start mb-3 border-b pb-2 border-yellow-200">
+                  <div>
+                    <h4 className="text-xl font-extrabold text-yellow-800">
+                      <Award
+                        size={20}
+                        className="inline mr-2 text-yellow-600"
+                      />
+                      {cert.name}
+                    </h4>
+                    <p className="text-base font-semibold text-gray-700 mt-0.5 flex items-center">
+                      <ShieldCheck size={16} className="mr-2 text-yellow-600" />
+                      {cert.issuer}
+                    </p>
+                  </div>
+                </div>
 
-                <div className="mt-2 text-xs font-medium text-gray-500 flex flex-wrap items-center gap-4">
-                  <span className="flex items-center gap-1">
-                    <FaCalendarAlt className="text-teal-500" />
-                    Cấp ngày: **{formatDate(cert.issueDate)}**
-                  </span>
-                  {cert.expirationDate && (
-                    <span className="flex items-center gap-1">
-                      — Hết hạn: **{formatDate(cert.expirationDate)}**
-                    </span>
-                  )}
+                {/* Thông tin Ngày cấp, Hết hạn và ID */}
+                <div className="text-sm text-gray-700 space-y-2">
+                  <div className="flex flex-wrap items-center gap-4">
+                    {/* Ngày cấp */}
+                    <p className="flex items-center font-medium">
+                      <Calendar size={14} className="mr-2 text-yellow-600" />
+                      Cấp ngày:{" "}
+                      <span className="ml-1 font-semibold">
+                        {cert.issueDate}
+                      </span>
+                    </p>
+
+                    {/* Ngày hết hạn */}
+                    {cert.expirationDate && (
+                      <p className="flex items-center font-medium text-red-600">
+                        <Clock size={14} className="mr-2 text-red-500" />
+                        Hết hạn:{" "}
+                        <span className="ml-1 font-semibold">
+                          {cert.expirationDate}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Credential ID */}
                   {cert.credentialId && (
-                    <span className="flex items-center gap-1">
-                      — ID: **{cert.credentialId}**
-                    </span>
+                    <p className="flex items-center text-xs font-medium bg-yellow-100 p-1 rounded">
+                      <ClipboardCheck
+                        size={14}
+                        className="mr-2 text-yellow-700"
+                      />
+                      Credential ID:{" "}
+                      <span className="ml-1 font-semibold text-gray-800">
+                        {cert.credentialId}
+                      </span>
+                    </p>
+                  )}
+
+                  {/* Credential URL */}
+                  {cert.credentialUrl && (
+                    <p className="flex items-center">
+                      <Link size={14} className="mr-2 text-blue-500" />
+                      <a
+                        href={cert.credentialUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline font-medium text-sm"
+                        title="Xem chứng chỉ trực tuyến"
+                      >
+                        Xem Chứng chỉ (Link)
+                      </a>
+                    </p>
                   )}
                 </div>
 
-                {cert.credentialUrl && (
-                  <a
-                    href={cert.credentialUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-teal-500 hover:text-teal-700 flex items-center mt-1 font-medium"
-                  >
-                    <Link className="inline w-3 h-3 mr-1" /> Xem Chứng chỉ
-                  </a>
-                )}
-
+                {/* Mô tả chi tiết */}
                 {cert.description && (
-                  <p className="text-sm text-gray-600 mt-2 border-t border-gray-200 pt-2 whitespace-pre-line">
-                    {cert.description}
-                  </p>
+                  <div className="pt-3 mt-3 border-t border-yellow-100">
+                    <p className="font-semibold text-gray-700 mb-1 flex items-center">
+                      <Info size={14} className="mr-2 text-gray-500" />
+                      Mô tả:
+                    </p>
+                    {/* Sử dụng whitespace-pre-line để giữ định dạng xuống dòng */}
+                    <p className="text-sm text-gray-700 whitespace-pre-line border-l-2 border-yellow-300 pl-3 ml-1">
+                      {cert.description}
+                    </p>
+                  </div>
                 )}
               </div>
             ))}

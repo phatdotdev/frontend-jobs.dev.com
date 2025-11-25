@@ -1,7 +1,8 @@
 // ActivityItem.tsx
-import React, { type FC } from "react";
+import { type FC } from "react";
 import { Users, Calendar, UserCheck, Info, MapPin } from "lucide-react";
 import type { ActivityProps } from "../../types/ResumeProps";
+import { formatDate } from "../../utils/helper";
 
 interface ActivityItemProps {
   activity: ActivityProps;
@@ -38,9 +39,12 @@ const ActivityItem: FC<ActivityItemProps> = ({ activity }) => (
         <Calendar size={14} className="mr-2 text-cyan-500" />
         Thời gian:{" "}
         <span className="ml-1 font-semibold">
-          {activity.startDate}
-        </span> đến{" "}
-        <span className="ml-1 font-semibold">{activity.endDate}</span>
+          {formatDate(activity.startDate)}
+        </span>{" "}
+        đến{" "}
+        <span className="ml-1 font-semibold">
+          {formatDate(activity.endDate)}
+        </span>
       </p>
     </div>
 

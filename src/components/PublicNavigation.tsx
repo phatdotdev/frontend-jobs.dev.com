@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
   ChevronDown,
@@ -19,20 +19,42 @@ import {
 import { useGetUserInfoQuery } from "../redux/api/apiUserSlice";
 import { useLogoutMutation } from "../redux/api/authenticationApiSlice";
 import NotificationPanel from "./Notification/NotificationPanel";
+import { useDispatch } from "react-redux";
+import { addToast } from "../redux/features/toastSlice";
+import { clearNotifications } from "../redux/features/notificationSlice";
 
 const PublicNavigation = () => {
   const [logout] = useLogoutMutation();
-  const { data: { data: userInfo } = {} } = useGetUserInfoQuery();
+  const { data, isError } = useGetUserInfoQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
+  const navigation = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
+  let userInfo = data?.data;
+  if (isError) {
+    userInfo = undefined;
+  }
   const location = useLocation();
   const currentPath = location.pathname;
 
+  const dispatch = useDispatch();
+
   const handleLogout = async () => {
+    dispatch({ type: "LOGOUT" });
+    dispatch(clearNotifications());
+
     await logout();
     setShowUserMenu(false);
-    window.location.href = "/";
+    dispatch(
+      addToast({
+        type: "success",
+        title: "Đăng xuất thành công",
+        message: "Bạn đã thoát khỏi hệ thống!",
+      })
+    );
+    navigation("/login");
+    // window.location.reload();
   };
 
   const navItems = [
@@ -241,7 +263,7 @@ const PublicNavigation = () => {
                   >
                     {/* Role Chip */}
                     <div className="hidden sm:block">
-                      {renderUserRole(String(userInfo.role))}
+                      {renderUserRole(String(userInfo?.role))}
                     </div>
 
                     {/* Avatar */}

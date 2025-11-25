@@ -29,6 +29,9 @@ const messagesSlice = createSlice({
       );
     },
   },
+  extraReducers: (builder) => {
+    builder.addCase("LOGOUT", () => []);
+  },
 });
 
 export const { setMessages, addMessage, markAsRead } = messagesSlice.actions;

@@ -1,5 +1,5 @@
 import type { ResponseProps } from "../../types/ResponseProps";
-import { POST_URL } from "../features/constant";
+import { POST_URL, REC_URL } from "../features/constant";
 import { apiSlice } from "./apiSlice";
 
 type JobSearchProps = {
@@ -27,6 +27,11 @@ export const postApiSlice = apiSlice.injectEndpoints({
     getJobPostingDetail: builder.query<ResponseProps<any>, string>({
       query: (id) => ({ url: `${POST_URL}/${id}` }),
     }),
+    getSimilarJobs: builder.query<ResponseProps<any>, string>({
+      query: (id) => ({
+        url: `${POST_URL}/${id}/similar`,
+      }),
+    }),
     // ADMIN
     getAllJobPostings: builder.query<ResponseProps<any>, JobSearchProps>({
       query: (params) => ({
@@ -44,6 +49,42 @@ export const postApiSlice = apiSlice.injectEndpoints({
         params,
       }),
     }),
+    getMyDraftJobPosting: builder.query<
+      ResponseProps<any>,
+      { page: number; size: number }
+    >({
+      query: (params) => ({
+        url: `${POST_URL}/mine/draft`,
+        params,
+      }),
+    }),
+    getMyPublishedJobPosting: builder.query<
+      ResponseProps<any>,
+      { page: number; size: number }
+    >({
+      query: (params) => ({
+        url: `${POST_URL}/mine/published`,
+        params,
+      }),
+    }),
+    getMyClosedJobPosting: builder.query<
+      ResponseProps<any>,
+      { page: number; size: number }
+    >({
+      query: (params) => ({
+        url: `${POST_URL}/mine/closed`,
+        params,
+      }),
+    }),
+    getMyCompletedJobPosting: builder.query<
+      ResponseProps<any>,
+      { page: number; size: number }
+    >({
+      query: (params) => ({
+        url: `${POST_URL}/mine/completed`,
+        params,
+      }),
+    }),
     createJobPosting: builder.mutation<ResponseProps<any>, any>({
       query: (data) => ({
         url: `${POST_URL}`,
@@ -56,6 +97,13 @@ export const postApiSlice = apiSlice.injectEndpoints({
         url: `${POST_URL}/${id}`,
         method: "PUT",
         body: data,
+      }),
+    }),
+    updateJobPostingState: builder.mutation<ResponseProps<any>, any>({
+      query: ({ state, id }) => ({
+        url: `${POST_URL}/${id}/state`,
+        method: "PUT",
+        params: { state },
       }),
     }),
     // INTERACTION
@@ -81,20 +129,35 @@ export const postApiSlice = apiSlice.injectEndpoints({
         url: `${POST_URL}/recruiter/${id}/recent`,
       }),
     }),
+    // RECOMMEND
+    getRecommendedJobPostings: builder.query<ResponseProps<any>, void>({
+      query: () => ({
+        url: `${REC_URL}/postings`,
+      }),
+    }),
   }),
 });
 
 export const {
+  // RECRUITER
   useGetMineJobPostingsQuery,
   useCreateJobPostingMutation,
+  useGetMyDraftJobPostingQuery,
+  useGetMyPublishedJobPostingQuery,
+  useGetMyClosedJobPostingQuery,
+  useGetMyCompletedJobPostingQuery,
+  useUpdateJobPostingMutation,
+  useUpdateJobPostingStateMutation,
   // PUBLIC
   useSearchJobPostingsQuery,
   useGetJobPostingDetailQuery,
-  useUpdateJobPostingMutation,
+  useGetSimilarJobsQuery,
   // INTERACTION
   useLikeJobPostingMutation,
   useViewJobPostingMutation,
   useIsLikedQuery,
   // RECENT
   useGetRecentPostByRecruiterQuery,
+  // RECOMMEND
+  useGetRecommendedJobPostingsQuery,
 } = postApiSlice;

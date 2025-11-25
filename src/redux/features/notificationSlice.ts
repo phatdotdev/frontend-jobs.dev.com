@@ -30,7 +30,10 @@ export const notificationsSlice = createSlice({
         n.id === action.payload ? { ...n, isRead: true } : n
       );
     },
-    clearNotifications: () => [],
+    clearNotifications: () => initialState,
+  },
+  extraReducers: (builder) => {
+    builder.addCase("LOGOUT", () => []);
   },
 });
 

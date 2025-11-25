@@ -12,6 +12,8 @@ export interface FeedbackRequestProps {
 }
 
 export interface FeedbackReviewProps {
+  expertId: any;
+  reviewerName: string;
   id: string;
   score: number;
   overallComment: string;

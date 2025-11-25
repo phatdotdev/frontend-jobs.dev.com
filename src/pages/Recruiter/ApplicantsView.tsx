@@ -14,6 +14,7 @@ import {
   Filter,
   Upload,
   Edit2,
+  Laptop,
 } from "lucide-react";
 
 import DataLoader from "../../components/UI/DataLoader";
@@ -27,11 +28,13 @@ import type {
   ApplicationState,
 } from "../../types/ApplicationProps";
 import ApplicantCard from "../../components/Application/ApplicationCard";
-import { FaArrowRight } from "react-icons/fa6";
+
 import {
   getApplicationStateNote,
   mapApplicationStateToVi,
 } from "../../utils/helper";
+import { FaFileExcel } from "react-icons/fa6";
+import { exportApplicationsToExcel } from "../../utils/exportToExcel";
 
 interface PageData<T> {
   content: T[];
@@ -107,6 +110,7 @@ const ApplicantsByPostView: React.FC = () => {
 
   const applicationsData: PageData<ApplicationDetail> | undefined =
     response?.data;
+
   const postTitle = postDetail?.data?.title || "Đang tải tên công việc...";
 
   const handleFilterChange = (state: ApplicationState) => {
@@ -155,32 +159,39 @@ const ApplicantsByPostView: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-teal-50 py-6 px-4 md:px-10">
       {/* Header */}
-      <div className="max-w-7xl mx-auto text-left mb-12">
-        <h1 className="mt-4 flex items-center gap-4 font-extrabold justify-center my-4 text-4xl font-bold text-center text-gray-800">
-          <Briefcase className="w-16 h-16" />
-          Quản lý Ứng viên
-        </h1>
-        <h2 className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-purple-600 to-teal-600 bg-clip-text text-transparent flex items-center justify-center gap-4">
-          {postTitle}
-        </h2>
-        <p className="mt-3 text-xl font-bold text-gray-600">
-          Tổng:
-          <span className="font-bold text-purple-600">
-            {applicationsData?.totalElements ?? "..."}
-          </span>
-          ứng viên
-        </p>
+      <div className="flex justify-between items-center max-w-7xl mx-auto mb-10">
+        <div className="mb-4 sm:mb-0">
+          <h1 className="text-4xl font-extrabold text-gray-900 leading-tight flex items-center gap-3">
+            <Briefcase className="h-8 w-8 text-teal-600" />
+            Quản lý danh sách tuyển dụng
+          </h1>
+          <p className="ml-10 flex items-center gap-4 mt-4 font-extrabold text-3xl text-purple-600">
+            {postTitle}
+          </p>
+        </div>
+        <button
+          onClick={() =>
+            exportApplicationsToExcel(applicationsData?.content as any)
+          }
+          className="flex items-center gap-3 px-4 py-2 rounded-2xl 
+             bg-emerald-500 text-white font-semibold text-base 
+             shadow-md hover:bg-emerald-600 hover:shadow-lg 
+             transition-all duration-200 border-4 border-green-300"
+        >
+          <FaFileExcel className="text-white text-xl" />
+          Xuất file kết quả
+        </button>
       </div>
 
       {/* Filter Bar */}
       <div className="max-w-7xl mx-auto mb-10">
         <div className="backdrop-blur-xl bg-white/80 rounded-3xl shadow-2xl border border-white/50 p-6">
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-col flex-wrap items-start gap-4">
             <div className="flex items-center gap-3 text-xl font-bold text-gray-700">
               <Filter className="w-8 h-8 text-purple-600" />
               Lọc theo trạng thái:
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-4">
               {STATE_OPTIONS.map((option) => (
                 <button
                   key={option.value}
@@ -200,18 +211,18 @@ const ApplicantsByPostView: React.FC = () => {
                     ` (${applicationsData?.totalElements ?? "..."})`}
                 </button>
               ))}
+              <button
+                onClick={() => refetch()}
+                disabled={isFetching}
+                className="ml-auto p-4 rounded-full bg-purple-600 text-white hover:bg-purple-700 shadow-xl hover:shadow-2xl transform hover:scale-110 transition-all duration-300"
+              >
+                {isFetching ? (
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-6 h-6" />
+                )}
+              </button>
             </div>
-            <button
-              onClick={() => refetch()}
-              disabled={isFetching}
-              className="ml-auto p-4 rounded-full bg-purple-600 text-white hover:bg-purple-700 shadow-xl hover:shadow-2xl transform hover:scale-110 transition-all duration-300"
-            >
-              {isFetching ? (
-                <Loader2 className="w-6 h-6 animate-spin" />
-              ) : (
-                <RefreshCw className="w-6 h-6" />
-              )}
-            </button>
           </div>
         </div>
       </div>

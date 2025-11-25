@@ -10,7 +10,21 @@ export const apiStatisticsSlice = apiSlice.injectEndpoints({
         url: `${STATIS_URL}`,
       }),
     }),
+    getRecruiterStatistic: builder.query<ResponseProps<any>, void>({
+      query: () => ({
+        url: `${STATIS_URL}/recruiter`,
+      }),
+    }),
+    getJobSeekerActivities: builder.query<ResponseProps<any>, void>({
+      query: () => ({
+        url: `${STATIS_URL}/job-seeker`,
+      }),
+    }),
   }),
 });
 
-export const { useGetGeneralStatisticsQuery } = apiStatisticsSlice;
+export const {
+  useGetGeneralStatisticsQuery,
+  useGetRecruiterStatisticQuery,
+  useGetJobSeekerActivitiesQuery,
+} = apiStatisticsSlice;

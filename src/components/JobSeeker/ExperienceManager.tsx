@@ -22,8 +22,11 @@ import {
   Edit3,
   Trash2,
   Loader2,
+  Info,
 } from "lucide-react";
 import InputWithIcon from "../UI/InputWithIcon";
+import { useDispatch } from "react-redux";
+import { addToast } from "../../redux/features/toastSlice";
 
 const ExperienceManager = () => {
   const {
@@ -71,6 +74,8 @@ const ExperienceManager = () => {
     setShowForm(false);
   };
 
+  const dispatch = useDispatch();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -82,20 +87,25 @@ const ExperienceManager = () => {
         description: form.description,
       };
       if (isEditing) {
-        // Logic cập nhật (nếu có API update)
         await updateExperience({ id: editingId, ...payload }).unwrap();
       } else {
-        // Tạo payload không có id, createdAt, updatedAt
-
         await createExperience(payload).unwrap();
       }
+      dispatch(
+        addToast({
+          type: "success",
+          message: "Cập nhật kinh nghiệm thành công.",
+        })
+      );
 
       resetForm();
       refetch();
     } catch (err) {
-      console.error(
-        `Lỗi khi ${isEditing ? "cập nhật" : "tạo"} kinh nghiệm:`,
-        err
+      dispatch(
+        addToast({
+          type: "error",
+          message: "Thông tin cung cấp không hợp lệ.",
+        })
       );
     }
   };
@@ -131,14 +141,14 @@ const ExperienceManager = () => {
       {/* 1. Header & Nút Thêm/Đóng */}
       <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100">
         <h1 className="flex items-center text-xl font-bold text-gray-800">
-          <MdWork className="mr-3 text-2xl text-teal-600" /> Quản lý Kinh nghiệm
+          <MdWork className="mr-3 text-2xl text-blue-600" /> Quản lý Kinh nghiệm
         </h1>
         <button
           onClick={() => (showForm ? resetForm() : setShowForm(true))}
           className={`flex items-center text-sm font-semibold transition py-1.5 px-3 rounded-md border ${
             showForm
               ? "bg-white text-gray-600 hover:bg-red-50 hover:text-red-600 border-gray-300"
-              : "bg-teal-600 text-white hover:bg-teal-700 border-teal-600 shadow-md"
+              : "bg-blue-500 text-white hover:bg-blue-700 border-blue-600 shadow-md"
           }`}
         >
           {showForm ? (
@@ -154,54 +164,78 @@ const ExperienceManager = () => {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="bg-teal-50/50 p-6 shadow-inner transition-all duration-300 ease-in-out"
+          className="bg-blue-50/50 p-6 shadow-inner transition-all duration-300 ease-in-out"
         >
+          {/* Nhóm 1: Công ty & Vị trí */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-            <InputWithIcon
-              Icon={Building}
-              name="companyName"
-              placeholder="Tên công ty (*)"
-              value={form.companyName}
-              onChange={handleChange}
-              required
-            />
-            <InputWithIcon
-              Icon={Briefcase}
-              name="position"
-              placeholder="Vị trí công việc (*)"
-              value={form.position}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-            <InputWithIcon
-              Icon={Calendar}
-              name="startDate"
-              type="date"
-              value={form.startDate}
-              onChange={handleChange}
-              required
-            />
-            <InputWithIcon
-              Icon={Calendar}
-              name="endDate"
-              type="date"
-              value={form.endDate}
-              onChange={handleChange}
-              required
-            />
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Tên công ty <span className="text-red-500">*</span>
+              </label>
+              <InputWithIcon
+                Icon={Building}
+                name="companyName"
+                value={form.companyName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Vị trí công việc <span className="text-red-500">*</span>
+              </label>
+              <InputWithIcon
+                Icon={Briefcase}
+                name="position"
+                value={form.position}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
 
-          {/* Mô tả - Sử dụng Textarea tùy chỉnh */}
-          <div className="relative">
-            <MdOutlineDescription className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+          {/* Nhóm 2: Thời gian */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Ngày bắt đầu <span className="text-red-500">*</span>
+              </label>
+              <InputWithIcon
+                Icon={Calendar}
+                name="startDate"
+                type="date"
+                value={form.startDate}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+                Ngày kết thúc <span className="text-red-500">*</span>
+              </label>
+              <InputWithIcon
+                Icon={Calendar}
+                name="endDate"
+                type="date"
+                value={form.endDate}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Mô tả */}
+          <div className="relative mb-3">
+            <label className="ml-2 block text-sm font-medium text-gray-700 mb-1">
+              Mô tả công việc
+            </label>
+            <MdOutlineDescription className="absolute left-3 top-9 w-4 h-4 text-gray-400" />
             <textarea
               name="description"
               placeholder="Mô tả công việc, dự án, thành tựu..."
               value={form.description}
               onChange={handleChange}
-              className="border border-gray-300 p-2.5 pl-9 text-sm rounded-lg w-full focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition duration-150"
+              className="border border-gray-300 p-2.5 pl-9 text-sm rounded-lg w-full focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
               rows={4}
             />
           </div>
@@ -210,7 +244,7 @@ const ExperienceManager = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="mt-4 bg-teal-600 hover:bg-teal-700 transition text-white font-semibold text-sm px-6 py-2.5 rounded-lg shadow disabled:opacity-50 disabled:cursor-wait"
+            className="mt-4 bg-blue-500 hover:bg-blue-700 transition text-white font-semibold text-sm px-6 py-2.5 rounded-lg shadow disabled:opacity-50 disabled:cursor-wait"
           >
             {isLoading ? (
               <>
@@ -259,7 +293,7 @@ const ExperienceManager = () => {
                 className={`relative group border-l-4 p-4 pl-5 shadow-sm bg-gray-50/70 rounded-lg hover:shadow-md transition duration-300 ${
                   exp.id === editingId
                     ? "border-red-500 ring-2 ring-red-300 bg-red-50"
-                    : "border-teal-500"
+                    : "border-blue-500"
                 }`}
               >
                 {/* Action Buttons: Edit/Delete */}
@@ -280,21 +314,50 @@ const ExperienceManager = () => {
                   </button>
                 </div>
 
-                <h3 className="text-lg font-bold text-teal-700 leading-snug pr-20">
-                  {exp.companyName}
-                </h3>
-                <p className="text-sm font-semibold text-gray-700">
-                  {exp.position}
-                </p>
-                <p className="mt-1 text-xs font-medium text-gray-500 flex items-center gap-1">
-                  <Calendar className="text-teal-500" size={14} />
-                  {formatDate(exp.startDate)} — {formatDate(exp.endDate)}
-                </p>
-                {exp.description && (
-                  <p className="text-sm text-gray-600 mt-2 border-t border-gray-200 pt-2 whitespace-pre-line">
-                    {exp.description}
+                {/* Tiêu đề chính */}
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h4 className="text-xl font-extrabold text-teal-800">
+                      {exp.position}
+                    </h4>
+                    <p className="text-base font-semibold text-gray-700 mt-0.5">
+                      <Briefcase
+                        size={16}
+                        className="inline mr-2 text-teal-600"
+                      />
+                      {exp.companyName}
+                    </p>
+                  </div>
+                </div>
+
+                <hr className="my-3 border-teal-200" />
+
+                {/* Thông tin thời gian */}
+                <div className="text-sm text-gray-600 space-y-2">
+                  <p className="flex items-center font-medium">
+                    <Calendar size={14} className="mr-2 text-teal-600" />
+                    Thời gian:{" "}
+                    <span className="ml-1 font-semibold">
+                      {exp.startDate}
+                    </span>{" "}
+                    đến{" "}
+                    <span className="ml-1 font-semibold">{exp.endDate}</span>
                   </p>
-                )}
+
+                  {/* Mô tả/Trách nhiệm */}
+                  {exp.description && (
+                    <div className="pt-2 border-t border-teal-100">
+                      <p className="flex items-center font-semibold text-gray-700 mb-1">
+                        <Info size={14} className="mr-2 text-teal-600" />
+                        Mô tả & Thành tựu:
+                      </p>
+                      {/* Sử dụng whitespace-pre-line để giữ định dạng xuống dòng */}
+                      <p className="text-sm text-gray-700 whitespace-pre-line border-l-2 border-teal-300 pl-3 ml-1">
+                        {exp.description}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>

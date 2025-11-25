@@ -1,10 +1,13 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { BASE_URL } from "../features/constant";
+import { addToast } from "../features/toastSlice";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,
   credentials: "include",
 });
+
+let isRefreshing = false;
 
 const baseQueryWithReauth: typeof baseQuery = async (
   args,
@@ -14,22 +17,33 @@ const baseQueryWithReauth: typeof baseQuery = async (
   let result = await baseQuery(args, api, extraOptions);
 
   if (result?.error?.status === 401) {
-    console.log("Token expired. Attempting to refresh token...");
-
-    const refreshResult = await baseQuery(
-      { url: "/api/v1/auth/refresh", method: "POST" },
-      api,
-      extraOptions
-    );
-
-    if (!refreshResult?.error) {
-      console.log(
-        "Refresh successful (new Access Token saved via Cookie). Retrying original request..."
+    if (!isRefreshing) {
+      isRefreshing = true;
+      const refreshResult = await baseQuery(
+        { url: "auth/refresh", method: "POST" },
+        api,
+        extraOptions
       );
+      if (!refreshResult?.error) {
+        api.dispatch(
+          addToast({
+            type: "info",
+            title: "Khôi phục thành công!",
+            message: "Phiên làm việc của bạn đã được khôi phục!",
+          })
+        );
 
-      result = await baseQuery(args, api, extraOptions);
-    } else {
-      console.log("Refresh failed. Logging out...");
+        result = await baseQuery(args, api, extraOptions);
+      } else {
+        // api.dispatch(
+        //   addToast({
+        //     type: "error",
+        //     title: "Xác thực thất bại!",
+        //     message: "Người dùng chưa đăng nhập!",
+        //   })
+        // );
+      }
+      isRefreshing = false;
       api.dispatch({ type: "auth/logout" });
     }
   }
@@ -40,6 +54,6 @@ const baseQueryWithReauth: typeof baseQuery = async (
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["authentication", "messages"],
+  tagTypes: ["authentication", "messages", "UserInfo"],
   endpoints: () => ({}),
 });
