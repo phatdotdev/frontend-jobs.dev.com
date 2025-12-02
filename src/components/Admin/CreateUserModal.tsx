@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import SelectField from "../UI/SelectField";
 import InputField from "../UI/InputField";
+import { useDispatch } from "react-redux";
+import { addToast } from "../../redux/features/toastSlice";
 
 const CreateUserModal = ({
   onClose,
@@ -57,6 +59,7 @@ const CreateUserModal = ({
     useCreateExpertMutation();
 
   const isLoading = isJobSeekerLoading || isRecruiterLoading || isExpertLoading;
+  const dispatch = useDispatch();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -95,9 +98,19 @@ const CreateUserModal = ({
       }
       onSuccess();
       onClose();
+      dispatch(
+        addToast({
+          type: "success",
+          message: "Tạo người dùng thành công!",
+        })
+      );
     } catch (error) {
-      console.error("Lỗi khi tạo người dùng:", error);
-      // Cần thêm logic hiển thị lỗi cho người dùng (ví dụ: thông báo Toast)
+      dispatch(
+        addToast({
+          type: "error",
+          message: "Lỗi khi tạo người dùng!",
+        })
+      );
     }
   };
 
