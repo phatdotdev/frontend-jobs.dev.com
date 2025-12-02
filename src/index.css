@@ -12,3 +12,7 @@
 .animate-shine {
   animation: shine 1.5s ease-in-out;
 }
+
+button {
+  cursor: pointer;
+}

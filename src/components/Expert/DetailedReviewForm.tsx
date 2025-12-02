@@ -1,6 +1,16 @@
 import { useState, type FormEvent, type JSX } from "react";
-import { Send, Star, User, BookOpen, Layers, Zap } from "lucide-react";
+import {
+  Send,
+  Star,
+  User,
+  BookOpen,
+  Layers,
+  Zap,
+  Lightbulb,
+  Target,
+} from "lucide-react";
 import { useSubmitReviewMutation } from "../../redux/api/apiReviewSlice";
+import { cn } from "../../utils/helper";
 
 type ReviewFormProps = {
   resumeTitle: string;
@@ -33,7 +43,8 @@ const DetailedReviewForm = ({ resumeTitle, requestId }: ReviewFormProps) => {
 
     try {
       await submitReview({ id: requestId, payload: reviewData }).unwrap();
-      alert(`Đã gửi nhận xét cho hồ sơ "${resumeTitle}" thành công!`);
+      alert(`Đã gửi đánh giá thành công cho hồ sơ "${resumeTitle}"!`);
+      // Reset form
       setScore("");
       setOverallComment("");
       setExperienceComment("");
@@ -55,112 +66,139 @@ const DetailedReviewForm = ({ resumeTitle, requestId }: ReviewFormProps) => {
     placeholder: string,
     required = true
   ) => (
-    <div className="mb-4">
-      <label className="flex items-center text-sm font-semibold text-gray-700 mb-1">
+    <div className="mb-6 group">
+      <label className="flex items-center gap-3 text-sm font-bold text-gray-800 mb-3">
         {icon}
-        <span className="ml-2">
+        <span>
           {label} {required && <span className="text-red-500">*</span>}
         </span>
       </label>
       <textarea
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        rows={3}
+        rows={4}
         required={required}
         placeholder={placeholder}
-        className="w-full p-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 transition duration-150 text-sm resize-none"
+        className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-purple-100 focus:border-purple-500 transition-all duration-300 resize-none text-sm bg-gray-50/70 hover:bg-gray-50 focus:bg-white shadow-sm"
       />
     </div>
   );
 
   return (
-    <div className="p-6 bg-white shadow-lg rounded-xl h-full flex flex-col">
-      <h2 className="text-2xl font-bold text-gray-800 border-b pb-3 mb-4 flex items-center">
-        <Star className="w-5 h-5 mr-2 text-yellow-500" /> Nhập Bình Luận & Đánh
-        Giá
-      </h2>
-
-      <form
-        onSubmit={handleSubmit}
-        className="flex-grow flex flex-col justify-between"
-      >
-        <div>
-          {/* Điểm số */}
-          <div className="mb-4">
-            <label className="flex items-center text-md font-bold text-gray-800 mb-2">
-              <Zap className="w-4 h-4 mr-2 text-red-500" /> Điểm Đánh Giá (1-10)
-            </label>
-            <input
-              type="number"
-              value={score}
-              onChange={(e) => setScore(e.target.value)}
-              min="1"
-              max="10"
-              required
-              placeholder="7"
-              className="w-20 text-center p-2 text-xl font-bold border-2 border-red-400 rounded-md focus:ring-red-500 focus:border-red-500"
-            />
+    <div className="w-full h-full flex flex-col bg-gradient-to-br from-purple-50 via-white to-pink-50">
+      <div className="flex-1 overflow-y-auto p-8">
+        <div className="max-w-2xl mx-auto">
+          {/* Header */}
+          <div className="mb-10 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl shadow-2xl mb-4">
+              <Star className="w-9 h-9 text-white" fill="currentColor" />
+            </div>
+            <h2 className="text-3xl font-extrabold text-gray-800">
+              Đánh Giá & Góp Ý Hồ Sơ
+            </h2>
+            <p className="text-lg text-purple-700 font-medium mt-2">
+              {resumeTitle}
+            </p>
           </div>
 
-          {/* Các ô nhận xét */}
-          {renderTextarea(
-            "Nhận Xét Tổng Quan",
-            <User className="w-4 h-4 text-purple-600" />,
-            overallComment,
-            setOverallComment,
-            "Ấn tượng chung và mức độ phù hợp..."
-          )}
-          {renderTextarea(
-            "Nhận Xét Kinh Nghiệm",
-            <Layers className="w-4 h-4 text-green-600" />,
-            experienceComment,
-            setExperienceComment,
-            "Đánh giá các dự án, vai trò..."
-          )}
-          {renderTextarea(
-            "Nhận Xét Kỹ Năng",
-            <Zap className="w-4 h-4 text-blue-600" />,
-            skillsComment,
-            setSkillsComment,
-            "Đánh giá về Java, Spring Boot, v.v..."
-          )}
-          {renderTextarea(
-            "Nhận Xét Học Vấn",
-            <BookOpen className="w-4 h-4 text-yellow-600" />,
-            educationComment,
-            setEducationComment,
-            "Đánh giá GPA, thành tích..."
-          )}
-          {renderTextarea(
-            "Khuyến Nghị",
-            <Send className="w-4 h-4 text-red-600" />,
-            recommendation,
-            setRecommendation,
-            "Lời khuyên cải thiện hồ sơ/chuẩn bị phỏng vấn..."
-          )}
-        </div>
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Điểm số 1-100 – PHIÊN BẢN DỄ NHẬP NHẤT */}
+            <div className="bg-white rounded-3xl shadow-2xl p-10">
+              <label className="block text-center text-2xl font-bold text-gray-800 mb-8">
+                Điểm Tổng Quan:{" "}
+                <span className="text-6xl text-purple-600">
+                  {score || "--"}
+                </span>
+                /100
+              </label>
 
-        {/* Nút Gửi */}
-        <div className="mt-4 pt-4 border-t">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`flex items-center justify-center w-full px-4 py-2 font-semibold rounded-md transition duration-300 shadow-md ${
-              isSubmitting
-                ? "bg-gray-400 text-gray-700 cursor-not-allowed"
-                : "bg-purple-600 text-white hover:bg-purple-700"
-            }`}
-          >
-            {isSubmitting ? (
-              "Đang Gửi..."
-            ) : (
-              <>
-                <Send className="w-4 h-4 mr-2" /> Hoàn Tất Gửi Review
-              </>
-            )}
-          </button>
+              <div className="max-w-2xl mx-auto">
+                <input
+                  type="range"
+                  min="1"
+                  max="100"
+                  value={score || 50}
+                  onChange={(e) => setScore(e.target.value)}
+                  className="w-full h-8 bg-gray-200 rounded-full appearance-none cursor-pointer slider"
+                  style={{
+                    background: `linear-gradient(to right, #10b981 0%, #f59e0b ${score}%, #ef4444 ${score}%, #e5e7eb 100%)`,
+                  }}
+                />
+                <div className="flex justify-between text-sm text-gray-500 mt-4">
+                  <span>Yếu</span>
+                  <span>Trung bình</span>
+                  <span>Khá</span>
+                  <span>Xuất sắc</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Các phần nhận xét */}
+            <div className="space-y-8 bg-white/70 backdrop-blur rounded-3xl p-8 shadow-xl border border-purple-100">
+              {renderTextarea(
+                "Nhận xét tổng quan",
+                <User className="w-6 h-6 text-purple-600" />,
+                overallComment,
+                setOverallComment,
+                "Ấn tượng chung, độ chuyên nghiệp, mức độ phù hợp với vị trí..."
+              )}
+
+              {renderTextarea(
+                "Đánh giá kinh nghiệm làm việc",
+                <Layers className="w-6 h-6 text-emerald-600" />,
+                experienceComment,
+                setExperienceComment,
+                "Chất lượng dự án, vai trò, thành tựu nổi bật..."
+              )}
+
+              {renderTextarea(
+                "Đánh giá kỹ năng chuyên môn",
+                <Zap className="w-6 h-6 text-blue-600" />,
+                skillsComment,
+                setSkillsComment,
+                "Mức độ thành thạo công nghệ, kỹ năng mềm, chứng chỉ..."
+              )}
+
+              {renderTextarea(
+                "Đánh giá học vấn & chứng chỉ",
+                <BookOpen className="w-6 h-6 text-amber-600" />,
+                educationComment,
+                setEducationComment,
+                "Trường học, GPA, chứng chỉ quốc tế, khóa học nổi bật..."
+              )}
+
+              {renderTextarea(
+                "Lời khuyên & khuyến nghị",
+                <Lightbulb className="w-6 h-6 text-yellow-500" />,
+                recommendation,
+                setRecommendation,
+                "Những điểm cần cải thiện, cách trình bày tốt hơn, chuẩn bị phỏng vấn..."
+              )}
+            </div>
+
+            {/* Nút gửi */}
+            <div className="mt-10">
+              <button
+                type="submit"
+                disabled={isSubmitting || !score}
+                className="w-full group flex items-center justify-center gap-4 px-8 py-5 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xl font-bold rounded-2xl shadow-2xl hover:shadow-3xl transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                    Đang gửi đánh giá...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-7 h-7 group-hover:translate-x-1 transition-transform" />
+                    Hoàn Tất & Gửi Đánh Giá
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

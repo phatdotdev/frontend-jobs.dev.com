@@ -246,6 +246,19 @@ export const apiResumeSlice = apiSlice.injectEndpoints({
         url: `job-seeker/${id}/experiences`,
       }),
     }),
+    // get suggestions
+    getSuggestionJobs: builder.mutation<ResponseProps<any>, any>({
+      query: (id) => ({
+        url: `${id}/job-suggestions`,
+        method: "POST",
+      }),
+    }),
+    getSuggestionCandidates: builder.mutation<ResponseProps<any>, any>({
+      query: (id) => ({
+        url: `${id}/candidate-suggestions`,
+        method: "POST",
+      }),
+    }),
   }),
 });
 
@@ -291,4 +304,6 @@ export const {
   // PUBLIC
   useGetEducationsByJobSeekerIdQuery,
   useGetExperiencesByJobSeekerIdQuery,
+  useGetSuggestionJobsMutation,
+  useGetSuggestionCandidatesMutation,
 } = apiResumeSlice;

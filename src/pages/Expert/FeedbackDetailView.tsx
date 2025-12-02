@@ -2,61 +2,7 @@ import { Star, User, BookOpen, Layers, Zap, CheckCircle } from "lucide-react";
 import moment from "moment";
 import ResumeViewer from "../JobSeeker/ResumeViewer";
 
-// Dữ liệu mẫu JSON cho Hồ sơ và Review ĐÃ HOÀN THÀNH
-const mockCompletedData = {
-  // Dữ liệu hồ sơ gốc (từ dữ liệu bạn cung cấp)
-  resume: {
-    title: "Hồ sơ cho FPT Software",
-    firstname: "Do",
-    lastname: "Phat",
-    phone: "0365317149",
-    email: "dan@gmail.com",
-    address: "Can Tho",
-    dob: "2004-12-09",
-    objectCareer:
-      "Trở thành lập trình viên backend chuyên nghiệp trong lĩnh vực Java Spring Boot.",
-    educations: [
-      {
-        schoolName: "Dai Hoc Can Tho",
-        degree: "Cử nhân",
-        major: "Công nghệ thông tin",
-        startDate: "2019-09-01",
-        endDate: "2023-06-30",
-        grade: 3.5,
-        description:
-          "Tham gia CLB lập trình, đạt giải Nhất Olympic Tin học sinh viên.",
-      },
-    ],
-    experiences: [
-      {
-        companyName: "FPT Software",
-        position: "Thực tập sinh da cap nhat",
-        startDate: "2025-03-01",
-        endDate: "2025-11-11",
-        description: "Tham gia phát triển dự án nội bộ",
-      },
-    ],
-  },
-  review: {
-    score: 8,
-    overallComment:
-      "Hồ sơ mạnh mẽ, đặc biệt ở thành tích học thuật và mục tiêu nghề nghiệp rõ ràng. Cần làm nổi bật hơn kinh nghiệm thực tế tại FPT Software.",
-    experienceComment:
-      "Kinh nghiệm thực tập tốt, nhưng mô tả quá ngắn gọn. Nên thêm các số liệu cụ thể (ví dụ: 'giảm 10% lỗi', 'tăng 15% hiệu suất').",
-    skillsComment:
-      "Kỹ năng Java Spring Boot phù hợp với vị trí. Nên bổ sung thêm các công cụ liên quan như Git, Docker.",
-    educationComment:
-      "Thành tích học tập xuất sắc (GPA 3.5 và Giải Nhất Olympic) là một điểm cộng lớn.",
-    recommendation:
-      "Ứng viên nên mở rộng mô tả kinh nghiệm và chuẩn bị sâu về kiến thức hệ thống trong phỏng vấn.",
-    reviewedBy: "Chuyên gia Nguyễn Văn A",
-    completedDate: "2025-11-13T15:30:00.000Z",
-  },
-  status: "COMPLETED",
-};
-
-// --- Component Cột Phải: Hiển thị Kết quả Review ---
-const CompletedReviewDisplay = ({ review }) => {
+const CompletedReviewDisplay = ({ review }: { reivew: any }) => {
   const renderCommentSection = (title, icon, comment) => (
     <div className="mb-5 p-4 border border-gray-200 rounded-lg bg-white">
       <h4 className="flex items-center text-sm font-bold text-gray-800 mb-2">
@@ -80,7 +26,7 @@ const CompletedReviewDisplay = ({ review }) => {
       <div className="flex justify-between items-center mb-6 p-3 bg-green-50 border border-green-200 rounded-lg">
         <div>
           <p className="text-sm font-medium text-gray-700">
-            Đánh giá bởi: **{review.reviewedBy}**
+            Đánh giá bởi: **{review.reviewer}**
           </p>
           <p className="text-sm font-medium text-gray-700">
             Ngày hoàn thành: **

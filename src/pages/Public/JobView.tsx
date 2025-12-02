@@ -12,27 +12,22 @@ import {
 } from "lucide-react";
 import { useSearchJobPostingsQuery } from "../../redux/api/apiPostSlice";
 import DataLoader from "../../components/UI/DataLoader";
-import JobPostingItem from "../../components/Post/JobPostingCard";
 import JobPostingCard from "../../components/Post/JobPostingCard";
-
-// Đổi tên Loader để tránh xung đột và dùng cho animation
-const LoaderIcon = Loader;
+import { useGetAllLocationsQuery } from "../../redux/api/apiAdminSlice";
 
 type JobPosting = {
   id: string;
   title: string;
   companyName: string;
   location: { id: string; name: string };
-  minSalary: number;
-  maxSalary: number;
+  salary: number;
   type: "FULL_TIME" | "PART_TIME" | "CONTRACT";
   createdAt: string;
   avatarUrl: string;
 };
 type SearchParams = {
   keyword: string;
-  minSalary: number | undefined;
-  maxSalary: number | undefined;
+  salary: number | undefined;
   locationId: string;
   type: string;
   page: number;
@@ -42,73 +37,41 @@ type SearchParams = {
 const JobView: React.FC = () => {
   const [searchParams, setSearchParams] = useState<SearchParams>({
     keyword: "",
-    minSalary: undefined,
-    maxSalary: undefined,
     locationId: "",
     type: "",
+    salary: undefined,
     page: 0,
-    size: 6,
+    size: 9,
   });
+
+  const { data: locationResponse } = useGetAllLocationsQuery();
+  const locations = locationResponse?.data || [];
 
   const { data, isLoading, isError } = useSearchJobPostingsQuery(searchParams);
 
-  const handleInputChange = (
-    field: keyof SearchParams,
-    value: string | number
-  ) => {
-    let finalValue: string | number | undefined = value;
-    if (field === "minSalary" || field === "maxSalary") {
-      finalValue =
-        value === ""
-          ? undefined
-          : typeof value === "string"
-          ? parseInt(value, 10)
-          : value;
+  const handleChange = (field: keyof SearchParams, value: any) => {
+    if (field === "salary") {
+      value = value === "" ? undefined : Number(value);
     }
-
-    setSearchParams((prev) => ({ ...prev, [field]: finalValue as any }));
-  };
-
-  const handleSearch = () => {
-    setSearchParams((prev) => ({ ...prev, page: 0 }));
+    setSearchParams((prev) => ({ ...prev, [field]: value, page: 0 }));
   };
 
   const handleReset = () => {
     setSearchParams({
       keyword: "",
-      minSalary: undefined,
-      maxSalary: undefined,
       locationId: "",
       type: "",
+      salary: undefined,
       page: 0,
-      size: 6,
+      size: 9,
     });
   };
 
-  const handleNextPage = () => {
-    if (
-      data?.data?.totalPages &&
-      searchParams.page < data.data.totalPages - 1
-    ) {
-      setSearchParams((prev) => ({ ...prev, page: prev.page + 1 }));
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (searchParams.page > 0) {
-      setSearchParams((prev) => ({ ...prev, page: prev.page - 1 }));
-    }
-  };
-
-  const isResetEnabled = Object.values(searchParams).some((val, index) => {
-    const key = Object.keys(searchParams)[index];
-    if (key === "page" || key === "size") return false;
-
-    return (
-      (typeof val === "string" && val !== "") ||
-      (typeof val === "number" && val !== undefined)
-    );
-  });
+  const hasFilters =
+    searchParams.keyword ||
+    searchParams.locationId ||
+    searchParams.type ||
+    searchParams.salary;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-10 space-y-10">
@@ -119,97 +82,89 @@ const JobView: React.FC = () => {
       </h1>
 
       {/* --- */}
-      <div className="bg-white p-4 md:p-6 rounded-2xl shadow-md border border-gray-100 transition duration-300">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-          {/* Từ khóa */}
-          <div className="relative col-span-1 lg:col-span-2">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-teal-500" />
+      {/* Thanh tìm kiếm chính - 4 ô đẹp */}
+      <div className="max-w-8xl mx-auto bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 mb-12">
+        <div className="space-y-6">
+          {/* 1. Từ khóa công việc - nổi bật nhất */}
+          <div className="relative">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-teal-600" />
             <input
               type="text"
               value={searchParams.keyword}
-              onChange={(e) => handleInputChange("keyword", e.target.value)}
-              placeholder="Từ khóa (vị trí, công ty...)"
-              className="w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-400 transition text-sm text-gray-800 placeholder-gray-500 font-normal"
+              onChange={(e) => handleChange("keyword", e.target.value)}
+              placeholder="Tên công việc, kỹ năng, công ty..."
+              className="w-full pl-16 pr-6 py-5 text-lg font-medium border-2 border-gray-200 rounded-2xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all duration-300 placeholder-gray-400"
             />
           </div>
 
-          {/* Vị trí */}
-          <div className="relative col-span-1">
-            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-teal-500" />
-            <input
-              type="text"
-              value={searchParams.locationId}
-              onChange={(e) => handleInputChange("locationId", e.target.value)}
-              placeholder="Vị trí làm việc"
-              className="w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-400 transition text-sm text-gray-800 placeholder-gray-500 font-normal"
-            />
-          </div>
+          {/* 2. Vị trí + Loại hình + Mức lương - 3 ô ngang */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Vị trí - Select */}
+            <div className="relative">
+              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-teal-600 z-10" />
+              <select
+                value={searchParams.locationId}
+                onChange={(e) => handleChange("locationId", e.target.value)}
+                className="w-full pl-14 pr-10 py-4 bg-white border-2 border-gray-200 rounded-2xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all appearance-none text-gray-700 font-medium cursor-pointer hover:border-teal-300"
+              >
+                <option value="">Tất cả địa điểm</option>
+                {locations.map((loc: any) => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+            </div>
 
-          {/* Loại hình */}
-          <div className="relative col-span-1">
-            <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-teal-500" />
-            <select
-              value={searchParams.type}
-              onChange={(e) => handleInputChange("type", e.target.value)}
-              className="w-full pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-400 transition text-sm text-gray-800 bg-white font-normal appearance-none"
-            >
-              <option value="">Tất cả loại hình</option>
-              <option value="FULL_TIME">Toàn thời gian</option>
-              <option value="PART_TIME">Bán thời gian</option>
-              <option value="CONTRACT">Hợp đồng</option>
-              <option value="INTERNSHIP">Thực tập</option>
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-gray-400">
-              <ChevronDown size={16} />
+            {/* Loại hình */}
+            <div className="relative">
+              <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-teal-600 z-10" />
+              <select
+                value={searchParams.type}
+                onChange={(e) => handleChange("type", e.target.value)}
+                className="w-full pl-14 pr-10 py-4 bg-white border-2 border-gray-200 rounded-2xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all appearance-none text-gray-700 font-medium cursor-pointer hover:border-teal-300"
+              >
+                <option value="">Tất cả loại hình</option>
+                <option value="FULL_TIME">Toàn thời gian</option>
+                <option value="PART_TIME">Bán thời gian</option>
+                <option value="CONTRACT">Hợp đồng</option>
+                <option value="INTERNSHIP">Thực tập</option>
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+            </div>
+
+            {/* Mức lương */}
+            <div className="relative flex items-center gap-3">
+              <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-teal-600 z-10" />
+              <input
+                type="number"
+                value={searchParams.salary ?? ""}
+                onChange={(e) => handleChange("salary", e.target.value)}
+                placeholder="Mức lương mong muốn"
+                className="w-full pl-14 pr-3 py-4 border-2 border-gray-200 rounded-2xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all text-gray-700 font-medium placeholder-gray-400"
+              />
             </div>
           </div>
-        </div>
 
-        {/* Mức lương + Buttons */}
-        <div className="flex flex-col md:flex-row gap-4 mt-4 items-center">
-          {/* Mức lương */}
-          <div className="relative flex w-full md:w-2/3 lg:w-1/2 bg-white rounded-xl border border-gray-200 focus-within:ring-2 focus-within:ring-teal-400 transition">
-            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-teal-500 z-10" />
-            <input
-              type="number"
-              value={searchParams.minSalary ?? ""}
-              onChange={(e) => handleInputChange("minSalary", e.target.value)}
-              placeholder="Lương tối thiểu"
-              className="w-1/2 pl-10 pr-2 py-3 bg-transparent rounded-l-xl focus:outline-none text-sm text-gray-800 placeholder-gray-500 font-normal"
-            />
-            <div className="flex items-center text-gray-500 border-x border-gray-200 px-2 text-sm font-medium">
-              Đến
-            </div>
-            <input
-              type="number"
-              value={searchParams.maxSalary ?? ""}
-              onChange={(e) => handleInputChange("maxSalary", e.target.value)}
-              placeholder="Lương tối đa"
-              className="w-1/2 pl-3 pr-3 py-3 bg-transparent rounded-r-xl focus:outline-none text-sm text-gray-800 placeholder-gray-500 font-normal"
-            />
-          </div>
-
-          {/* Buttons */}
-          <div className="flex gap-3 w-full md:w-1/3 lg:w-auto md:justify-end">
+          {/* Nút Tìm kiếm & Reset */}
+          <div className="flex justify-center gap-6 pt-4">
             <button
-              onClick={handleSearch}
-              disabled={isLoading}
-              className="flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500 to-indigo-500 text-white px-5 py-3 rounded-xl text-sm font-semibold hover:from-teal-600 hover:to-indigo-600 transition disabled:opacity-60 disabled:cursor-not-allowed"
+              onClick={() => setSearchParams((prev) => ({ ...prev, page: 0 }))}
+              className="group flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-teal-600 to-indigo-600 text-white font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
             >
-              {isLoading ? (
-                <LoaderIcon className="animate-spin h-4 w-4" />
-              ) : (
-                <Search size={16} />
-              )}
-              {isLoading ? "Đang tìm..." : "Tìm kiếm"}
+              <Search className="w-6 h-6 group-hover:translate-x-1 transition" />
+              Tìm Ngay
             </button>
-            <button
-              onClick={handleReset}
-              disabled={isLoading || !isResetEnabled}
-              className="flex items-center justify-center gap-2 bg-gray-100 text-gray-600 px-5 py-3 rounded-xl text-sm font-medium hover:bg-gray-200 transition border border-gray-300 disabled:opacity-50"
-            >
-              <Filter size={16} /> Đặt lại
-            </button>
+            {hasFilters && (
+              <button
+                onClick={handleReset}
+                className="flex items-center gap-2 px-8 py-4 bg-gray-100 text-gray-700 font-semibold rounded-2xl hover:bg-gray-200 transition border border-gray-300"
+              >
+                <Filter className="w-5 h-5" />
+                Xóa bộ lọc
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -237,35 +192,34 @@ const JobView: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
           {data?.data.content.map((job: JobPosting) => (
-            <JobPostingCard key={job.id} job={job} />
+            <JobPostingCard key={job.id} job={job as any} />
           ))}
         </div>
       )}
 
       {/* Phân trang */}
       {data?.data?.totalPages > 1 && (
-        <div className="flex justify-center items-center gap-6 mt-10">
+        <div className="flex justify-center items-center gap-6 mt-16">
           <button
-            onClick={handlePrevPage}
-            disabled={searchParams.page === 0 || isLoading}
-            className="flex items-center gap-2 px-6 py-3 bg-white border border-teal-500 rounded-full text-teal-600 font-bold hover:bg-teal-50 hover:shadow-lg disabled:opacity-50 transition duration-200"
+            onClick={() =>
+              setSearchParams((prev) => ({ ...prev, page: prev.page - 1 }))
+            }
+            disabled={searchParams.page === 0}
+            className="flex items-center gap-3 px-8 py-4 bg-white border-2 border-teal-600 text-teal-600 font-bold rounded-full hover:bg-teal-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
-            <ChevronLeft size={20} />
-            Trang trước
+            <ChevronLeft /> Trang trước
           </button>
-          <span className="text-lg font-extrabold text-teal-700 bg-teal-100 px-4 py-2 rounded-lg min-w-[100px] text-center shadow-md">
-            {searchParams.page + 1} / {data?.data?.totalPages || 1}
+          <span className="text-2xl font-bold text-teal-700">
+            {searchParams.page + 1} / {data?.data.totalPages}
           </span>
           <button
-            onClick={handleNextPage}
-            disabled={
-              searchParams.page >= (data?.data?.totalPages || 1) - 1 ||
-              isLoading
+            onClick={() =>
+              setSearchParams((prev) => ({ ...prev, page: prev.page + 1 }))
             }
-            className="flex items-center gap-2 px-6 py-3 bg-teal-600 text-white rounded-full font-bold hover:bg-teal-700 hover:shadow-lg disabled:opacity-50 transition duration-200"
+            disabled={searchParams.page >= data?.data.totalPages - 1}
+            className="flex items-center gap-3 px-8 py-4 bg-teal-600 text-white font-bold rounded-full hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
-            Trang sau
-            <ChevronRight size={20} />
+            Trang sau <ChevronRight />
           </button>
         </div>
       )}

@@ -33,9 +33,7 @@ const FeedbackViewer: React.FC<FeedbackViewerProps> = ({ review }) => {
     </div>
   );
 
-  const expertName = review.expert
-    ? `${review.expert.username}`
-    : "Chuyên gia ẩn danh";
+  const expertName = `${review.reviewerName}` || "Chuyên gia ẩn danh";
 
   return (
     <div className="p-6 bg-white shadow-lg rounded-xl h-full flex flex-col">
@@ -61,7 +59,7 @@ const FeedbackViewer: React.FC<FeedbackViewerProps> = ({ review }) => {
           <p className="text-xs font-bold text-gray-500 uppercase">Điểm</p>
           <p className="text-4xl font-extrabold text-red-600">
             {review.score}
-            <span className="text-xl">/10</span>
+            <span className="text-xl">/100</span>
           </p>
         </div>
       </div>

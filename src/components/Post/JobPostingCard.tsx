@@ -60,7 +60,7 @@ const JobPostingCard = ({ job }: { job: JobPosting }) => {
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 text-sm font-medium pt-3 border-t border-gray-100">
+      <div className="mt-auto grid grid-cols-2 gap-3 text-sm font-medium pt-3 border-t border-gray-100">
         <div className="flex items-center gap-2 text-teal-600">
           <DollarSign size={16} />
           <span className="text-gray-700 font-semibold">
@@ -83,7 +83,7 @@ const JobPostingCard = ({ job }: { job: JobPosting }) => {
 
       <button
         onClick={handleViewJob}
-        className="block w-full bg-teal-500 text-white py-2 mt-2 rounded-lg font-bold hover:bg-teal-600 transition duration-200"
+        className="mt-auto block w-full bg-teal-500 text-white py-2 mt-2 rounded-lg font-bold hover:bg-teal-600 transition duration-200"
       >
         Xem chi tiết
       </button>

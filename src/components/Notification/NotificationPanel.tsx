@@ -15,7 +15,14 @@ function NotificationPanel() {
   if (isError) {
     notificationsData = [];
   }
-  const notifications = useSelector((state: RootState) => state.notifications);
+  const notifications = useSelector((state: RootState) =>
+    (state.notifications || [])
+      .slice()
+      .sort(
+        (a: any, b: any) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      )
+  );
   const [showDropdown, setShowDropdown] = useState(false);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;

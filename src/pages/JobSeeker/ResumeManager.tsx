@@ -246,7 +246,7 @@ const ResumeManager = () => {
   };
 
   return (
-    <div className="sm:mx-[100px] mt-4 p-4 bg-white shadow-2xl">
+    <div className="min-h-screen sm:mx-[100px] mt-4 p-4 bg-white shadow-2xl">
       <div className="flex justify-between items-center mb-4">
         <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-800 tracking-tight">
           <FileText className="mr-3 w-8 h-8 text-blue-600" /> Quản lý hồ sơ xin

@@ -23,6 +23,8 @@ import { useDispatch } from "react-redux";
 import { addToast } from "../redux/features/toastSlice";
 import { clearNotifications } from "../redux/features/notificationSlice";
 
+import logo from "../../public/logo.png";
+
 const PublicNavigation = () => {
   const [logout] = useLogoutMutation();
   const { data, isError } = useGetUserInfoQuery(undefined, {
@@ -199,10 +201,11 @@ const PublicNavigation = () => {
           {/* Logo */}
           <div className="text-3xl font-extrabold text-gray-800 tracking-tight">
             <Link to="/" className="flex items-center gap-1 group">
+              <img src={logo} className="w-10 h-10 rounded-lg mr-2" />
               <span className="relative text-2xl md:text-3xl font-extrabold tracking-tight">
                 {/* Gradient Text */}
-                <span className="bg-gradient-to-r from-teal-600 via-emerald-400 to-teal-600 bg-clip-text text-transparent">
-                  WorkNest
+                <span className="bg-gradient-to-r bg-teal-500 bg-clip-text text-transparent">
+                  worknest
                 </span>
 
                 {/* Shine Effect */}

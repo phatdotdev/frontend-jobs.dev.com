@@ -1,7 +1,6 @@
 import { useState, type FC } from "react";
 import { Link, useParams } from "react-router-dom"; // Dùng để lấy ID từ URL
 import {
-  User,
   Mail,
   Phone,
   MapPin,
@@ -18,19 +17,21 @@ import {
   Star,
   HeartPlus,
   CheckCircle2,
+  X,
 } from "lucide-react";
 
 import type {
   ResumeProps,
   EducationProps,
-  ExperienceProps,
   SkillProps,
   CertificationProps,
-  AwardProps,
   ActivityProps,
   ProjectProps,
 } from "../../types/ResumeProps";
-import { useGetResumeByIdQuery } from "../../redux/api/apiResumeSlice";
+import {
+  useGetResumeByIdQuery,
+  useGetSuggestionJobsMutation,
+} from "../../redux/api/apiResumeSlice";
 import ExperienceItem from "../../components/JobSeeker/ExperienceItem";
 import EducationItem from "../../components/JobSeeker/EducationItem";
 import SkillItem from "../../components/JobSeeker/SkillItem";
@@ -45,6 +46,8 @@ import {
 } from "../../utils/helper";
 import { useCreateFeedbackRequestMutation } from "../../redux/api/apiReviewSlice";
 import FeedbackRequestModal from "../../components/Modal/FeedbackRequestModal";
+import DataLoader from "../../components/UI/DataLoader";
+import { useDispatch } from "react-redux";
 
 const ResumeViewer: FC = () => {
   const { id: resumeId } = useParams<{ id: string }>();
@@ -58,15 +61,18 @@ const ResumeViewer: FC = () => {
   });
 
   const resume: ResumeProps | undefined = response?.data;
-  const userAvatarUrl: string | undefined = undefined;
-
-  console.log(resume);
 
   const [isRequesting, setIsRequesting] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); // Thêm state quản lý loading khi submit
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [getSuggestions] = useGetSuggestionJobsMutation();
+
+  const [showJobSuggestions, setShowJobSuggestions] = useState(false);
+  const [jobSuggestions, setJobSuggestions] = useState<any[] | null>(null);
+  const [loadingJobs, setLoadingJobs] = useState(false);
 
   const [createFeedbackRequest] = useCreateFeedbackRequestMutation();
 
+  const dispatch = useDispatch();
   const createRequest = async (notes: string, completedAt: string) => {
     if (!resumeId) return;
 
@@ -86,7 +92,6 @@ const ResumeViewer: FC = () => {
     }
   };
 
-  // 3. Xử lý trạng thái Loading và Error
   if (isLoading) {
     return (
       <div className="text-center p-10 flex flex-col items-center justify-center">
@@ -107,6 +112,52 @@ const ResumeViewer: FC = () => {
       </div>
     );
   }
+
+  const fetchJobSuggestions = async () => {
+    // Chỉ gọi 1 lần (có cache)
+    if (jobSuggestions !== null) return;
+
+    setLoadingJobs(true);
+    try {
+      const res = await getSuggestions(resumeId).unwrap();
+
+      let suggestedJobs: any[] = [];
+
+      if (res.success && res.data) {
+        // Trường hợp 1: backend trả chuỗi JSON (hiện tại của bạn)
+        if (typeof res.data === "string") {
+          try {
+            const parsed = JSON.parse(res.data);
+            suggestedJobs = parsed.suggested_jobs || [];
+          } catch (e) {
+            console.error("Parse JSON từ backend thất bại:", e);
+            suggestedJobs = [];
+          }
+        }
+        // Trường hợp 2: backend đã trả object thật (tương lai)
+        else if (res.data.suggested_jobs) {
+          suggestedJobs = res.data.suggested_jobs;
+        }
+      }
+
+      // LỌC BỎ những job rỗng (id null, title rỗng, score = 0)
+      const validJobs = suggestedJobs.filter(
+        (job: any) =>
+          job.id && job.title && job.title.trim() !== "" && job.match_score > 0
+      );
+
+      setJobSuggestions(validJobs);
+    } catch (err) {
+      setJobSuggestions([]);
+    } finally {
+      setLoadingJobs(false);
+    }
+  };
+
+  const handleOpenJobSuggestions = () => {
+    setShowJobSuggestions(true);
+    fetchJobSuggestions();
+  };
 
   const fullName = `${resume.firstname} ${resume.lastname}`;
 
@@ -373,6 +424,22 @@ const ResumeViewer: FC = () => {
             Xem đánh giá
           </button>
         </Link>
+
+        {/* Nút 3: GỢI Ý CÔNG VIỆC – MỚI */}
+        <button
+          onClick={handleOpenJobSuggestions}
+          className="
+      flex items-center gap-2 
+      bg-gradient-to-r from-emerald-500 to-teal-600 
+      text-white p-3 rounded-xl font-bold text-base 
+      shadow-lg shadow-teal-500/50 
+      hover:scale-105 hover:shadow-xl 
+      transition-all duration-300 ease-in-out
+    "
+        >
+          <Target className="w-5 h-5" />
+          Gợi ý công việc phù hợp
+        </button>
       </div>
 
       <footer className="p-4 text-xs text-right text-gray-500 border-t">
@@ -386,6 +453,102 @@ const ResumeViewer: FC = () => {
         onSubmit={createRequest}
         isLoading={isSubmitting}
       />
+
+      {/* Suggest modal */}
+      {showJobSuggestions && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-teal-500 border-b p-5 flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-white">
+                Công việc phù hợp với hồ sơ của bạn
+              </h2>
+              <button
+                onClick={() => setShowJobSuggestions(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                <X size={24} className="w-6 h-6 text-white" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {loadingJobs ? (
+                <div className="text-center py-16">
+                  <DataLoader content="Đang tạo câu trả lời, mong bạn chờ trong giây lát..." />
+                </div>
+              ) : jobSuggestions && jobSuggestions.length > 0 ? (
+                <div className="space-y-4">
+                  {jobSuggestions.map((job) => (
+                    <div
+                      key={job.id}
+                      className="border rounded-xl p-5 hover:shadow-lg transition-shadow"
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 className="text-xl font-bold text-teal-700">
+                            {job.title}
+                          </h3>
+                          <p className="text-gray-700 font-medium">
+                            {job.companyName}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {job.location || "Không rõ địa điểm"} • Lương:{" "}
+                            {job.promotedSalary || job.salary || "Thoả thuận"}
+                          </p>
+                          {job.reason && (
+                            <p className="text-xs text-gray-600 mt-1">
+                              Lý do: {job.reason}
+                            </p>
+                          )}
+                        </div>
+                        {job.matchScore && (
+                          <div className="text-right">
+                            <span className="text-2xl font-bold text-green-600">
+                              {job.matchScore}%
+                            </span>
+                            <p className="text-xs text-gray-500">phù hợp</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {job.requiredSkills
+                          ?.slice(0, 6)
+                          .map((skill: string) => (
+                            <span
+                              key={skill}
+                              className="text-xs bg-teal-100 text-teal-700 px-3 py-1 rounded-full"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                      </div>
+
+                      <div className="flex gap-3">
+                        <Link to={`/jobs/${job.id}`}>
+                          <button className="bg-teal-600 text-white px-5 py-2 rounded-lg hover:bg-teal-700 transition">
+                            Xem chi tiết
+                          </button>
+                        </Link>
+                        <button className="border border-teal-600 text-teal-600 px-5 py-2 rounded-lg hover:bg-teal-50 transition">
+                          Ứng tuyển ngay
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16 text-gray-500">
+                  <p className="text-lg">Chưa có công việc phù hợp.</p>
+                  <p className="text-sm mt-2">
+                    Hãy bổ sung thêm kỹ năng và kinh nghiệm nhé!
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* --- */}
     </div>
   );
 };

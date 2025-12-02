@@ -11,8 +11,10 @@ import {
   Edit2,
   File,
   PenBoxIcon,
+  X,
 } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { RiGeminiLine } from "react-icons/ri";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useUpdateJobPostingMutation } from "../../redux/api/apiPostSlice";
 import { useGetAllLocationsQuery } from "../../redux/api/apiAdminSlice";
 import type { JobType, Location } from "../../types/PostingProps";
@@ -31,6 +33,8 @@ import {
 } from "../../redux/features/postSlice";
 import { addToast } from "../../redux/features/toastSlice";
 import { getFileIcon, getFileIconFromName } from "../../utils/helpRender";
+import { useGetSuggestionCandidatesMutation } from "../../redux/api/apiResumeSlice";
+import DataLoader from "../../components/UI/DataLoader";
 
 const EditJobPostingView = () => {
   const { id: jobId } = useParams();
@@ -40,6 +44,8 @@ const EditJobPostingView = () => {
     useUpdateJobPostingMutation();
   const { data: locationsData } = useGetAllLocationsQuery();
   const locations: Location[] = locationsData?.data ?? [];
+
+  const [showCandidateSugestion, setShowCandidateSuggestion] = useState(false);
 
   // Lấy draft từ Redux để đồng bộ
   const {
@@ -70,6 +76,8 @@ const EditJobPostingView = () => {
     setExistingImageUrls(imageUrls || []);
     setExistingDocument(documents || []);
   }, [imageUrls, documents]);
+
+  const [getCandidateSuggestions] = useGetSuggestionCandidatesMutation();
 
   const maxImages = 5;
   const totalImages = existingImageUrls?.length + newImages?.length;
@@ -234,6 +242,49 @@ const EditJobPostingView = () => {
         })
       );
     }
+  };
+
+  const [loadingCandidates, setLoadingCandidates] = useState(false);
+  const [candidateSuggestions, setCandidateSuggestion] = useState<any>(null);
+  const fetchJobSuggestions = async () => {
+    if (candidateSuggestions !== null) return;
+
+    setLoadingCandidates(true);
+    try {
+      const res = await getCandidateSuggestions(jobId).unwrap();
+
+      let suggestedJobs: any[] = [];
+
+      if (res.success && res.data) {
+        // Trường hợp 1: backend trả chuỗi JSON (hiện tại của bạn)
+        if (typeof res.data === "string") {
+          try {
+            const parsed = JSON.parse(res.data);
+            suggestedJobs = parsed.suggested_jobs || [];
+          } catch (e) {
+            console.error("Parse JSON từ backend thất bại:", e);
+            suggestedJobs = [];
+          }
+        } else if (res.data.suggested_jobs) {
+          suggestedJobs = res.data.suggested_jobs;
+        }
+      }
+
+      const validJobs = suggestedJobs.filter(
+        (job: any) =>
+          job.id && job.title && job.title.trim() !== "" && job.match_score > 0
+      );
+
+      setCandidateSuggestion(validJobs);
+    } catch (err) {
+      setCandidateSuggestion([]);
+    } finally {
+      setLoadingCandidates(false);
+    }
+  };
+
+  const handleOpenCandidateSuggestion = () => {
+    setShowCandidateSuggestion(true);
   };
 
   return (
@@ -639,9 +690,114 @@ const EditJobPostingView = () => {
               <ClipboardList size={20} /> Xem ứng viên
             </button>
           )}
+          {state === "PUBLISHED" && (
+            <button
+              type="button"
+              onClick={handleOpenCandidateSuggestion}
+              className="bg-gradient-to-r from-red-600 via-purple-600 to-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 flex items-center gap-2"
+            >
+              <RiGeminiLine size={20} /> Gợi ý ứng viên
+            </button>
+          )}
         </div>
         ;
       </form>
+
+      {/* Suggest modal */}
+      {showCandidateSugestion && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-teal-500 border-b p-5 flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-white">
+                Công việc phù hợp với hồ sơ của bạn
+              </h2>
+              <button
+                onClick={() => setShowCandidateSuggestion(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                <X size={24} className="w-6 h-6 text-white" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {loadingCandidates ? (
+                <div className="text-center py-16">
+                  <DataLoader content="Tìm kiếm ứng viên..." />
+                </div>
+              ) : candidateSuggestions && candidateSuggestions.length > 0 ? (
+                <div className="space-y-4">
+                  {candidateSuggestions.map((job) => (
+                    <div
+                      key={job.id}
+                      className="border rounded-xl p-5 hover:shadow-lg transition-shadow"
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 className="text-xl font-bold text-teal-700">
+                            {job.title}
+                          </h3>
+                          <p className="text-gray-700 font-medium">
+                            {job.companyName}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {job.location || "Không rõ địa điểm"} • Lương:{" "}
+                            {job.promotedSalary || job.salary || "Thoả thuận"}
+                          </p>
+                          {job.reason && (
+                            <p className="text-xs text-gray-600 mt-1">
+                              Lý do: {job.reason}
+                            </p>
+                          )}
+                        </div>
+                        {job.matchScore && (
+                          <div className="text-right">
+                            <span className="text-2xl font-bold text-green-600">
+                              {job.matchScore}%
+                            </span>
+                            <p className="text-xs text-gray-500">phù hợp</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {job.requiredSkills
+                          ?.slice(0, 6)
+                          .map((skill: string) => (
+                            <span
+                              key={skill}
+                              className="text-xs bg-teal-100 text-teal-700 px-3 py-1 rounded-full"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                      </div>
+
+                      <div className="flex gap-3">
+                        <Link to={`/jobs/${job.id}`}>
+                          <button className="bg-teal-600 text-white px-5 py-2 rounded-lg hover:bg-teal-700 transition">
+                            Xem chi tiết
+                          </button>
+                        </Link>
+                        <button className="border border-teal-600 text-teal-600 px-5 py-2 rounded-lg hover:bg-teal-50 transition">
+                          Ứng tuyển ngay
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16 text-gray-500">
+                  <p className="text-lg">Chưa có ứng viên phù hợp.</p>
+                  <p className="text-sm mt-2">
+                    Hãy chờ đợi ứng viên có kinh nghiệm nhé!
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* --- */}
     </div>
   );
 };

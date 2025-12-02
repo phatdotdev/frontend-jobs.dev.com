@@ -35,8 +35,6 @@ const CompanyView: React.FC = () => {
     size,
   });
 
-  console.log(companies);
-
   const handleSearch = () => {
     setSearchQuery(searchTerm);
   };
@@ -65,7 +63,7 @@ const CompanyView: React.FC = () => {
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSearch();
             }}
-            placeholder="Tìm kiếm công ty, vị trí, hoặc từ khóa..." // Tối ưu hóa placeholder
+            placeholder="Tìm kiếm công ty, vị trí, hoặc từ khóa..."
             className="w-full pl-12 pr-4 py-2.5 bg-gray-50 border-transparent rounded-xl 
                        focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent 
                        transition duration-200 placeholder-gray-500 text-gray-800 shadow-inner"
@@ -74,7 +72,6 @@ const CompanyView: React.FC = () => {
         <button
           onClick={handleSearch}
           disabled={isLoading}
-          // 🎯 Nút chính: Màu sắc đậm hơn, shadow mạnh và hiệu ứng hover rõ ràng
           className="flex items-center justify-center gap-2 bg-teal-500 text-white px-8 py-2.5 rounded-xl font-bold 
                    hover:bg-teal-700 transition duration-200 disabled:opacity-50 disabled:shadow-none"
         >
@@ -106,7 +103,7 @@ const CompanyView: React.FC = () => {
           Không tìm thấy công ty nào phù hợp với từ khóa "{searchQuery}".
         </p>
       ) : (
-        <div className="md:mx-[100px] grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {companies.map((company: Company) => (
             <CompanyItem key={company.id} company={company} />
           ))}

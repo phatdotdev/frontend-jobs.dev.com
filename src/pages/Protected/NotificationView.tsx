@@ -11,6 +11,7 @@ import {
   Building2,
   Megaphone,
   AlertCircle,
+  Star,
 } from "lucide-react";
 import { useGetAllMyNotificationQuery } from "../../redux/api/apiCommunication";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,6 +23,7 @@ import type { RootState } from "../../redux/features/store";
 import DataLoader from "../../components/UI/DataLoader";
 import { useEffect } from "react";
 import { useSocketContext } from "../../context/SocketContext";
+import { getNotificationLink } from "../../utils/helper";
 
 type Notification = {
   id: string;
@@ -51,19 +53,12 @@ const getTypeConfig = (type: string) => {
       border: "bg-purple-500",
       label: "Cập nhật trạng thái",
     },
-    INTERVIEW_RESULT: {
-      icon: CheckCircle,
-      color: "text-green-600",
-      bg: "bg-green-50",
-      border: "bg-green-500",
-      label: "Kết quả phỏng vấn",
-    },
-    JOB_OFFER: {
-      icon: Building2,
-      color: "text-amber-600",
-      bg: "bg-amber-50",
-      border: "bg-amber-500",
-      label: "Offer việc làm",
+    REVIEW_RECEIVED: {
+      icon: Star,
+      color: "text-yellow-600",
+      bg: "bg-yellow-50",
+      border: "bg-yellow-500",
+      label: "Kết quả đánh giá hồ sơ",
     },
     SYSTEM_ANNOUNCEMENT: {
       icon: Megaphone,
@@ -88,13 +83,17 @@ const getTypeConfig = (type: string) => {
 const NotificationView = () => {
   const dispatch = useDispatch();
   const { data: response, isLoading, isError } = useGetAllMyNotificationQuery();
-  const notifications = useSelector(
-    (state: RootState) => state.notifications || []
+  const notifications = useSelector((state: RootState) =>
+    (state.notifications || [])
+      .slice()
+      .sort(
+        (a: any, b: any) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      )
   );
 
   const { markNotificationAsRead } = useSocketContext();
 
-  // Cập nhật danh sách thông báo từ API
   useEffect(() => {
     if (response?.data) {
       dispatch(setNotifications(response.data));
@@ -188,7 +187,7 @@ const NotificationView = () => {
                 className={`absolute left-0 top-0 bottom-0 w-2 ${config.border} group-hover:w-4 transition-all duration-500`}
               />
 
-              <div className="p-6 pl-10 flex gap-5">
+              <div className="p-6 pl-10 flex items-center gap-5">
                 {/* Icon loại */}
                 <div
                   className={`p-4 rounded-2xl ${config.bg} shadow-md flex-shrink-0`}
@@ -209,13 +208,9 @@ const NotificationView = () => {
                   </p>
 
                   {/* Link chi tiết */}
-                  {(noti.applicationId || noti.postId) && (
+                  {getNotificationLink(noti) && (
                     <Link
-                      to={
-                        noti.applicationId
-                          ? `/job-seeker/applied-jobs/${noti.applicationId}`
-                          : `/jobs/${noti.postId}`
-                      }
+                      to={getNotificationLink(noti) as string}
                       onClick={(e) => e.stopPropagation()}
                       className="inline-flex items-center gap-2 mt-4 text-teal-600 font-bold hover:underline"
                     >

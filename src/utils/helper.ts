@@ -1,3 +1,6 @@
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
 export function getImageUrl(fileName: string): string {
   const baseUrl = import.meta.env.VITE_API_URL;
   return `${baseUrl}/api/v1/files/${fileName}`;
@@ -128,4 +131,21 @@ export function getApplicationStateNote(state: string): string {
     default:
       return "Trạng thái không xác định.";
   }
+}
+
+// Tailwind
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+// Links
+
+export function getNotificationLink(notification: any) {
+  if (notification.resumeId)
+    return `/job-seeker/resume/${notification.resumeId}/reviews`;
+  else if (notification.applicationId)
+    return `/job-seeker/applied-jobs/${notification.applicationId}`;
+  else if (notification.postId) return `/jobs/${notification.postId}`;
+  return null;
 }

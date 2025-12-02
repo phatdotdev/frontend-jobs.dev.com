@@ -4,48 +4,16 @@ import { useGetMyFeedbacksQuery } from "../../redux/api/apiReviewSlice";
 import DataLoader from "../../components/UI/DataLoader";
 import { Link } from "react-router-dom";
 
-const mockReviewHistory = [
-  {
-    id: "5adad008-964e-474f-a35f-edf3652b01c3",
-    resumeTitle: "Hồ sơ cho FPT Software",
-    applicantName: "Đỗ Phát",
-    status: "REVIEW", // Đang xem xét
-    score: null,
-    createdAt: "2025-11-10T00:56:15.841188",
-    completedAt: "2025-11-15T10:00:00",
-  },
-  {
-    id: "a1b2c3d4-e5f6-7890-a0b1-c2d3e4f5g6h7",
-    resumeTitle: "Hồ sơ Java Developer - Vingroup",
-    applicantName: "Lê Văn Tám",
-    status: "COMPLETED", // Đã hoàn thành
-    score: 9,
-    createdAt: "2025-10-01T10:00:00.000Z",
-    completedAt: "2025-10-05T15:30:00.000Z",
-  },
-  {
-    id: "b9c8d7e6-f5g4-h3i2-j1k0-l9m8n7o6p5q4",
-    resumeTitle: "Hồ sơ Data Analyst - Viettel",
-    applicantName: "Trần Thị Bé",
-    status: "COMPLETED", // Đã hoàn thành
-    score: 6,
-    createdAt: "2025-09-20T08:15:00.000Z",
-    completedAt: "2025-09-25T11:00:00.000Z",
-  },
-];
-
 const ReviewHistoryPage = () => {
   const { data: response, isLoading } = useGetMyFeedbacksQuery({});
   const historyData = response?.data.content;
-
-  console.log(historyData);
 
   const renderStatusBadge = (status: string) => {
     switch (status) {
       case "REVIEW":
         return (
           <span className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
-            <Clock className="w-3 h-3 mr-1" /> Đang Review
+            <Clock className="w-3 h-3 mr-1" /> Đang đánh giá
           </span>
         );
       case "COMPLETED":
@@ -118,7 +86,7 @@ const ReviewHistoryPage = () => {
                   {moment(item.createdAt).format("DD/MM/YYYY")}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {renderStatusBadge(item.state)}
+                  {renderStatusBadge(item.state || "COMPLETED")}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-bold">
                   {item.score ? (
@@ -138,12 +106,7 @@ const ReviewHistoryPage = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <Link to={`/expert/reviews/${item.id}`}>
-                    <button
-                      onClick={() =>
-                        console.log(`Xem chi tiết review ${item.id}`)
-                      }
-                      className="text-indigo-600 hover:text-indigo-900 font-semibold text-xs py-1 px-3 border border-indigo-300 rounded-md"
-                    >
+                    <button className="text-indigo-600 hover:text-indigo-900 font-semibold text-xs py-1 px-3 border border-indigo-300 rounded-md">
                       Xem Chi Tiết
                     </button>
                   </Link>
@@ -153,13 +116,6 @@ const ReviewHistoryPage = () => {
           </tbody>
         </table>
       </div>
-
-      {/* Thanh Phân trang (Placeholder) */}
-      {/* <div className="mt-6 flex justify-center border-t pt-4">
-                <button className="text-sm text-gray-600 hover:text-indigo-600">
-                    Xem thêm...
-                </button>
-            </div> */}
     </div>
   );
 };

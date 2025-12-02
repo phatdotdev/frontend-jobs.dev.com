@@ -22,6 +22,7 @@ import {
 } from "../../utils/helper";
 import DataLoader from "../UI/DataLoader";
 import ErrorAlert from "../UI/ErrorAlert";
+import NotificationPanel from "../Notification/NotificationPanel";
 
 // Mock Default Assets
 const defaultAvatar = "https://placehold.co/100x100/10b981/ffffff?text=JS";
@@ -78,7 +79,7 @@ const JobSeekerPageHeader = () => {
   const secondaryColor = "blue-50";
 
   return (
-    <header className="bg-white shadow-xl rounded-b-xl overflow-hidden">
+    <header className="bg-white shadow-xl rounded-b-xl">
       {/* 1. Cover Image and Avatar Section */}
       <div className="relative">
         <Link
@@ -129,7 +130,7 @@ const JobSeekerPageHeader = () => {
             {`${jobSeekerInfo.firstname} ${jobSeekerInfo.lastname}` ||
               "Tên Người tìm việc"}
           </h1>
-          <p className="text-md text-gray-600 mt-1 truncate font-semibold">
+          <p className="text-md ml-10 text-gray-600 mt-1 truncate font-semibold">
             {jobSeekerInfo.role || "Chức danh/Vị trí mong muốn"}
           </p>
 
@@ -158,13 +159,17 @@ const JobSeekerPageHeader = () => {
           </div>
         </div>
 
-        {/* Action Button: Edit Profile */}
-        <button
-          className={`flex items-center gap-1.5 bg-${secondaryColor} text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-200 transition duration-150 text-sm flex-shrink-0`}
-        >
-          <User size={18} />
-          Chỉnh sửa Hồ sơ cá nhân
-        </button>
+        <div className="flex items-center gap-4">
+          {/* Action Button: Edit Profile */}
+          <Link
+            to="/account"
+            className={`flex items-center gap-1.5 bg-${secondaryColor} text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-200 transition duration-150 text-sm flex-shrink-0`}
+          >
+            <User size={18} />
+            Chỉnh sửa Hồ sơ cá nhân
+          </Link>
+          <NotificationPanel />
+        </div>
       </div>
 
       {/* 3. Navigation Links */}

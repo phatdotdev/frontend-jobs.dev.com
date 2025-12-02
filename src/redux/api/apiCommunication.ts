@@ -29,6 +29,14 @@ export const apiCommunicationSlice = apiSlice.injectEndpoints({
         method: "PUT",
       }),
     }),
+    // create notification
+    createNotification: builder.mutation<ResponseProps<any>, any>({
+      query: (notification) => ({
+        url: `${NOTI_URL}`,
+        method: "POST",
+        body: notification,
+      }),
+    }),
   }),
 });
 
@@ -38,4 +46,5 @@ export const {
   // NOTIFICATION
   useGetAllMyNotificationQuery,
   useMarkNotificationAsReadMutation,
+  useCreateNotificationMutation,
 } = apiCommunicationSlice;

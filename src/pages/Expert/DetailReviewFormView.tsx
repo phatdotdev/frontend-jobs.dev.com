@@ -18,7 +18,7 @@ const ReviewDetailPage = () => {
   return (
     <div className="sm:mx-auto max-w-7xl mt-4 p-4">
       <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-6">
-        Chi Tiết Review Hồ Sơ:{" "}
+        Chi Tiết Đánh Giá Hồ Sơ:{" "}
         <span className="text-purple-700">{resumeData.title}</span>
       </h1>
 

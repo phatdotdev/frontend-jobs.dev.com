@@ -11,12 +11,11 @@ import {
   FaGraduationCap,
   FaBriefcase,
   FaTools,
-  FaCertificate,
   FaLaptopCode,
   FaMedal,
   FaUsers,
 } from "react-icons/fa";
-import { LayoutDashboard, TicketCheck, User } from "lucide-react";
+import { TicketCheck, User } from "lucide-react";
 
 const tabConfig = [
   {

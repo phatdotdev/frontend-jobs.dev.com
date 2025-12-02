@@ -11,6 +11,7 @@ import { useState } from "react";
 import { useGetJobSeekerActivitiesQuery } from "../../redux/api/apiStatisticsSlice";
 import { Link } from "react-router-dom";
 import { formatDate, getImageUrl } from "../../utils/helper";
+import DataLoader from "../../components/UI/DataLoader";
 
 const ActivitiesView = () => {
   const { data: response, isLoading } = useGetJobSeekerActivitiesQuery();
@@ -21,11 +22,7 @@ const ActivitiesView = () => {
   );
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <DataLoader />;
   }
 
   const tabs = [

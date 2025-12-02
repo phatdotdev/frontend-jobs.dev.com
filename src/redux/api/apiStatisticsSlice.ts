@@ -20,6 +20,18 @@ export const apiStatisticsSlice = apiSlice.injectEndpoints({
         url: `${STATIS_URL}/job-seeker`,
       }),
     }),
+    getTrendingPostings: builder.query<ResponseProps<any>, any>({
+      query: (count) => ({
+        url: `${STATIS_URL}/postings/trend`,
+        params: { count },
+      }),
+    }),
+    getTrendingCompanies: builder.query<ResponseProps<any>, any>({
+      query: (count) => ({
+        url: `${STATIS_URL}/companies/trend`,
+        params: { count },
+      }),
+    }),
   }),
 });
 
@@ -27,4 +39,7 @@ export const {
   useGetGeneralStatisticsQuery,
   useGetRecruiterStatisticQuery,
   useGetJobSeekerActivitiesQuery,
+  // HOME
+  useGetTrendingCompaniesQuery,
+  useGetTrendingPostingsQuery,
 } = apiStatisticsSlice;

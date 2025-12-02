@@ -28,6 +28,7 @@ const JobSeekerInfo = () => {
   const [lastname, setLastname] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
+  const [recommended, setRecommended] = useState<boolean>(false);
 
   const [isEditing, setIsEditing] = useState(false);
 
@@ -36,7 +37,14 @@ const JobSeekerInfo = () => {
 
   const handleSaveProfile = async () => {
     try {
-      updateProfile({ username, firstname, lastname, address, phone }).unwrap();
+      updateProfile({
+        username,
+        firstname,
+        lastname,
+        address,
+        phone,
+        recommended,
+      }).unwrap();
     } catch (error) {
       dispatch(
         addToast({
@@ -61,6 +69,7 @@ const JobSeekerInfo = () => {
       setLastname(info.lastname || "");
       setAddress(info.address || "");
       setPhone(info.phone || "");
+      setRecommended(info.recommended || false);
     }
   }, [info]);
   if (isLoading) {
@@ -231,6 +240,30 @@ const JobSeekerInfo = () => {
                             : "bg-gray-50 border-gray-200 cursor-default"
                         }`}
           />
+        </div>
+
+        <div className="col-span-1 md:col-span-2 flex items-center justify-between p-6 bg-teal-50 rounded-xl">
+          <div>
+            <p className="font-bold text-gray-800">
+              Hiển thị trong danh sách đề xuất
+            </p>
+            <p className="text-sm text-gray-600">
+              Cho phép nhà tuyển dụng tìm thấy bạn dễ dàng hơn
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={!isEditing}
+            onClick={() => setRecommended(!recommended)}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+      ${recommended ? "bg-teal-600" : "bg-gray-300"}
+      ${isEditing ? "cursor-pointer" : "cursor-not-allowed opacity-60"}`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+        ${recommended ? "translate-x-6" : "translate-x-1"}`}
+            />
+          </button>
         </div>
       </div>
 

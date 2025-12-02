@@ -13,6 +13,7 @@
     "@reduxjs/toolkit": "^2.9.0",
     "@stomp/stompjs": "^7.2.1",
     "@tailwindcss/vite": "^4.1.14",
+    "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.19",
     "docx": "^9.5.1",
@@ -20,6 +21,7 @@
     "file-saver": "^2.0.5",
     "framer-motion": "^12.23.24",
     "jwt-decode": "^4.0.0",
+    "lib-utils-ts": "^0.0.0-test",
     "lucide-react": "^0.545.0",
     "moment": "^2.30.1",
     "react": "^19.1.1",
@@ -31,6 +33,7 @@
     "react-router-dom": "^7.9.4",
     "sockjs-client": "^1.6.1",
     "stompjs": "^2.3.3",
+    "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.14",
     "uuid": "^13.0.0"
   },
