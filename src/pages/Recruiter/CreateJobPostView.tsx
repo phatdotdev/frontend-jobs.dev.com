@@ -182,7 +182,7 @@ const CreateJobPostView = () => {
           message: "Tạo bài đăng thành công (đã lưu nháp)",
         })
       );
-      // navigate("/recruiter/jobs");
+      navigate("/recruiter/jobs");
     } catch (err: any) {
       dispatch(
         addToast({

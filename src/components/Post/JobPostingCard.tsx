@@ -38,14 +38,14 @@ const JobPostingCard = ({ job }: { job: JobPosting }) => {
   return (
     <div className="bg-white rounded-xl p-5 shadow-lg border border-gray-100 transition duration-300 hover:shadow-xl hover:border-teal-300 flex flex-col space-y-4">
       <div className="flex justify-between items-start">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-1 items-center gap-4">
           <img
             src={getImageUrl(job.avatarUrl)}
             alt={job.companyName}
             className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border-2 border-teal-500 p-0.5"
           />
           <div>
-            <h3 className="text-xl font-bold text-gray-900 leading-tight w-[80%]">
+            <h3 className="text-xl font-bold text-gray-900 leading-tight">
               {job.title}
             </h3>
             <p className="text-sm font-medium text-gray-500 flex items-center gap-1 mt-1">

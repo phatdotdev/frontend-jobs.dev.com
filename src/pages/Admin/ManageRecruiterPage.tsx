@@ -85,14 +85,14 @@ const ManageRecruiterPage = () => {
   const verifyRecruiter = async (id: string) => {
     if (confirm("Xác minh người dùng?")) {
       try {
-        verify(id);
+        await verify(id).unwrap();
         dispatch(
           addToast({
             type: "success",
             message: "Xác thực nhà tuyển dụng thành công!",
           })
         );
-        refetch();
+        await refetch();
       } catch (error) {
         dispatch(
           addToast({

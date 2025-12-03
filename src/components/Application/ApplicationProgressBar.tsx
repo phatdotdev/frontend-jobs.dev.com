@@ -38,41 +38,54 @@ const steps = [
 ];
 
 export default function ApplicationProgressBar({ app }: { app: Application }) {
-  const { state, appliedAt, requestedAt, acceptedAt, hiredAt, rejectedAt } =
-    app;
+  const {
+    state,
+    appliedAt,
+    requestedAt,
+    acceptedAt,
+    interviewAt,
+    hiredAt,
+    rejectedAt,
+  } = app;
 
+  // Xác định bước hiện tại và trạng thái từ chối
   const getProgress = () => {
+    // Trường hợp bị từ chối
     if (state === "REJECTED" || rejectedAt) {
-      let rejectedStep = appliedAt ? 2 : 1;
-      if (acceptedAt) rejectedStep = 4;
-      return {
-        currentStep: rejectedStep,
-        isRejected: true,
-        status: "rejected",
-      };
+      if (acceptedAt) {
+        // Đã từng được chấp nhận → bị loại sau phỏng vấn → bước 4
+        return { currentStep: 4, isRejected: true, rejectedAtStep: 4 };
+      } else {
+        // Chưa từng được accepted → bị loại ở bước xét duyệt → bước 2
+        return { currentStep: 2, isRejected: true, rejectedAtStep: 2 };
+      }
     }
 
+    // Trường hợp được nhận việc
     if (state === "HIRED" || hiredAt) {
       return { currentStep: 4, status: "hired" };
     }
 
-    if (state === "INTERVIEW") {
+    // Đang phỏng vấn
+    if (state === "INTERVIEW" || interviewAt) {
       return { currentStep: 3, status: "interview" };
     }
 
+    // Hồ sơ đã được chấp nhận (đi phỏng vấn)
     if (state === "ACCEPTED" || acceptedAt) {
       return { currentStep: 3, status: "accepted" };
     }
 
+    // Yêu cầu bổ sung / đang xét duyệt
     if (state === "REQUESTED" || requestedAt) {
-      const step = acceptedAt ? 3 : 2;
-      return { currentStep: step, status: "requested" };
+      return { currentStep: 2, status: "requested" };
     }
 
     if (state === "REVIEW" || state === "REVIEWING") {
       return { currentStep: 2, status: "reviewing" };
     }
 
+    // Đã nộp hồ sơ → bước 1 hoàn thành
     if (state === "SUBMITTED" || appliedAt) {
       return { currentStep: 1, status: "submitted" };
     }
@@ -80,7 +93,12 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
     return { currentStep: 1, status: "pending" };
   };
 
-  const { currentStep, isRejected, status } = getProgress();
+  const {
+    currentStep,
+    isRejected,
+    rejectedAtStep,
+    status = "pending",
+  } = getProgress();
 
   const statusConfig: Record<string, any> = {
     submitted: { color: "bg-green-500", ring: "ring-green-200", icon: Check },
@@ -93,7 +111,6 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
     accepted: { color: "bg-yellow-500", ring: "ring-yellow-200", icon: Check },
     interview: { color: "bg-indigo-500", ring: "ring-indigo-200", icon: Users },
     hired: { color: "bg-emerald-600", ring: "ring-emerald-300", icon: Award },
-    rejected: { color: "bg-red-600", ring: "ring-red-300", icon: X },
   };
 
   const getStepDisplay = (stepIndex: number) => {
@@ -101,8 +118,8 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
     const isCurrent = stepIndex === currentStep;
     const isFuture = stepIndex > currentStep;
 
-    // Bị từ chối → đỏ từ bước bị loại trở đi
-    if (isRejected && stepIndex >= currentStep) {
+    // Nếu bị từ chối: tô đỏ từ bước bị loại trở đi
+    if (isRejected && stepIndex >= (rejectedAtStep || currentStep)) {
       return {
         bg: "bg-red-600 text-white",
         ring: "ring-red-300",
@@ -111,7 +128,8 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
       };
     }
 
-    if (isPast) {
+    // Các bước đã hoàn thành (xanh)
+    if (isPast || (isCurrent && status === "hired")) {
       return {
         bg: "bg-green-500 text-white",
         ring: "ring-green-200",
@@ -120,7 +138,16 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
       };
     }
 
+    // Bước hiện tại
     if (isCurrent) {
+      if (status === "hired") {
+        return {
+          bg: "bg-emerald-600 text-white",
+          ring: "ring-emerald-300",
+          icon: Award,
+          labelColor: "text-emerald-700",
+        };
+      }
       const cfg = statusConfig[status] || statusConfig.submitted;
       return {
         bg: cfg.color + " text-white",
@@ -130,6 +157,7 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
       };
     }
 
+    // Bước tương lai → xám
     return {
       bg: "bg-gray-300 text-gray-600",
       ring: "ring-gray-200",
@@ -139,7 +167,7 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
   };
 
   const getStatusText = () => {
-    if (status === "rejected")
+    if (isRejected)
       return `Bị từ chối ${
         rejectedAt ? format(new Date(rejectedAt), "dd/MM/yyyy") : ""
       }`;
@@ -152,7 +180,7 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
     if (status === "requested") return "Yêu cầu bổ sung hồ sơ";
     if (status === "reviewing") return "Đang xét duyệt";
     if (status === "submitted") return "Đã nộp hồ sơ";
-    return "Chưa nộp";
+    return "Chưa nộp hồ sơ";
   };
 
   return (

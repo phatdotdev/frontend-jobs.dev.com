@@ -376,12 +376,15 @@ const SkillManager = () => {
                     {/* Thông tin Danh mục */}
                     <p className="text-sm text-gray-600 mb-3 flex items-center">
                       <CategoryIcon size={14} className="mr-2 text-teal-600" />
-                      **Danh mục:** {categoryDisplay.label}
+                      <span className="font-bold mr-2">Danh mục:</span>{" "}
+                      <span className="text-teal-500 font-bold">
+                        {categoryDisplay.label}
+                      </span>
                     </p>
 
                     {/* Cấp độ kỹ năng (Level Badge) */}
                     <div
-                      className={`flex items-center text-xs font-bold px-3 py-1.5 rounded-full ${levelDisplay.color} ${levelDisplay.text} bg-opacity-20 shadow-inner`}
+                      className={`mb-2 flex items-center text-xs font-bold px-3 py-1.5 rounded-full ${levelDisplay.color} ${levelDisplay.text} bg-opacity-20 shadow-inner`}
                       title={`Cấp độ: ${levelDisplay.label}`}
                     >
                       <LevelIcon size={14} className="mr-1.5" />

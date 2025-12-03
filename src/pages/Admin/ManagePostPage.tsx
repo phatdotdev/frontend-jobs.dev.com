@@ -23,6 +23,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import DataLoader from "../../components/UI/DataLoader";
+import { getImageUrl } from "../../utils/helper";
 
 type PostState = "DRAFT" | "PUBLISHED" | "CLOSED" | "COMPLETED";
 type JobType =
@@ -335,10 +336,10 @@ const ManagePostPage = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
                       <div className="lg:col-span-5">
                         <div className="flex items-start gap-5">
-                          <div className="w-16 h-16 bg-gray-200 border-2 border-dashed rounded-2xl flex-shrink-0 flex items-center justify-center">
+                          <div className="w-16 h-16 bg-gray-200 rounded-2xl flex-shrink-0 flex items-center justify-center">
                             {post.avatarUrl ? (
                               <img
-                                src={post.avatarUrl}
+                                src={getImageUrl(post.avatarUrl)}
                                 alt=""
                                 className="w-full h-full object-cover rounded-2xl"
                               />
