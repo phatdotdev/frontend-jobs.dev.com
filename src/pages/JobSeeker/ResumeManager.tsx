@@ -474,7 +474,10 @@ const ResumeManager = () => {
                     <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5" />
-                        Cập nhật: {formatDate(resume.updatedAt)}
+                        Cập nhật:{" "}
+                        {formatDate(
+                          resume.updatedAt ? resume.updatedAt : resume.createdAt
+                        )}
                       </span>
                     </div>
                   </div>

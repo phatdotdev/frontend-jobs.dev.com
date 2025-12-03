@@ -37,6 +37,12 @@ export const apiCommunicationSlice = apiSlice.injectEndpoints({
         body: notification,
       }),
     }),
+    sendInvitation: builder.mutation<ResponseProps<any>, any>({
+      query: ({ postId, receiverId }) => ({
+        url: `${NOTI_URL}/${postId}/invitation/${receiverId}`,
+        method: "POST",
+      }),
+    }),
   }),
 });
 
@@ -47,4 +53,5 @@ export const {
   useGetAllMyNotificationQuery,
   useMarkNotificationAsReadMutation,
   useCreateNotificationMutation,
+  useSendInvitationMutation,
 } = apiCommunicationSlice;

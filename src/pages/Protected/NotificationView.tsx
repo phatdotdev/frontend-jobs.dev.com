@@ -12,6 +12,7 @@ import {
   Megaphone,
   AlertCircle,
   Star,
+  Send,
 } from "lucide-react";
 import { useGetAllMyNotificationQuery } from "../../redux/api/apiCommunication";
 import { useDispatch, useSelector } from "react-redux";
@@ -66,6 +67,13 @@ const getTypeConfig = (type: string) => {
       bg: "bg-pink-50",
       border: "bg-pink-500",
       label: "Thông báo hệ thống",
+    },
+    JOB_INVITATION: {
+      icon: Send,
+      color: "text-indigo-600",
+      bg: "bg-indigo-50",
+      border: "bg-indigo-500",
+      label: "Lời mời ứng tuyển",
     },
   };
 

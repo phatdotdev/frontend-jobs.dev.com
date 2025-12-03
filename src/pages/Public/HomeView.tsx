@@ -19,7 +19,7 @@ const HomeView = () => {
     data: trendJobsResp,
     isLoading: loadingTrendJobs,
     isError: errTrendJobs,
-  } = useGetTrendingPostingsQuery(9);
+  } = useGetTrendingPostingsQuery(6);
   const {
     data: trendCompResp,
     isLoading: loadingTrendComp,
@@ -72,7 +72,7 @@ const HomeView = () => {
           ) : trendingJobs.length === 0 ? (
             <EmptyState text="Chưa có công việc nào đang hot" />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
               {trendingJobs.map((job: any) => (
                 <JobPostingItem key={job.id} job={job} />
               ))}

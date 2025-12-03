@@ -25,9 +25,19 @@ export interface NotificationProps {
 }
 
 export interface ApplicationDetail {
+  acceptedAt: string | number | Date;
+  hiredAt: string | number | Date;
+  rejectedAt: any;
+  updatedAt: string;
   id: string;
   appliedAt: string;
-  state: "SUBMITTED" | "REVIEWING" | "REQUESTED" | "ACCEPTED" | "REJECTED";
+  state:
+    | "SUBMITTED"
+    | "REVIEWING"
+    | "REQUESTED"
+    | "ACCEPTED"
+    | "REJECTED"
+    | "HIRED";
   resume: {
     avatarUrl: string;
     id: string;

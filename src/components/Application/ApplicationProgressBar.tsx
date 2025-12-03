@@ -38,21 +38,13 @@ const steps = [
 ];
 
 export default function ApplicationProgressBar({ app }: { app: Application }) {
-  const {
-    state,
-    appliedAt,
-    requestedAt,
-    acceptedAt,
-    interviewAt,
-    hiredAt,
-    rejectedAt,
-  } = app;
+  const { state, appliedAt, requestedAt, acceptedAt, hiredAt, rejectedAt } =
+    app;
 
-  // === XÁC ĐỊNH BƯỚC HIỆN TẠI & TRẠNG THÁI CHI TIẾT ===
   const getProgress = () => {
-    // Bị từ chối → đỏ từ bước bị loại
     if (state === "REJECTED" || rejectedAt) {
-      const rejectedStep = appliedAt ? 2 : 1;
+      let rejectedStep = appliedAt ? 2 : 1;
+      if (acceptedAt) rejectedStep = 4;
       return {
         currentStep: rejectedStep,
         isRejected: true,
@@ -60,33 +52,27 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
       };
     }
 
-    // ĐÃ NHẬN VIỆC → hoàn thành hết
     if (state === "HIRED" || hiredAt) {
       return { currentStep: 4, status: "hired" };
     }
 
-    // ĐANG PHỎNG VẤN
-    if (state === "INTERVIEW" || interviewAt) {
+    if (state === "INTERVIEW") {
       return { currentStep: 3, status: "interview" };
     }
 
-    // ĐÃ CHẤP NHẬN (sẵn sàng phỏng vấn hoặc đã offer)
     if (state === "ACCEPTED" || acceptedAt) {
       return { currentStep: 3, status: "accepted" };
     }
 
-    // YÊU CẦU BỔ SUNG (có thể ở bước 2 hoặc 3)
     if (state === "REQUESTED" || requestedAt) {
-      const step = acceptedAt || interviewAt ? 3 : 2;
+      const step = acceptedAt ? 3 : 2;
       return { currentStep: step, status: "requested" };
     }
 
-    // ĐANG XÉT DUYỆT
     if (state === "REVIEW" || state === "REVIEWING") {
       return { currentStep: 2, status: "reviewing" };
     }
 
-    // ĐÃ NỘP HỒ SƠ
     if (state === "SUBMITTED" || appliedAt) {
       return { currentStep: 1, status: "submitted" };
     }
@@ -96,7 +82,6 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
 
   const { currentStep, isRejected, status } = getProgress();
 
-  // === CẤU HÌNH MÀU + ICON CHO TỪNG TRẠNG THÁI ===
   const statusConfig: Record<string, any> = {
     submitted: { color: "bg-green-500", ring: "ring-green-200", icon: Check },
     reviewing: { color: "bg-amber-500", ring: "ring-amber-200", icon: Clock },
@@ -113,7 +98,7 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
 
   const getStepDisplay = (stepIndex: number) => {
     const isPast = stepIndex < currentStep;
-    const isCurrent = stepIndex === currentStep; // sửa lỗi ở đây
+    const isCurrent = stepIndex === currentStep;
     const isFuture = stepIndex > currentStep;
 
     // Bị từ chối → đỏ từ bước bị loại trở đi
@@ -126,7 +111,6 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
       };
     }
 
-    // Đã hoàn thành
     if (isPast) {
       return {
         bg: "bg-green-500 text-white",
@@ -136,7 +120,6 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
       };
     }
 
-    // Bước hiện tại
     if (isCurrent) {
       const cfg = statusConfig[status] || statusConfig.submitted;
       return {
@@ -147,7 +130,6 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
       };
     }
 
-    // Tương lai
     return {
       bg: "bg-gray-300 text-gray-600",
       ring: "ring-gray-200",
@@ -174,7 +156,7 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto py-10 px-6">
+    <div className="w-full max-w-6xl mx-auto py-10 px-6">
       {/* Thanh tiến trình */}
       <div className="relative">
         {/* Line nền */}

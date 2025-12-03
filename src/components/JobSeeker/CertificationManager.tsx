@@ -28,6 +28,7 @@ import {
 import InputWithIcon from "../UI/InputWithIcon";
 import { useDispatch } from "react-redux";
 import { addToast } from "../../redux/features/toastSlice";
+import { formatDate } from "../../utils/helper";
 
 const CertificationManager = () => {
   const {
@@ -373,7 +374,7 @@ const CertificationManager = () => {
                       <Calendar size={14} className="mr-2 text-yellow-600" />
                       Cấp ngày:{" "}
                       <span className="ml-1 font-semibold">
-                        {cert.issueDate}
+                        {formatDate(cert.issueDate)}
                       </span>
                     </p>
 
@@ -383,7 +384,7 @@ const CertificationManager = () => {
                         <Clock size={14} className="mr-2 text-red-500" />
                         Hết hạn:{" "}
                         <span className="ml-1 font-semibold">
-                          {cert.expirationDate}
+                          {formatDate(cert.expirationDate)}
                         </span>
                       </p>
                     )}

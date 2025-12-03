@@ -27,6 +27,7 @@ import {
 import InputWithIcon from "../UI/InputWithIcon";
 import { useDispatch } from "react-redux";
 import { addToast } from "../../redux/features/toastSlice";
+import { formatDate } from "../../utils/helper";
 
 const ExperienceManager = () => {
   const {
@@ -129,12 +130,6 @@ const ExperienceManager = () => {
       }
     }
   };
-
-  const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString("vi-VN", {
-      year: "numeric",
-      month: "short",
-    });
 
   return (
     <div className="p-0 bg-white rounded-xl shadow-lg">
@@ -334,14 +329,16 @@ const ExperienceManager = () => {
 
                 {/* Thông tin thời gian */}
                 <div className="text-sm text-gray-600 space-y-2">
-                  <p className="flex items-center font-medium">
+                  <p className="flex gap-1 items-center font-medium">
                     <Calendar size={14} className="mr-2 text-teal-600" />
                     Thời gian:{" "}
                     <span className="ml-1 font-semibold">
-                      {exp.startDate}
-                    </span>{" "}
-                    đến{" "}
-                    <span className="ml-1 font-semibold">{exp.endDate}</span>
+                      {formatDate(exp.startDate)}
+                    </span>
+                    đến
+                    <span className="ml-1 font-semibold">
+                      {formatDate(exp.endDate)}
+                    </span>
                   </p>
 
                   {/* Mô tả/Trách nhiệm */}

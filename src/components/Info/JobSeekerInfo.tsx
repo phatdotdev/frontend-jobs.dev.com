@@ -1,4 +1,5 @@
 import {
+  Cake,
   CircleX,
   FilePenLine,
   IdCard,
@@ -9,6 +10,7 @@ import {
   SaveAll,
   Tag,
   User,
+  VenusAndMars,
 } from "lucide-react";
 import {
   useGetJobSeekerProfileQuery,
@@ -21,13 +23,17 @@ import { useDispatch } from "react-redux";
 import { addToast } from "../../redux/features/toastSlice";
 
 const JobSeekerInfo = () => {
-  const { data: { data: info } = {}, isLoading } =
-    useGetJobSeekerProfileQuery();
+  const { data: { data: info } = {}, isLoading } = useGetJobSeekerProfileQuery(
+    undefined,
+    { refetchOnMountOrArgChange: true, refetchOnReconnect: true }
+  );
   const [username, setUsername] = useState("");
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
+  const [dob, setDob] = useState("");
+  const [gender, setGener] = useState("");
   const [recommended, setRecommended] = useState<boolean>(false);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -43,6 +49,8 @@ const JobSeekerInfo = () => {
         lastname,
         address,
         phone,
+        gender,
+        dob,
         recommended,
       }).unwrap();
     } catch (error) {
@@ -69,6 +77,8 @@ const JobSeekerInfo = () => {
       setLastname(info.lastname || "");
       setAddress(info.address || "");
       setPhone(info.phone || "");
+      setGener(info.gender || "");
+      setDob(info.dob || "");
       setRecommended(info.recommended || false);
     }
   }, [info]);
@@ -240,6 +250,48 @@ const JobSeekerInfo = () => {
                             : "bg-gray-50 border-gray-200 cursor-default"
                         }`}
           />
+        </div>
+        {/* DOB */}
+        <div className="col-span-1">
+          <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3">
+            <Cake className="h-5 w-5 text-teal-600" />
+            Ngày sinh
+          </label>
+          <input
+            type="date"
+            value={dob}
+            onChange={(e) => setDob(e.target.value)}
+            disabled={!isEditing}
+            className={`w-full px-5 py-4 rounded-xl font-medium border-2 text-gray-700 
+                        ${
+                          isEditing
+                            ? "bg-white border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-300 text-gray-900"
+                            : "bg-gray-50 border-gray-200 cursor-default"
+                        }`}
+          />
+        </div>
+        {/* Gender */}
+        <div className="col-span-1">
+          <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3">
+            <VenusAndMars className="h-5 w-5 text-teal-600" />
+            Giới tính
+          </label>
+          <select
+            value={gender}
+            onChange={(e) => setGener(e.target.value)}
+            disabled={!isEditing}
+            className={`w-full px-5 py-4 rounded-xl font-medium border-2 text-gray-700 
+                        ${
+                          isEditing
+                            ? "bg-white border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-300 text-gray-900"
+                            : "bg-gray-50 border-gray-200 cursor-default"
+                        }`}
+          >
+            <option value=""></option>
+            <option value={"MALE"}>Nam</option>
+            <option value={"FEMALE"}>Nữ</option>
+            <option value={"OTHER"}>Khác</option>
+          </select>
         </div>
 
         <div className="col-span-1 md:col-span-2 flex items-center justify-between p-6 bg-teal-50 rounded-xl">

@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Check,
   X,
+  MailOpen,
 } from "lucide-react";
 import { useSocketContext } from "../../context/SocketContext";
 import { useDispatch } from "react-redux";
@@ -64,6 +65,13 @@ const getNotificationInfo = (type: string) => {
         color: "from-purple-400 to-pink-500",
         bg: "bg-purple-100",
         text: "text-purple-700",
+      };
+    case "JOB_INVITATION":
+      return {
+        icon: <MailOpen className="w-5 h-5" />,
+        color: "from-rose-400 to-pink-500",
+        bg: "bg-rose-100",
+        text: "text-rose-700",
       };
     default:
       return {

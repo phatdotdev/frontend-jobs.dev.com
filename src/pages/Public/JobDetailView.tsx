@@ -29,18 +29,18 @@ import {
 import ImageCarousel from "../../components/UI/ImageCarosel";
 import { useGetUserInfoQuery } from "../../redux/api/apiUserSlice";
 import { useLazyGetAllResumesQuery } from "../../redux/api/apiResumeSlice";
-
 import CvSelectionModal from "../../components/Modal/CvSelectModal";
 import {
   useApplyJobMutation,
   useSearchApplyQuery,
 } from "../../redux/api/apiApplicationSlice";
-import ApplicationInfo from "../../components/Application/ApplicationInfo"; // Component đã cải tiến
+import ApplicationInfo from "../../components/Application/ApplicationInfo";
 import InteractionItem from "../../components/Post/InteractionItem";
 import type { PostingProps } from "../../types/PostingProps";
 import { getFileIconFromName, renderTabContent } from "../../utils/helpRender";
 import { useDispatch } from "react-redux";
 import { addToast } from "../../redux/features/toastSlice";
+import { differenceInDays } from "date-fns";
 
 const Loader = Loader2;
 
@@ -52,6 +52,7 @@ const formatSalary = (min: number, max: number) => {
 const JobDetailView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const {
     data: jobData,
@@ -77,26 +78,22 @@ const JobDetailView: React.FC = () => {
   });
   const similarJobs = similarJobsData?.data;
 
-  // Sử dụng useSearchApplyQuery để kiểm tra application
   const { data: { data: application } = {}, refetch: refetchApply } =
-    useSearchApplyQuery({
-      postId: id,
-    });
-
+    useSearchApplyQuery({ postId: id });
   const [applyJob, { isLoading: isApplyingApi }] = useApplyJobMutation();
-
-  const dispatch = useDispatch();
 
   const currentPathEncoded = encodeURIComponent(
     location.pathname + location.search
   );
 
+  const daysLeft = job?.expiredAt
+    ? differenceInDays(new Date(job.expiredAt), new Date())
+    : null;
+
   const fetchResumes = async () => {
     try {
       const { data } = await triggerGetResumes();
-      if (data && data.data) {
-        setResumes(data.data);
-      }
+      if (data && data.data) setResumes(data.data);
     } catch (error) {
       console.error("Lỗi khi fetch Resumes:", error);
     }
@@ -104,7 +101,6 @@ const JobDetailView: React.FC = () => {
 
   const handleApply = async () => {
     if (isProcessing) return;
-
     if (!isAuthenticated) {
       setIsProcessing(true);
       navigate(`/login?redirect=${currentPathEncoded}`);
@@ -112,9 +108,7 @@ const JobDetailView: React.FC = () => {
     }
     setIsProcessing(true);
     setShowCvModal(true);
-
     await fetchResumes();
-
     setIsProcessing(false);
   };
 
@@ -124,10 +118,7 @@ const JobDetailView: React.FC = () => {
       const formData = new FormData();
       formData.append("postId", job.id);
       formData.append("resumeId", resumeId);
-      console.log(files);
-      files.forEach((file) => {
-        formData.append("documents", file);
-      });
+      files.forEach((file) => formData.append("documents", file));
 
       await applyJob(formData).unwrap();
       dispatch(
@@ -144,7 +135,7 @@ const JobDetailView: React.FC = () => {
         addToast({
           type: "error",
           title: "Ứng tuyển thất bại!",
-          message: "Lỗi khi ứng tuyển!",
+          message: "Đã có lỗi xảy ra, vui lòng thử lại!",
         })
       );
     }
@@ -162,19 +153,16 @@ const JobDetailView: React.FC = () => {
     isResumesFetching ||
     isApplyingApi;
 
-  if (isJobLoading) {
-    return <DataLoader />;
-  }
-
+  if (isJobLoading) return <DataLoader />;
   if (isJobError || !job) {
     return (
       <div className="min-h-screen flex items-center justify-center p-8 bg-gray-50">
-        <div className="bg-white p-10 rounded-xl shadow-lg border border-red-200">
-          <X className="h-10 w-10 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-red-600">
+        <div className="bg-white p-12 rounded-2xl shadow-2xl border border-red-200 text-center">
+          <X className="h-16 w-16 text-red-500 mx-auto mb-6" />
+          <h2 className="text-3xl font-bold text-red-600">
             Không tìm thấy công việc
           </h2>
-          <p className="text-gray-600 mt-2">
+          <p className="text-gray-600 mt-3 text-lg">
             ID công việc không hợp lệ hoặc đã hết hạn.
           </p>
         </div>
@@ -183,29 +171,31 @@ const JobDetailView: React.FC = () => {
   }
 
   return (
-    <div className="relative min-h-screen bg-gray-50 pb-20">
-      {/* 1. Header Section */}
-      <header className="bg-white shadow-xl py-8 md:py-10 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center gap-6">
+    <div className="relative min-h-screen bg-gradient-to-b from-gray-50 to-white pb-24">
+      {/* Header */}
+      <header className="bg-white shadow-2xl py-10 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center gap-8">
           <img
             src={getImageUrl(job.avatarUrl)}
             alt={job.companyName}
-            className="w-24 h-24 rounded-2xl object-cover border-4 border-teal-500 shadow-xl flex-shrink-0"
+            className="w-28 h-28 rounded-3xl object-cover border-4 border-teal-500 shadow-2xl ring-4 ring-white"
           />
-          <div className="flex-1 min-w-0 text-center md:text-left">
-            <h1 className="text-4xl font-extrabold text-gray-900 leading-tight">
+          <div className="flex-1 text-center md:text-left">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
               {job.title}
             </h1>
-            <p className="text-xl font-semibold text-teal-600 mt-1 hover:text-teal-700 transition duration-200 cursor-pointer">
-              {job.companyName}
-            </p>
-            <div className="flex flex-wrap justify-center md:justify-start gap-x-6 gap-y-2 mt-4 text-gray-600 text-base font-medium">
-              <span className="flex items-center gap-2">
-                <MapPin size={18} className="text-teal-500" />
-                <span className="text-gray-700">{job.location.name}</span>
+            <p className="text-2xl font-bold text-teal-600 mt-3 group cursor-pointer">
+              <span className="transition-all duration-300 group-hover:text-teal-700 group-hover:underline underline-offset-4">
+                {job.companyName}
               </span>
-              <span className="flex items-center gap-2 font-bold text-lg text-red-600">
-                <DollarSign size={18} className="text-red-600" />
+            </p>
+            <div className="flex flex-wrap justify-center md:justify-start gap-x-8 gap-y-3 mt-5 text-gray-700">
+              <span className="flex items-center gap-2 text-lg">
+                <MapPin size={22} className="text-teal-600" />
+                <span className="font-semibold">{job.location.name}</span>
+              </span>
+              <span className="flex items-center gap-2 text-lg font-bold text-red-600">
+                <DollarSign size={24} className="text-red-600" />
                 {formatSalary(job.minSalary, job.maxSalary)}
               </span>
             </div>
@@ -213,206 +203,199 @@ const JobDetailView: React.FC = () => {
         </div>
       </header>
 
-      {/* --- */}
-
-      {/* 2. Main Content and Sidebar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 grid grid-cols-1 lg:grid-cols-9 gap-10">
-        {/* LEFT COLUMN - Job Tabs */}
-        <div className="lg:col-span-5  space-y-8">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 mt-12 grid grid-cols-1 lg:grid-cols-9 gap-10">
+        {/* Left: Tabs & Description */}
+        <div className="lg:col-span-5 space-y-8">
           <ImageCarousel images={job.imageUrls.map(getImageUrl)} />
 
-          <div className="bg-white p-6 md:p-10 rounded-2xl shadow-2xl border border-gray-100">
+          <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
             <div className="border-b border-gray-200">
-              <nav className="flex space-x-6 -mb-px" aria-label="Tabs">
-                {/* Tab: Mô tả công việc */}
-                <button
-                  onClick={() => setActiveTab("description")}
-                  className={`py-3 px-1 font-bold text-lg transition-colors duration-200 
-                                        ${
-                                          activeTab === "description"
-                                            ? "border-b-4 border-teal-600 text-teal-700"
-                                            : "text-gray-500 hover:text-teal-600"
-                                        }`}
-                >
-                  <Layers size={20} className="inline mr-2 -mt-0.5" /> Mô tả
-                  công việc
-                </button>
-                {/* Tab: Yêu cầu */}
-                <button
-                  onClick={() => setActiveTab("requirements")}
-                  className={`py-3 px-1 font-bold text-lg transition-colors duration-200 
-                                        ${
-                                          activeTab === "requirements"
-                                            ? "border-b-4 border-teal-600 text-teal-700"
-                                            : "text-gray-500 hover:text-teal-600"
-                                        }`}
-                >
-                  <CheckCircle size={20} className="inline mr-2 -mt-0.5" /> Yêu
-                  cầu
-                </button>
-                {/* Tab: Quyền lợi */}
-                <button
-                  onClick={() => setActiveTab("benefits")}
-                  className={`py-3 px-1 font-bold text-lg transition-colors duration-200 
-                                        ${
-                                          activeTab === "benefits"
-                                            ? "border-b-4 border-teal-600 text-teal-700"
-                                            : "text-gray-500 hover:text-teal-600"
-                                        }`}
-                >
-                  <Zap size={20} className="inline mr-2 -mt-0.5" /> Quyền lợi
-                </button>
+              <nav className="flex">
+                {[
+                  {
+                    key: "description",
+                    label: "Mô tả công việc",
+                    icon: Layers,
+                  },
+                  { key: "requirements", label: "Yêu cầu", icon: CheckCircle },
+                  { key: "benefits", label: "Quyền lợi", icon: Zap },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`relative flex-1 py-5 px-6 font-bold text-lg transition-all duration-300 flex items-center justify-center gap-3 ${
+                      activeTab === tab.key
+                        ? "text-teal-700"
+                        : "text-gray-500 hover:text-teal-600"
+                    }`}
+                  >
+                    <tab.icon size={22} />
+                    {tab.label}
+                    {activeTab === tab.key && (
+                      <span className="absolute bottom-0 left-0 right-0 h-1 bg-teal-600 rounded-t-full"></span>
+                    )}
+                  </button>
+                ))}
               </nav>
             </div>
-            {/* Tab Content */}
-            <div className="pt-8">
+            <div className="p-8 md:p-10">
               {activeTab === "description" &&
-                renderTabContent(job.description, CheckCircle, "text-teal-500")}
+                renderTabContent(job.description, CheckCircle, "text-teal-600")}
               {activeTab === "requirements" &&
                 renderTabContent(
                   job.requirements,
                   CheckCircle,
-                  "text-teal-500"
+                  "text-teal-600"
                 )}
               {activeTab === "benefits" &&
-                renderTabContent(job.benefits, Zap, "text-orange-500")}
+                renderTabContent(job.benefits, Zap, "text-orange-600")}
             </div>
           </div>
         </div>
 
-        {/* --- */}
-
-        {/* RIGHT COLUMN - Sidebar */}
+        {/* Right: Sidebar */}
         <div className="lg:col-span-4 space-y-8">
-          {/* Job Info Card */}
-          <div className="bg-white p-4 rounded-2xl shadow-xl border border-gray-100 space-y-5">
-            <h3 className="text-xl font-bold text-gray-800 border-b pb-4 mb-3 flex items-center gap-2">
-              <Building2 size={24} className="text-teal-600" />
+          {/* Job Info */}
+          <div className="bg-white p-7 rounded-3xl shadow-2xl border border-gray-100 hover:shadow-3xl transition-shadow duration-500">
+            <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-3 mb-6 pb-4 border-b">
+              <Building2 size={28} className="text-teal-600" />
               Thông tin công việc
             </h3>
-
-            <div className="space-y-4 text-gray-700">
-              {/* Kinh nghiệm */}
+            <div className="space-y-6 text-gray-700">
               <div className="flex items-center gap-4">
-                <Briefcase size={22} className="text-teal-500 flex-shrink-0" />
+                <Briefcase size={24} className="text-teal-600" />
                 <div>
-                  <p className="font-semibold text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 font-medium">
                     Kinh nghiệm
                   </p>
-                  <p className="text-base font-medium">{job.experience}</p>
+                  <p className="text-lg font-semibold">{job.experience}</p>
                 </div>
               </div>
-
-              {/* Loại hình */}
               <div className="flex items-center gap-4">
-                <Clock size={22} className="text-teal-500 flex-shrink-0" />
+                <Clock size={24} className="text-teal-600" />
                 <div>
-                  <p className="font-semibold text-sm text-gray-500">
-                    Loại hình
-                  </p>
-                  <p className="text-base font-medium">
+                  <p className="text-sm text-gray-500 font-medium">Loại hình</p>
+                  <p className="text-lg font-semibold">
                     {mapJobTypeVietnamese(job.type)}
                   </p>
                 </div>
               </div>
-
-              {/* Loại hình */}
               <div className="flex items-center gap-4">
-                <FileText size={22} className="text-teal-500 flex-shrink-0" />
+                <FileText size={24} className="text-teal-600" />
                 <div>
-                  <p className="font-semibold text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 font-medium">
                     Hồ sơ yêu cầu
                   </p>
-                  <p className="text-base font-medium">
-                    {job?.requiredDocuments}
+                  <p className="text-lg font-semibold">
+                    {job.requiredDocuments || "Không yêu cầu cụ thể"}
                   </p>
                 </div>
               </div>
-
-              {/* Hạn nộp hồ sơ */}
               <div className="flex items-center gap-4">
-                <Calendar size={22} className="text-teal-500 flex-shrink-0" />
+                <Calendar
+                  size={24}
+                  className={`${
+                    daysLeft !== null && daysLeft <= 7
+                      ? "text-red-600"
+                      : "text-teal-600"
+                  }`}
+                />
                 <div>
-                  <p className="font-semibold text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 font-medium">
                     Hạn nộp hồ sơ
                   </p>
-                  <p className="text-base font-bold text-red-600">
+                  <p
+                    className={`text-lg font-bold ${
+                      daysLeft !== null && daysLeft <= 7
+                        ? "text-red-600 animate-pulse"
+                        : "text-red-600"
+                    }`}
+                  >
                     {formatDateTime(job.expiredAt)}
+                    {daysLeft !== null && daysLeft <= 3 && (
+                      <span className="ml-3 text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded-full font-bold">
+                        Sắp hết hạn!
+                      </span>
+                    )}
                   </p>
                 </div>
               </div>
-              {/* Tương tác  */}
-              <InteractionItem
-                likes={job?.likes as number}
-                views={job?.views as number}
-              />
+              <div className="pt-4 border-t">
+                <InteractionItem
+                  likes={job?.likes as number}
+                  views={job?.views as number}
+                />
+              </div>
             </div>
           </div>
 
-          {/* Files đã thêm */}
-          <div className="bg-white p-4 pb-6">
-            {job.documents?.length > 0 && (
-              <div className="mt-4 space-y-2">
-                <p className="text-sm font-medium text-gray-700">
-                  Tài liệu đã thêm ({job.documents.length}/5):
-                </p>
-                {job.documents?.map((document, index) => (
+          {/* Documents */}
+          {job.documents?.length > 0 && (
+            <div className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100">
+              <p className="text-lg font-bold text-gray-800 mb-4">
+                Tài liệu đính kèm ({job.documents.length})
+              </p>
+              <div className="space-y-3">
+                {job.documents.map((doc, i) => (
                   <div
-                    key={index}
-                    className="flex items-center justify-between bg-gray-50 px-4 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-100 transition"
+                    key={i}
+                    className="flex items-center justify-between bg-gray-50 px-5 py-3 rounded-xl hover:bg-gray-100 transition"
                   >
-                    <div className="flex items-center gap-2 px-2 text-sm">
-                      {getFileIconFromName(document.originalName)}
-                      <span className="truncate max-w-xs font-medium">
-                        {document.originalName}
+                    <div className="flex items-center gap-3">
+                      {getFileIconFromName(doc.originalName)}
+                      <span className="font-medium text-gray-700 truncate max-w-[200px]">
+                        {doc.originalName}
                       </span>
                     </div>
-                    <button
-                      type="button"
-                      className="text-blue-500 hover:text-blue-600 hover:scale-110 cursor-pointer text-xs font-medium"
+                    <a
+                      href={getImageUrl(doc.fileName as string)}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      <a
-                        href={getImageUrl(document.fileName as string)}
-                        target="_blank"
-                      >
-                        <Download size={18} />
-                      </a>
-                    </button>
+                      <Download
+                        size={20}
+                        className="text-blue-600 hover:text-blue-700 transition"
+                      />
+                    </a>
                   </div>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          {/* Quick Apply Button / Applied Info - Sticky */}
-          <div className="sticky top-24">
-            {/* Conditional Rendering: Nếu đã nộp (application tồn tại) thì hiển thị thông tin */}
+          {/* Apply Button - Sticky */}
+          <div className="sticky top-24 z-10">
             {application ? (
               <ApplicationInfo application={application} />
             ) : (
-              // Ngược lại, hiển thị nút Ứng tuyển
               <>
                 <button
                   onClick={handleApply}
                   disabled={buttonLoading}
-                  className="w-full flex items-center justify-center gap-3 bg-teal-600 text-white text-xl font-bold py-4 rounded-2xl shadow-2xl shadow-teal-600/40 hover:bg-teal-700 transition duration-300 transform hover:scale-[1.005] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative overflow-hidden w-full group flex items-center justify-center gap-4 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white text-xl font-bold py-6 rounded-3xl shadow-2xl shadow-teal-600/50 transform hover:scale-[1.02] active:scale-98 transition-all duration-300 disabled:opacity-60"
                 >
-                  {buttonLoading ? (
-                    <>
-                      <Loader className="animate-spin h-6 w-6" />
-                      {isProcessing || isResumesFetching || isApplyingApi
-                        ? "Đang tải dữ liệu..."
-                        : "Đang xác thực..."}
-                    </>
-                  ) : (
-                    <>
-                      <Send size={24} />
-                      Ứng tuyển ngay
-                    </>
-                  )}
+                  <span className="relative z-10 flex items-center gap-4">
+                    {buttonLoading ? (
+                      <>
+                        <Loader className="animate-spin h-8 w-8" />
+                        <span>Đang chuẩn bị...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send
+                          size={28}
+                          className="group-hover:translate-x-1 transition-transform"
+                        />
+                        Ứng tuyển ngay
+                      </>
+                    )}
+                  </span>
+                  <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-500"></span>
                 </button>
-                <p className="text-sm text-gray-500 text-center mt-3">
-                  Nộp hồ sơ trực tuyến chỉ trong 1 phút.
+                <p className="text-center text-gray-600 mt-4 font-medium">
+                  Nộp hồ sơ chỉ trong{" "}
+                  <span className="text-teal-600 font-bold">30 giây</span>
                 </p>
               </>
             )}
@@ -420,54 +403,57 @@ const JobDetailView: React.FC = () => {
         </div>
       </div>
 
-      {/* --- */}
-
-      {/* Similar Jobs Section */}
+      {/* Similar Jobs */}
       {similarJobs && similarJobs.length > 0 && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
-          <h2 className="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-3">
-            <Layers size={28} className="text-teal-600" />
+        <section className="max-w-7xl mx-auto px-6 lg:px-8 mt-20">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-800 mb-10 flex items-center gap-4">
+            <Layers size={36} className="text-teal-600" />
             Công việc tương tự
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {similarJobs.map((sJob: PostingProps) => (
               <div
                 key={sJob.id}
-                className="bg-white rounded-xl shadow-lg border border-gray-200 p-5 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col cursor-pointer"
                 onClick={() => navigate(`/jobs/${sJob.id}`)}
+                className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl hover:border-teal-200 cursor-pointer group transition-all duration-300"
               >
-                <div className="flex items-start gap-4">
-                  <img
-                    src={getImageUrl(sJob.avatarUrl)}
-                    alt={sJob.companyName}
-                    className="w-14 h-14 rounded-lg object-cover border-2 border-gray-100"
-                  />
-                  <div className="flex-1">
-                    <h4 className="font-bold text-lg text-gray-800 hover:text-teal-600 transition-colors duration-200 leading-tight">
-                      {sJob.title}
-                    </h4>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {sJob.companyName}
-                    </p>
+                <div className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="relative">
+                      <img
+                        src={getImageUrl(sJob.avatarUrl)}
+                        alt={sJob.companyName}
+                        className="w-16 h-16 rounded-xl object-cover ring-4 ring-gray-50 group-hover:ring-teal-100 transition-all"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-lg text-gray-900 group-hover:text-teal-600 transition line-clamp-2">
+                        {sJob.title}
+                      </h4>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {sJob.companyName}
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <div className="mt-4 pt-4 border-t border-gray-100 space-y-2 text-sm">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <MapPin size={16} className="text-gray-400" />
-                    <span>{sJob.location.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2 font-semibold text-red-600">
-                    <DollarSign size={16} className="text-red-500" />
-                    <span>{formatSalary(sJob.minSalary, sJob.maxSalary)}</span>
+                <div className="px-6 pb-6 pt-3 bg-gray-50/70 border-t border-gray-100">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="flex items-center gap-2 text-gray-600">
+                      <MapPin size={16} />
+                      {sJob.location.name}
+                    </span>
+                    <span className="font-bold text-red-600">
+                      {formatSalary(sJob.minSalary, sJob.maxSalary)}
+                    </span>
                   </div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* CvSelectionModal */}
+      {/* Modal */}
       {application == null && showCvModal && (
         <CvSelectionModal
           jobId={job.id}

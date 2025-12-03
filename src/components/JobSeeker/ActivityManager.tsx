@@ -357,13 +357,13 @@ const ActivityManager = () => {
                   </p>
 
                   {/* Thời gian */}
-                  <p className="flex items-center font-medium">
+                  <p className="flex gap-1 items-center font-medium">
                     <Calendar size={14} className="mr-2 text-cyan-500" />
-                    Thời gian:{" "}
+                    Thời gian:
                     <span className="ml-1 font-semibold">
                       {formatDate(activity.startDate)}
-                    </span>{" "}
-                    đến{" "}
+                    </span>
+                    đến
                     <span className="ml-1 font-semibold">
                       {formatDate(activity.endDate)}
                     </span>
