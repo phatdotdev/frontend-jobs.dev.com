@@ -141,7 +141,7 @@ const RecruiterPageHeader = () => {
               </span>
             )}
           </h1>
-          <p className="text-md my-2 line-clamp-3 px-4">
+          <p className="text-md text-justify my-2 line-clamp-3 px-4">
             {recruiterInfo.description || "Chưa có mô tả công ty chi tiết."}
           </p>
 
