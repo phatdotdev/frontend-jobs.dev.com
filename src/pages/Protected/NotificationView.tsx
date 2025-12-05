@@ -211,6 +211,11 @@ const NotificationView = () => {
                   <h3 className="text-xl font-extrabold text-gray-900 mt-1">
                     {noti.title}
                   </h3>
+                  {noti.objectTitle && (
+                    <p className="font-bold text-lg text-purple-600">
+                      {noti.objectTitle}
+                    </p>
+                  )}
                   <p className="text-gray-600 mt-2 leading-relaxed">
                     {noti.content}
                   </p>

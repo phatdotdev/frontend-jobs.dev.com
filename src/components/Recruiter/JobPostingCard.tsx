@@ -225,9 +225,9 @@ const JobPostingCard = ({
         {/* Thanh màu trên cùng theo trạng thái */}
         <div className={`h-1.5 ${config.bgColor}`} />
 
-        <div className="relative p-6">
+        <div className="flex flex-col h-full relative p-6">
           {/* Header Section */}
-          <div className="flex gap-5 mb-5">
+          <div className="flex flex-1 gap-5 mb-5">
             {/* Hình ảnh công ty */}
             <div className="flex-shrink-0">
               <div className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-gray-200 group-hover:border-teal-400 transition-all duration-300 shadow-md group-hover:shadow-xl">

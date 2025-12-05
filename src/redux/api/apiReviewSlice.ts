@@ -41,6 +41,7 @@ export const applicationSlice = apiSlice.injectEndpoints({
       query: (id) => ({
         url: `${FB_URL}/resume/${id}`,
       }),
+      keepUnusedDataFor: 5,
     }),
     createFeedbackRequest: builder.mutation<ResponseProps<any>, any>({
       query: (data) => ({

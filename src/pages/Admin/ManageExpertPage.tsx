@@ -231,7 +231,7 @@ const ManageExpertPage = () => {
                         </td>
                         <td className="gap-2 px-6 py-5 text-center">
                           <Link
-                            to={`/admin/job-seekers/${seeker.id}`}
+                            to={`/admin/users/expert/${seeker.id}`}
                             className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white font-medium rounded-xl hover:bg-purple-700 transition shadow-md"
                           >
                             <Eye className="w-4 h-4" />

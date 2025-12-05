@@ -270,7 +270,7 @@ const ManageRecruiterPage = () => {
                         </td>
                         <td className="flex flex-col gap-2 px-6 py-5 text-center">
                           <Link
-                            to={`/admin/job-seekers/${seeker.id}`}
+                            to={`/admin/users/recruiter/${seeker.id}`}
                             className="inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-teal-600 text-white font-medium rounded-xl hover:bg-teal-700 transition shadow-md"
                           >
                             <Eye className="w-4 h-4" />

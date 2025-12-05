@@ -12,6 +12,7 @@ import {
   Loader2,
   Trash2,
   Sparkles,
+  Info,
 } from "lucide-react";
 import {
   useCreateExpertiseMutation,
@@ -30,7 +31,12 @@ const ExpertiseManagerView = () => {
     yearsOfExperience: 0,
   };
 
-  const { data: response, refetch } = useGetAllExpertisesQuery();
+  const {
+    data: response,
+    refetch,
+    isFetching,
+    error,
+  } = useGetAllExpertisesQuery();
   const expertises = response?.data ?? [];
 
   const [createExpertise, { isLoading: isCreating }] =
@@ -248,69 +254,92 @@ const ExpertiseManagerView = () => {
         </div>
       )}
 
-      {/* Danh sách chuyên môn */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {expertises.length === 0 ? (
-          <div className="col-span-full text-center py-20 bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl border-2 border-dashed border-purple-300">
-            <Sparkles className="w-16 h-16 mx-auto text-purple-400 mb-4" />
-            <p className="text-xl font-semibold text-gray-700">
-              Chưa có chuyên môn nào
-            </p>
-            <p className="text-gray-500 mt-2">
-              Nhấn "Thêm Chuyên môn" để bắt đầu
+      {/* 3. Danh sách Chuyên môn */}
+      <div className="px-6 py-4">
+        {isFetching ? (
+          <p className="text-gray-500 italic p-4 text-center">
+            Đang tải dữ liệu...
+          </p>
+        ) : error ? (
+          <p className="text-red-500 p-3 bg-red-50 border border-red-200 rounded-lg text-sm">
+            Không thể tải danh sách chuyên môn.
+          </p>
+        ) : expertises.length === 0 ? (
+          <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
+            <Sparkles className="w-12 h-12 mx-auto text-purple-400 mb-3" />
+            <p className="text-gray-500 italic text-sm">
+              Thêm các chuyên môn, lĩnh vực bạn nổi bật nhất.
             </p>
           </div>
         ) : (
-          expertises.map((exp: any) => (
-            <div
-              key={exp.id}
-              className={`group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border-l-8 ${
-                exp.id === editingId
-                  ? "border-red-500 ring-4 ring-red-100"
-                  : "border-purple-500"
-              }`}
-            >
-              {/* Gradient overlay khi hover */}
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-pink-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="space-y-5">
+            {expertises.map((exp: any) => (
+              <div
+                key={exp.id}
+                className={`relative group border-l-4 p-5 pl-6 shadow-sm bg-gray-50/70 rounded-lg hover:shadow-md transition duration-300 ${
+                  exp.id === editingId
+                    ? "border-red-500 ring-2 ring-red-300 bg-red-50"
+                    : "border-purple-500"
+                }`}
+              >
+                {/* Nút Edit / Delete */}
+                <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <button
+                    onClick={() => handleEdit(exp)}
+                    className="text-gray-500 hover:text-purple-600 transition p-1.5 rounded hover:bg-white"
+                    disabled={isLoading}
+                  >
+                    <Edit3 size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(exp.id)}
+                    className="text-gray-500 hover:text-red-600 transition p-1.5 rounded hover:bg-white"
+                    disabled={isLoading}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
 
-              {/* Nút Edit/Delete */}
-              <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10">
-                <button
-                  onClick={() => handleEdit(exp)}
-                  className="p-2.5 bg-white rounded-full shadow-lg hover:bg-purple-50 hover:text-purple-600 transition"
-                >
-                  <Edit3 size={18} />
-                </button>
-                <button
-                  onClick={() => handleDelete(exp.id)}
-                  className="p-2.5 bg-white rounded-full shadow-lg hover:bg-red-50 hover:text-red-600 transition"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
-
-              <div className="p-6 relative z-10">
-                <h3 className="text-xl font-bold text-purple-700 mb-3 group-hover:text-purple-800 transition">
+                {/* Tiêu đề chuyên môn */}
+                <h3 className="text-xl font-extrabold text-purple-800 flex items-center gap-2 mb-3">
+                  <Briefcase className="w-6 h-6 text-purple-600" />
                   {exp.title}
                 </h3>
-                <div className="space-y-2 text-sm">
-                  <p className="flex items-center gap-2 text-gray-700 font-medium">
-                    <BookOpen className="w-4 h-4 text-purple-500" />
-                    {exp.field}
+
+                {/* Lĩnh vực & Kinh nghiệm */}
+                <div className="space-y-2 text-sm text-gray-700">
+                  <p className="flex items-center font-semibold">
+                    <BookOpen className="w-4 h-4 mr-2 text-purple-500" />
+                    Lĩnh vực:{" "}
+                    <span className="ml-2 font-medium text-purple-700">
+                      {exp.field}
+                    </span>
                   </p>
-                  <p className="flex items-center gap-2 text-gray-600">
-                    <Calendar className="w-4 h-4 text-pink-500" />
-                    {exp.yearsOfExperience} năm kinh nghiệm
+
+                  <p className="flex items-center font-medium">
+                    <Calendar className="w-4 h-4 mr-2 text-purple-500" />
+                    Kinh nghiệm:{" "}
+                    <span className="ml-2 font-semibold text-purple-800">
+                      {exp.yearsOfExperience} năm
+                    </span>
                   </p>
                 </div>
+
+                {/* Mô tả chi tiết (nếu có) */}
                 {exp.description && (
-                  <p className="mt-4 text-sm text-gray-600 italic line-clamp-3 bg-gray-50 p-4 rounded-xl">
-                    {exp.description}
-                  </p>
+                  <div className="mt-4 pt-4 border-t border-purple-100">
+                    <p className="font-semibold text-gray-700 mb-2 flex items-center">
+                      <Info className="w-4 h-4 mr-2 text-gray-500" />
+                      Mô tả chuyên môn:
+                    </p>
+                    <p className="text-sm text-gray-700 whitespace-pre-line border-l-2 border-purple-300 pl-4">
+                      {exp.description}
+                    </p>
+                  </div>
                 )}
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
     </div>

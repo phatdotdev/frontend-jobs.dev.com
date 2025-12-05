@@ -59,6 +59,7 @@ import ManageRecruiterPage from "./pages/Admin/ManageRecruiterPage.tsx";
 import ManageExpertPage from "./pages/Admin/ManageExpertPage.tsx";
 import ManagePostPage from "./pages/Admin/ManagePostPage.tsx";
 import ReviewerDetailView from "./pages/Public/ReviewerDetailView.tsx";
+import JobSeekerDetailPage from "./pages/Public/JobSeekerDetailView.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -109,6 +110,7 @@ const router = createBrowserRouter(
       {/* expert routes */}
       <Route path="/expert" element={<ExpertRoute />}>
         <Route path="requests" element={<FeedbackRequestView />} />
+        <Route path="" element={<FeedbackRequestView />} />
         <Route path="requests/:id" element={<DetailedReviewForm />} />
         <Route path="reviews" element={<ReviewHistoryPage />} />
         <Route path="reviews/:id" element={<DetailHistoryReviewView />} />
@@ -119,9 +121,15 @@ const router = createBrowserRouter(
       <Route path="/admin" element={<AdminPage />}>
         <Route path="" element={<AdminDashboard />} />
         <Route path="users" element={<ManageUserPage />} />
+
         <Route path="users/jobseeker" element={<ManageJobSeekerPage />} />
+        <Route path="users/jobseeker/:id" element={<JobSeekerDetailPage />} />
+
         <Route path="users/recruiter" element={<ManageRecruiterPage />} />
+        <Route path="users/recruiter/:id" element={<CompanyDetailPage />} />
+
         <Route path="users/expert" element={<ManageExpertPage />} />
+        <Route path="users/expert/:id" element={<ReviewerDetailView />} />
 
         <Route path="posts" element={<ManagePostPage />} />
 

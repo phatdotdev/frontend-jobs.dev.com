@@ -36,6 +36,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: `${USER_URL}/job-seeker/profile`,
         method: "GET",
       }),
+      keepUnusedDataFor: 0,
     }),
     updateJobSeekerProfile: builder.mutation<any, any>({
       query: (data: any) => ({
@@ -49,6 +50,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
       query: () => ({
         url: `${USER_URL}/recruiter/profile`,
       }),
+      keepUnusedDataFor: 0,
     }),
     updateRecruiterProfile: builder.mutation<any, any>({
       query: (data: any) => ({
@@ -62,6 +64,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
       query: () => ({
         url: `${USER_URL}/expert/profile`,
       }),
+      keepUnusedDataFor: 0,
     }),
     updateExpertProfile: builder.mutation<ResponseProps<any>, any>({
       query: (data) => ({

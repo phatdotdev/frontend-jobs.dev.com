@@ -9,7 +9,7 @@ import {
 
 import { MdOutlineAddCircle, MdOutlineDescription } from "react-icons/md";
 import { IoMdCloseCircle } from "react-icons/io";
-import { FaMedal, FaCalendarAlt } from "react-icons/fa";
+import { FaMedal } from "react-icons/fa";
 // Import icons từ lucide-react
 import {
   Award,
@@ -27,6 +27,7 @@ import {
 import InputWithIcon from "../UI/InputWithIcon";
 import { useDispatch } from "react-redux";
 import { addToast } from "../../redux/features/toastSlice";
+import { formatDate } from "../../utils/helper";
 
 const AwardManager = () => {
   const {
@@ -352,7 +353,7 @@ const AwardManager = () => {
                   {/* Ngày nhận giải */}
                   <div className="flex items-center text-sm font-bold px-3 py-1.5 rounded-full bg-purple-100 text-purple-700 shadow-inner">
                     <Calendar size={14} className="mr-1.5" />
-                    {award.receivedDate}
+                    {formatDate(award.receivedDate)}
                   </div>
                 </div>
 

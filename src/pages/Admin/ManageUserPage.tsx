@@ -141,7 +141,7 @@ const ManageUserPage = () => {
   };
 
   const handleToggleBlock = async (userId: string, currentStatus: string) => {
-    const newStatus = currentStatus === "BANNED" ? "ACTIVE" : "BANNED";
+    const newStatus = currentStatus !== "ACTIVE" ? "ACTIVE" : "BANNED";
     await updateUserStatus({ userId, status: newStatus });
     refetch();
   };
@@ -355,19 +355,19 @@ const ManageUserPage = () => {
                           }
                           disabled={isUpdating}
                           className={`px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all transform hover:scale-105 shadow-lg ${
-                            user.status === "BANNED"
+                            user.status !== "ACTIVE"
                               ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700"
                               : "bg-gradient-to-r from-red-500 to-rose-600 text-white hover:from-red-600 hover:to-rose-700"
                           } disabled:opacity-70`}
                         >
                           {isUpdating ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
-                          ) : user.status === "BANNED" ? (
-                            <Unlock className="w-5 h-5" />
-                          ) : (
+                          ) : user.status !== "ACTIVE" ? (
                             <Lock className="w-5 h-5" />
+                          ) : (
+                            <Unlock className="w-5 h-5" />
                           )}
-                          {user.status === "BANNED" ? "Mở khóa" : "Khóa"}
+                          {user.status !== "ACTIVE" ? "Kích hoạt" : "Khóa"}
                         </button>
 
                         <button className="p-3 bg-gray-100 text-gray-600 rounded-xl hover:bg-red-100 hover:text-red-600 transition">

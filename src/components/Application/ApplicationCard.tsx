@@ -175,7 +175,7 @@ const ApplicantCard: React.FC<{
                   </div>
                 </div>
 
-                <p className="text-lg font-semibold text-purple-600 w-[60%]">
+                <p className="text-lg text-justify font-semibold text-gray-600 w-[80%] line-clamp-3">
                   {resume.objectCareer || "Chưa xác định vị trí"}
                 </p>
 
@@ -215,7 +215,7 @@ const ApplicantCard: React.FC<{
               <Link
                 to={`/candidates/${application.id}`}
                 target="_blank"
-                className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-purple-600 text-white font-medium rounded-xl hover:bg-purple-700 transition shadow-md text-sm"
+                className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition shadow-md text-sm"
               >
                 <Eye className="w-4.5 h-4.5" />
                 Xem hồ sơ ứng viên
@@ -224,7 +224,7 @@ const ApplicantCard: React.FC<{
               <Link
                 target="_blank"
                 to={`${application.id}`}
-                className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-xl hover:opacity-90 transition shadow-md text-sm"
+                className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-purple-600 text-white font-medium rounded-xl hover:bg-purple-700 transition shadow-md text-sm"
               >
                 <ArrowBigRight className="w-4.5 h-4.5" />
                 Xem chi tiết ứng tuyển

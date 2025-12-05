@@ -10,7 +10,6 @@ import {
   Award,
   BriefcaseBusiness,
   GraduationCap,
-  FileText,
   CheckCircle2,
 } from "lucide-react";
 import { skipToken } from "@reduxjs/toolkit/query";
@@ -19,26 +18,23 @@ import ErrorAlert from "../../components/UI/ErrorAlert";
 import { getImageUrl } from "../../utils/helper";
 import ChatModal from "../../components/Modal/ChatModal";
 import {
-  useGetJobSeekerByApplicationIdQuery,
-  useGetResumeByApplicationIdQuery,
-} from "../../redux/api/apiApplicationSlice";
-import {
   useGetEducationsByJobSeekerIdQuery,
   useGetExperiencesByJobSeekerIdQuery,
 } from "../../redux/api/apiResumeSlice";
 import ExperienceItem from "../../components/JobSeeker/ExperienceItem";
 import EducationItem from "../../components/JobSeeker/EducationItem";
 import { format } from "date-fns";
+import { useGetJobSeekerByIdQuery } from "../../redux/api/apiUserSlice";
 
-const CandidateDetailPage: React.FC = () => {
-  const { id: applicationId } = useParams<{ id: string }>();
+const JobSeekerDetailPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const {
     data: candidateRes,
     isLoading: isCandidateLoading,
     isError: isCandidateError,
-  } = useGetJobSeekerByApplicationIdQuery(applicationId || skipToken);
+  } = useGetJobSeekerByIdQuery(id || skipToken);
 
   const candidate = candidateRes?.data;
 
@@ -49,13 +45,9 @@ const CandidateDetailPage: React.FC = () => {
   const { data: experienceRes } = useGetExperiencesByJobSeekerIdQuery(
     candidate?.id || skipToken
   );
-  const { data: resumeRes } = useGetResumeByApplicationIdQuery(
-    applicationId || skipToken
-  );
 
   const educations = educationRes?.data || [];
   const experiences = experienceRes?.data || [];
-  const resume = resumeRes?.data;
 
   if (isCandidateLoading) {
     return (
@@ -159,9 +151,9 @@ const CandidateDetailPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-8">
           {/* Cột trái: Thông tin + Kinh nghiệm + Học vấn */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-1 space-y-8">
             {/* Thông tin cá nhân */}
             <div className="bg-white rounded-3xl shadow-xl p-8 border border-indigo-100">
               <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
@@ -214,7 +206,9 @@ const CandidateDetailPage: React.FC = () => {
                 />
               </div>
             </div>
-
+          </div>
+          {/* Kinh nghiệm học vấn */}
+          <div className="p-2 flex flex-col gap-2">
             {/* Kinh nghiệm */}
             <div className="bg-white rounded-3xl shadow-xl p-8 border border-teal-100">
               <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
@@ -251,43 +245,6 @@ const CandidateDetailPage: React.FC = () => {
                   Chưa có thông tin học vấn
                 </p>
               )}
-            </div>
-          </div>
-
-          {/* Cột phải: CV */}
-          <div>
-            <div className="bg-white rounded-3xl shadow-xl p-8 border border-indigo-100">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                <FileText className="text-indigo-600" size={28} />
-                Hồ sơ ứng tuyển
-              </h2>
-              <div className="border-2 border-dashed border-indigo-200 rounded-2xl p-10 text-center bg-gradient-to-br from-indigo-50 to-purple-50">
-                {resume ? (
-                  <div>
-                    <FileText
-                      size={64}
-                      className="mx-auto text-indigo-600 mb-4"
-                    />
-                    <p className="text-xl font-bold text-indigo-800">
-                      {resume.title || "CV đính kèm"}
-                    </p>
-                    <p className="text-sm text-gray-600 mt-2">
-                      Đã tải lên{" "}
-                      {resume.createdAt
-                        ? format(new Date(resume.createdAt), "dd/MM/yyyy")
-                        : ""}
-                    </p>
-                  </div>
-                ) : (
-                  <div>
-                    <FileText
-                      size={64}
-                      className="mx-auto text-gray-300 mb-4"
-                    />
-                    <p className="text-gray-500">Chưa tải lên CV</p>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </div>
@@ -331,4 +288,4 @@ const InfoItem = ({
   </div>
 );
 
-export default CandidateDetailPage;
+export default JobSeekerDetailPage;

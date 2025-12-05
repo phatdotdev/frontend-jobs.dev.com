@@ -257,8 +257,15 @@ const EditJobPostingView = () => {
 
     try {
       await updateJobPosting({ data: formData, id: jobId }).unwrap();
-      console.log(payload);
-      // navigate("/recruiter/jobs");
+      dispatch(
+        addToast({
+          type: "success",
+          message: "Cập nhật bài viết thành công!",
+        })
+      );
+      setTimeout(() => {
+        navigate("/recruiter/jobs");
+      }, 0);
     } catch (err: any) {
       dispatch(
         addToast({

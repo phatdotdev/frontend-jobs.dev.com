@@ -12,7 +12,6 @@ import {
   Clock,
   Eye,
   RotateCw,
-  CheckCircle,
   XCircle,
   Download,
   Mail,
@@ -140,13 +139,13 @@ const NEXT_ACTIONS: any = {
     { label: "Yêu cầu bổ sung", state: "REQUESTED", color: "bg-purple-500" },
   ],
   REVIEWING: [
-    { label: "Mời phỏng vấn", state: "INTERVIEW", color: "bg-indigo-500" },
     { label: "Hồ sơ đạt", state: "ACCEPTED", color: "bg-emerald-500" },
     { label: "Từ chối", state: "REJECTED", color: "bg-red-600" },
     { label: "Yêu cầu bổ sung", state: "REQUESTED", color: "bg-purple-500" },
   ],
   REQUESTED: [
     { label: "Đã nhận hồ sơ", state: "REVIEWING", color: "bg-orange-500" },
+    { label: "Từ chối", state: "REJECTED", color: "bg-red-600" },
   ],
   INTERVIEW: [
     { label: "Tuyển dụng", state: "HIRED", color: "bg-green-600" },
@@ -154,8 +153,7 @@ const NEXT_ACTIONS: any = {
   ],
   ACCEPTED: [
     { label: "Phỏng vấn", state: "INTERVIEW", color: "bg-indigo-500" },
-    { label: "Tuyển dụng", state: "HIRED", color: "bg-green-600" },
-    { label: "Từ chối", state: "REJECTED", color: "bg-red-600" },
+    { label: "Yêu cầu bổ sung", state: "REQUESTED", color: "bg-purple-500" },
   ],
 };
 
@@ -253,13 +251,36 @@ const ApplicantDetailView = () => {
                 <div className="flex-1">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
+                      {/* Tên ứng viên */}
                       <h2 className="text-3xl font-extrabold text-gray-900">
                         {fullName}
                       </h2>
-                      <p className="text-xl font-medium text-purple-600 mt-1">
-                        {application.resume.objectCareer || "Chưa xác định"}
-                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 text-gray-600">
+                        {application.resume.email && (
+                          <a
+                            href={`mailto:${application.resume.email}`}
+                            className="flex items-center gap-3 hover:text-blue-600 transition"
+                          >
+                            <Mail className="w-5 h-5 text-blue-500" />
+                            <span className="font-medium">
+                              {application.resume.email}
+                            </span>
+                          </a>
+                        )}
+                        {application.resume.phone && (
+                          <a
+                            href={`tel:${application.resume.phone}`}
+                            className="flex items-center gap-3 hover:text-orange-600 transition"
+                          >
+                            <Phone className="w-5 h-5 text-orange-500" />
+                            <span className="font-medium">
+                              {application.resume.phone}
+                            </span>
+                          </a>
+                        )}
+                      </div>
                     </div>
+                    {/* Trạng thái */}
                     <div
                       className={`flex items-center gap-3 px-5 py-3 rounded-full ${state.color} text-white font-bold shadow-lg ring-4 ${state.ring}`}
                     >
@@ -267,37 +288,26 @@ const ApplicantDetailView = () => {
                       {state.label}
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 text-gray-600">
-                    {application.resume.email && (
-                      <a
-                        href={`mailto:${application.resume.email}`}
-                        className="flex items-center gap-3 hover:text-blue-600 transition"
-                      >
-                        <Mail className="w-5 h-5 text-blue-500" />
-                        <span className="font-medium">
-                          {application.resume.email}
-                        </span>
-                      </a>
-                    )}
-                    {application.resume.phone && (
-                      <a
-                        href={`tel:${application.resume.phone}`}
-                        className="flex items-center gap-3 hover:text-orange-600 transition"
-                      >
-                        <Phone className="w-5 h-5 text-orange-500" />
-                        <span className="font-medium">
-                          {application.resume.phone}
-                        </span>
-                      </a>
-                    )}
-                    <div className="flex items-center gap-3 col-span-2">
-                      <Calendar className="w-5 h-5 text-gray-500" />
-                      <span>
-                        Nộp lúc: {formatDateTime(application.appliedAt)}
-                      </span>
-                    </div>
-                  </div>
+                </div>
+              </div>
+              {/* Giới thiệu và mục tiêu */}
+              <div className="mt-5">
+                <p className="font-bold bg-blue-100 px-4 py-2 rounded-lg text-blue-500">
+                  Giới thiệu ứng viên
+                </p>
+                <p className="py-2 text-justify text-md font-medium text-gray-600 mt-1">
+                  {application.resume.introduction || "Chưa xác định"}
+                </p>
+                <p className="font-bold bg-blue-100 px-4 py-2 rounded-lg text-blue-500">
+                  Mục tiêu nghề nghiệp
+                </p>
+                <p className="py-2 text-justify text-md font-medium text-gray-600 mt-1">
+                  {application.resume.objectCareer || "Chưa xác định"}
+                </p>
+                {/* Timestamp */}
+                <div className="flex items-center mt-4 font-bold text-blue-500 gap-3 col-span-2">
+                  <Calendar className="w-5 h-5 text-gray-500" />
+                  <span>Nộp lúc: {formatDateTime(application.appliedAt)}</span>
                 </div>
               </div>
             </div>
@@ -316,6 +326,15 @@ const ApplicantDetailView = () => {
                       onClick={() => openModal(action)}
                       className={`flex items-center justify-center gap-3 py-5 ${action.color} text-white font-bold rounded-2xl hover:shadow-xl transform hover:scale-105 transition-all duration-300`}
                     >
+                      {action.state === "REVIEWING" && (
+                        <Eye className="w-6 h-6" />
+                      )}
+                      {action.state === "ACCEPTED" && (
+                        <CheckCircle2 className="w-6 h-6" />
+                      )}
+                      {action.state === "REQUESTED" && (
+                        <RotateCw className="w-6 h-6" />
+                      )}
                       {action.state === "INTERVIEW" && (
                         <FaMicrophone className="w-6 h-6" />
                       )}
@@ -328,6 +347,23 @@ const ApplicantDetailView = () => {
                       {action.label}
                     </button>
                   ))}
+
+                  {application.state === "REQUESTED" &&
+                    application.acceptedAt && (
+                      <button
+                        onClick={() =>
+                          openModal({
+                            label: "Phỏng vấn",
+                            state: "INTERVIEW",
+                            color: "bg-indigo-500",
+                          })
+                        }
+                        className={`flex items-center justify-center gap-3 py-5 bg-indigo-500 text-white font-bold rounded-2xl hover:shadow-xl transform hover:scale-105 transition-all duration-300`}
+                      >
+                        <Mic className="w-6 h-6" />
+                        Gọi phỏng vấn
+                      </button>
+                    )}
                 </div>
               </div>
             )}

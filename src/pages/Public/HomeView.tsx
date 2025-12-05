@@ -55,7 +55,7 @@ const HomeView = () => {
           ) : recommendedJobs.length === 0 ? (
             <EmptyState text="Chưa có công việc phù hợp với bạn" />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {recommendedJobs.map((job: any) => (
                 <JobPostingItem key={job.id} job={job} />
               ))}
@@ -80,19 +80,33 @@ const HomeView = () => {
           )}
         </PageSection>
 
-        {/* 3. Doanh nghiệp nổi bật */}
+        {/* 3. Doanh nghiệp phù hợp */}
+        <PageSection title="Doanh nghiệp dành cho bạn" type="featured">
+          {loadingFeat ? (
+            <div className="grid grid-cols-2 gap-6">
+              <DataLoader />
+            </div>
+          ) : errFeat ? (
+            <EmptyState text="Lỗi tải danh sách doanh nghiệp" />
+          ) : featuredCompanies.length === 0 ? (
+            <EmptyState text="Chưa có doanh nghiệp phù hợp" />
+          ) : (
+            <div className="grid grid-cols-2 gap-6">
+              {featuredCompanies.map((company: any) => (
+                <CompanyItem key={company.id} company={company} />
+              ))}
+            </div>
+          )}
+        </PageSection>
+
+        {/* 4. Doanh nghiệp nổi bật */}
         <PageSection
           title="Doanh nghiệp đang trending"
           type="trending-companies"
         >
           {loadingTrendComp ? (
             <div className="grid grid-cols-2 gap-6">
-              {[...Array(12)].map((_, i) => (
-                <div
-                  key={i}
-                  className="bg-gray-200 border-2 border-dashed rounded-xl aspect-square animate-pulse"
-                />
-              ))}
+              <DataLoader />
             </div>
           ) : errTrendComp ? (
             <EmptyState text="Lỗi tải doanh nghiệp nổi bật" />
@@ -101,30 +115,6 @@ const HomeView = () => {
           ) : (
             <div className="grid grid-cols-2 gap-6">
               {trendingCompanies.map((company: any) => (
-                <CompanyItem key={company.id} company={company} />
-              ))}
-            </div>
-          )}
-        </PageSection>
-
-        {/* 4. Doanh nghiệp phù hợp */}
-        <PageSection title="Doanh nghiệp dành cho bạn" type="featured">
-          {loadingFeat ? (
-            <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-12 gap-6">
-              {[...Array(12)].map((_, i) => (
-                <div
-                  key={i}
-                  className="bg-gray-200 border-2 border-dashed rounded-xl aspect-square animate-pulse"
-                />
-              ))}
-            </div>
-          ) : errFeat ? (
-            <EmptyState text="Lỗi tải danh sách doanh nghiệp" />
-          ) : featuredCompanies.length === 0 ? (
-            <EmptyState text="Chưa có doanh nghiệp phù hợp" />
-          ) : (
-            <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-12 gap-6">
-              {featuredCompanies.map((company: any) => (
                 <CompanyItem key={company.id} company={company} />
               ))}
             </div>

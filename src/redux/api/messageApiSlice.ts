@@ -9,6 +9,7 @@ export const messageApiSlice = apiSlice.injectEndpoints({
       query: () => ({
         url: `${MSG_URL}/mine`,
       }),
+      keepUnusedDataFor: 0,
     }),
     getMessagesWithOtherUser: builder.query({
       query: (otherUserId: string) => ({

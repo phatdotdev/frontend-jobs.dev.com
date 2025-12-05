@@ -22,6 +22,7 @@ export const apiCommunicationSlice = apiSlice.injectEndpoints({
       query: () => ({
         url: `${NOTI_URL}/mine`,
       }),
+      keepUnusedDataFor: 0,
     }),
     markNotificationAsRead: builder.mutation<ResponseProps<any>, any>({
       query: (id) => ({

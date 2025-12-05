@@ -10,7 +10,7 @@ const ExpertRoute = () => {
     if (!isLoading && userInfo?.role !== "EXPERT") {
       navigate("/");
     } else {
-      navigate("/expert/requests");
+      // navigate("/expert/requests");
     }
   }, []);
   return (

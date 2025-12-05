@@ -14,7 +14,7 @@ import {
   Filter,
   Upload,
   Edit2,
-  Laptop,
+  UserCheck,
 } from "lucide-react";
 
 import DataLoader from "../../components/UI/DataLoader";
@@ -63,7 +63,7 @@ const STATE_OPTIONS = [
     gradient: "from-purple-500 to-indigo-500",
   },
   {
-    value: "IN_REVIEW",
+    value: "REVIEWING",
     label: "Đang xem",
     icon: Eye,
     gradient: "from-yellow-500 to-orange-500",
@@ -79,6 +79,12 @@ const STATE_OPTIONS = [
     label: "Từ chối",
     icon: X,
     gradient: "from-red-500 to-pink-500",
+  },
+  {
+    value: "HIRED",
+    label: "Đã tuyển",
+    icon: UserCheck,
+    gradient: "from-emerald-500 to-green-500",
   },
 ];
 
@@ -191,7 +197,7 @@ const ApplicantsByPostView: React.FC = () => {
               <Filter className="w-8 h-8 text-purple-600" />
               Lọc theo trạng thái:
             </div>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-3">
               {STATE_OPTIONS.map((option) => (
                 <button
                   key={option.value}
@@ -202,7 +208,7 @@ const ApplicantsByPostView: React.FC = () => {
                   className={`flex items-center gap-3 px-6 py-3 rounded-full font-bold text-white shadow-lg transition-all duration-300 transform hover:scale-105 ${
                     filterState === option.value
                       ? `bg-gradient-to-r ${option.gradient} ring-4 ring-white/50`
-                      : "bg-gray-400 hover:bg-gray-500"
+                      : "bg-gray-500 hover:bg-gray-500"
                   }`}
                 >
                   <option.icon size={20} />

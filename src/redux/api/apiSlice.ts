@@ -29,7 +29,8 @@ const baseQueryWithReauth: typeof baseQuery = async (
           addToast({
             type: "info",
             title: "Khôi phục thành công!",
-            message: "Phiên làm việc của bạn đã được khôi phục!",
+            message:
+              "Phiên làm việc của bạn đã được khôi phục, reload trang nếu dữ liệu chưa khôi phục!",
           })
         );
 

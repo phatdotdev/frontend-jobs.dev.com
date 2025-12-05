@@ -7,6 +7,7 @@ import type {
   UserResponseProps,
 } from "../../types/UserProps";
 import {
+  CER_URL,
   CERT_URL,
   LOC_URL,
   POST_URL,
@@ -243,13 +244,13 @@ export const apiAdminSlice = apiSlice.injectEndpoints({
     // get all schools
     getAllCertificates: builder.query<ResponseProps<any>, void>({
       query: () => ({
-        url: `${SCH_URL}`,
+        url: `${CERT_URL}`,
       }),
     }),
     // create school
     createCertificate: builder.mutation<ResponseProps<any>, any>({
       query: (data) => ({
-        url: `${SCH_URL}`,
+        url: `${CERT_URL}`,
         method: "POST",
         body: data,
       }),

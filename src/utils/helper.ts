@@ -142,10 +142,14 @@ export function cn(...inputs: ClassValue[]) {
 // Links
 
 export function getNotificationLink(notification: any) {
-  if (notification.resumeId)
+  if (notification.resumeId) {
     return `/job-seeker/resume/${notification.resumeId}/reviews`;
-  else if (notification.applicationId)
+  } else if (notification.applicationId)
     return `/job-seeker/applied-jobs/${notification.applicationId}`;
-  else if (notification.postId) return `/jobs/${notification.postId}`;
+  else if (notification.postId) {
+    if (notification.type === "APPLICATION_ACTIVITY")
+      return `/recruiter/jobs/${notification.postId}/applicants`;
+    return `/jobs/${notification.postId}`;
+  }
   return null;
 }
