@@ -15,7 +15,10 @@ import {
 } from "lucide-react";
 import { formatDateTime } from "../../utils/helper";
 import SupplementModal from "./SupplementModal";
-import { useUpdateDocumentsMutation } from "../../redux/api/apiApplicationSlice";
+import {
+  useCancelApplicationMutation,
+  useUpdateDocumentsMutation,
+} from "../../redux/api/apiApplicationSlice";
 import { useDispatch } from "react-redux";
 import { addToast } from "../../redux/features/toastSlice";
 import type { ApplicationDetail } from "../../types/ApplicationProps";
@@ -28,6 +31,8 @@ const ApplicationInfo: React.FC<{
   const [updateDocuments] = useUpdateDocumentsMutation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [documentFiles, setDocumentFiles] = useState<File[]>([]);
+
+  const [cancel, { isLoading: canceling }] = useCancelApplicationMutation();
 
   const statusConfig = {
     SUBMITTED: {
@@ -72,6 +77,12 @@ const ApplicationInfo: React.FC<{
       color: "red",
       message: "Rất tiếc, bạn chưa phù hợp lần này",
     },
+    CANCELLED: {
+      label: "Đã hủy",
+      icon: XCircle,
+      color: "gray",
+      message: "Bạn đã hủy đơn ứng tuyển này",
+    },
   };
 
   const status = statusConfig[application.state] || statusConfig.SUBMITTED;
@@ -85,6 +96,7 @@ const ApplicationInfo: React.FC<{
     emerald: "bg-emerald-100 text-emerald-700 border-emerald-200",
     green: "bg-green-100 text-green-700 border-green-200",
     red: "bg-red-100 text-red-700 border-red-200",
+    gray: "bg-gray-100 text-gray-700 border-gray-200",
   };
 
   const bgClass = colorClasses[status.color as keyof typeof colorClasses];
@@ -118,6 +130,28 @@ const ApplicationInfo: React.FC<{
           type: "error",
           title: "Lỗi",
           message: "Không thể gửi tài liệu. Vui lòng thử lại.",
+        })
+      );
+    }
+  };
+
+  const cancelApplication = async () => {
+    try {
+      await cancel(application.id).unwrap();
+      dispatch(
+        addToast({
+          type: "success",
+          title: "Thành công!",
+          message: "Đã hủy đơn ứng tuyển",
+        })
+      );
+      await refetch?.();
+    } catch {
+      dispatch(
+        addToast({
+          type: "error",
+          title: "Lỗi",
+          message: "Không thể hủy đơn ứng tuyển.",
         })
       );
     }
@@ -229,6 +263,48 @@ const ApplicationInfo: React.FC<{
                 Bổ sung tài liệu
               </button>
             )}
+
+            {application.state !== "HIRED" &&
+              application.state !== "REJECTED" &&
+              application.state !== "CANCELLED" && (
+                <div className="mt-6">
+                  <button
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "Bạn có chắc chắn muốn hủy đơn ứng tuyển này không?\nHành động này không thể hoàn tác."
+                        )
+                      ) {
+                        cancelApplication();
+                      }
+                    }}
+                    disabled={canceling}
+                    className={`
+              group relative inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl font-medium
+              transition-all duration-300 transform hover:-translate-y-0.5
+              ${
+                canceling
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-white text-red-600 border-2 border-red-500 hover:border-red-600 hover:bg-red-50 hover:shadow-lg"
+              }
+            `}
+                  >
+                    {canceling ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                        <span>Đang hủy...</span>
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                        <span className="font-medium">Hủy đơn ứng tuyển</span>
+                      </>
+                    )}
+                    {/* Hiệu ứng viền đỏ lan tỏa khi hover */}
+                    <span className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-red-400 pointer-events-none transition-all"></span>
+                  </button>
+                </div>
+              )}
 
             {application.state === "HIRED" && (
               <div className="inline-flex items-center gap-3 bg-green-600 text-white px-7 py-4 rounded-xl font-bold">

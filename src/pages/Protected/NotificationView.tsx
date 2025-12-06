@@ -90,7 +90,13 @@ const getTypeConfig = (type: string) => {
 
 const NotificationView = () => {
   const dispatch = useDispatch();
-  const { data: response, isLoading, isError } = useGetAllMyNotificationQuery();
+  const {
+    data: response,
+    isLoading,
+    isError,
+  } = useGetAllMyNotificationQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
   const notifications = useSelector((state: RootState) =>
     (state.notifications || [])
       .slice()
@@ -108,10 +114,10 @@ const NotificationView = () => {
     }
   }, [response, dispatch]);
 
-  const handleClick = (noti: Notification) => {
+  const handleClick = async (noti: Notification) => {
     if (!noti.isRead) {
       dispatch(markAsRead(noti.id));
-      markNotificationAsRead(noti.id);
+      await markNotificationAsRead(noti.id);
     }
   };
 

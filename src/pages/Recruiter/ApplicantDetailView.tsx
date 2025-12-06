@@ -22,6 +22,7 @@ import {
   Mic,
   UserCheck,
   CheckCircle2,
+  Ban,
 } from "lucide-react";
 import { useState } from "react";
 import ApplicationProgressBar from "../../components/Application/ApplicationProgressBar";
@@ -131,6 +132,25 @@ const STATE_CONFIG: any = {
     icon: XCircle,
     ring: "ring-red-300",
   },
+  CANCELLED: {
+    label: "Đã hủy",
+    color: "bg-gray-500",
+    ring: "ring-gray-200",
+    textColor: "text-gray-600",
+    badgeBg: "bg-gray-100",
+    badgeBorder: "border-gray-300",
+    muted: true,
+    icon: Ban,
+  },
+  DEFAULT: {
+    label: "Không xác định",
+    color: "bg-gray-400",
+    ring: "ring-gray-200",
+    textColor: "text-gray-600",
+    badgeBg: "bg-gray-50",
+    badgeBorder: "border-gray-200",
+    icon: Clock,
+  },
 };
 
 const NEXT_ACTIONS: any = {
@@ -228,7 +248,7 @@ const ApplicantDetailView = () => {
         </div>
 
         {/* Progress Bar */}
-        <div className="mb-10">
+        <div className="mb-6">
           <ApplicationProgressBar app={application} />
         </div>
 
@@ -368,28 +388,51 @@ const ApplicantDetailView = () => {
               </div>
             )}
 
-            {/* Final Status */}
+            {/* Final Status – REJECTED / HIRED / CANCELLED */}
             {(application.state === "REJECTED" ||
-              application.state === "HIRED") && (
+              application.state === "HIRED" ||
+              application.state === "CANCELLED") && (
               <div
-                className={`rounded-3xl p-10 text-center ${
-                  application.state === "REJECTED"
-                    ? "bg-red-50 border-2 border-red-300"
-                    : "bg-green-50 border-2 border-green-400"
-                }`}
+                className={`
+      rounded-3xl p-10 text-center transition-all duration-300
+      ${
+        application.state === "REJECTED"
+          ? "bg-red-50 border-2 border-red-300"
+          : application.state === "HIRED"
+          ? "bg-green-50 border-2 border-green-400 shadow-lg"
+          : "bg-gray-50 border-2 border-gray-300"
+      }
+    `}
               >
                 {application.state === "REJECTED" ? (
                   <>
-                    <XCircle className="w-20 h-20 text-red-600 mx-auto mb-4" />
+                    <XCircle className="w-20 h-20 text-red-600 mx-auto mb-5" />
                     <p className="text-2xl font-bold text-red-700">
-                      Ứng viên đã bị từ chối
+                      Ứng tuyển không thành công
+                    </p>
+                    <p className="text-gray-600 mt-3">
+                      Rất tiếc, bạn chưa phù hợp với vị trí này lần này
+                    </p>
+                  </>
+                ) : application.state === "HIRED" ? (
+                  <>
+                    <UserCheck className="w-20 h-20 text-green-600 mx-auto mb-5" />
+                    <p className="text-2xl font-bold text-green-700">
+                      Chúc mừng! Bạn đã được nhận việc
+                    </p>
+                    <p className="text-green-600 mt-3 font-medium">
+                      Chào mừng bạn gia nhập đội ngũ!
                     </p>
                   </>
                 ) : (
+                  // CANCELLED
                   <>
-                    <FaUserCheck className="w-20 h-20 text-green-600 mx-auto mb-4" />
-                    <p className="text-2xl font-bold text-green-700">
-                      Ứng viên đã được tuyển dụng!
+                    <Ban className="w-20 h-20 text-gray-500 mx-auto mb-5" />
+                    <p className="text-2xl font-bold text-gray-700">
+                      Đơn ứng tuyển đã được hủy
+                    </p>
+                    <p className="text-gray-500 mt-3 text-base">
+                      Ứng viên đã chủ động hủy đơn ứng tuyển vào ngày
                     </p>
                   </>
                 )}

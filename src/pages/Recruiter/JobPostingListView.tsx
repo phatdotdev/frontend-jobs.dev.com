@@ -175,7 +175,7 @@ const JobPostingListView = () => {
             </p>
           </div>
           <button
-            onClick={() => navigate("/post")}
+            onClick={() => navigate("/recruiter/post")}
             className="mt-6 sm:mt-0 flex items-center gap-3 bg-teal-500 text-white font-bold py-4 px-8 rounded-xl shadow-xl hover:bg-teal-600 hover:shadow-2xl transition-all transform hover:scale-105"
           >
             <PlusCircle className="w-6 h-6" />

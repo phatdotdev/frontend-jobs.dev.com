@@ -24,8 +24,10 @@ import {
   useUpdateUserStatusMutation,
 } from "../../redux/api/apiAdminSlice";
 import CreateUserModal from "../../components/Admin/CreateUserModal";
+import { getImageUrl } from "../../utils/helper";
 
 type UserResponseProps = {
+  avatarUrl: string;
   id: string;
   username: string;
   email: string;
@@ -298,9 +300,17 @@ const ManageUserPage = () => {
                       {/* Thông tin chính */}
                       <div className="flex-1">
                         <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                            {user.username[0].toUpperCase()}
-                          </div>
+                          {user.avatarUrl ? (
+                            <img
+                              className="w-10 h-10 rounded"
+                              src={getImageUrl(user.avatarUrl as string)}
+                              alt="avatar"
+                            />
+                          ) : (
+                            <div className="w-14 h-14 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                              {user.username[0].toUpperCase()}
+                            </div>
+                          )}
                           <div>
                             <h3 className="text-2xl font-extrabold text-gray-900">
                               {user.username}

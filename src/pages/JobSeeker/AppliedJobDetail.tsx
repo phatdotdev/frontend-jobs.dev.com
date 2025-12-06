@@ -12,7 +12,7 @@ const AppliedJobDetail = () => {
   }
   return (
     <div className="sm:mx-[100px] mt-4 p-4 bg-white shadow-2xl">
-      <AppliedJobCard application={response?.data} />
+      <AppliedJobCard refetch={refetch} application={response?.data} />
     </div>
   );
 };

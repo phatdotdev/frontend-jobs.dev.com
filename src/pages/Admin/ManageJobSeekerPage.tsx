@@ -17,8 +17,12 @@ import {
   Loader2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getImageUrl } from "../../utils/helper";
 
 interface JobSeeker {
+  lastname: any;
+  firstname: any;
+  avatarUrl: string;
   status: string;
   id: string;
   username: string;
@@ -68,6 +72,8 @@ const ManageJobSeekerPage = () => {
   const jobSeekers: JobSeeker[] = data?.data?.content || [];
   const totalElements = data?.data?.totalElements || 0;
   const totalPages = data?.data?.totalPages || 0;
+
+  console.log(jobSeekers);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -154,9 +160,6 @@ const ManageJobSeekerPage = () => {
                         Tham gia
                       </th>
                       <th className="px-6 py-4 text-center text-sm font-bold uppercase tracking-wider">
-                        Hoạt động
-                      </th>
-                      <th className="px-6 py-4 text-center text-sm font-bold uppercase tracking-wider">
                         Hành động
                       </th>
                     </tr>
@@ -168,13 +171,22 @@ const ManageJobSeekerPage = () => {
                         className="hover:bg-gray-50 transition"
                       >
                         <td className="px-6 py-5">
-                          <div>
-                            <p className="font-bold text-gray-900">
-                              {seeker.fullName || "Chưa cập nhật"}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              @{seeker.username}
-                            </p>
+                          <div className="flex gap-2 items-center">
+                            <img
+                              className="h-10 w-10 rounded"
+                              src={getImageUrl(seeker?.avatarUrl as string)}
+                              alt="avatar"
+                            />
+                            <div>
+                              <p className="font-bold text-gray-900">
+                                {seeker.firstname && seeker.lastname
+                                  ? seeker.firstname + " " + seeker.lastname
+                                  : "Chưa cập nhật"}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                @{seeker.username}
+                              </p>
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-5">
@@ -218,16 +230,7 @@ const ManageJobSeekerPage = () => {
                             })}
                           </div>
                         </td>
-                        <td className="px-6 py-5 text-center">
-                          <div className="text-sm">
-                            <p className="font-medium text-gray-700">
-                              {seeker.resumeCount || 0} CV
-                            </p>
-                            <p className="text-gray-500">
-                              {seeker.appliedCount || 0} lượt nộp
-                            </p>
-                          </div>
-                        </td>
+
                         <td className="px-6 py-5 text-center">
                           <Link
                             to={`/admin/users/jobseeker/${seeker.id}`}

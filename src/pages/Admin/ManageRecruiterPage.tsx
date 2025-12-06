@@ -25,8 +25,10 @@ import {
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addToast } from "../../redux/features/toastSlice";
+import { getImageUrl } from "../../utils/helper";
 
 interface JobSeeker {
+  avatarUrl: string | undefined;
   status: string;
   id: string;
   username: string;
@@ -189,9 +191,6 @@ const ManageRecruiterPage = () => {
                         Tham gia
                       </th>
                       <th className="px-6 py-4 text-center text-sm font-bold uppercase tracking-wider">
-                        Hoạt động
-                      </th>
-                      <th className="px-6 py-4 text-center text-sm font-bold uppercase tracking-wider">
                         Hành động
                       </th>
                     </tr>
@@ -202,7 +201,12 @@ const ManageRecruiterPage = () => {
                         key={seeker.id}
                         className="hover:bg-gray-50 transition"
                       >
-                        <td className="px-6 py-5">
+                        <td className="flex gap-2 items-center px-6 py-5">
+                          <img
+                            src={getImageUrl(seeker.avatarUrl as string)}
+                            className="h-10 w-10 rounded"
+                            alt="avatar"
+                          />
                           <div>
                             <p className="flex items-center gap-2 font-bold text-gray-900">
                               {seeker.companyName || "Chưa cập nhật"}
@@ -256,16 +260,6 @@ const ManageRecruiterPage = () => {
                             {format(new Date(seeker.createdAt), "dd/MM/yyyy", {
                               locale: vi,
                             })}
-                          </div>
-                        </td>
-                        <td className="px-6 py-5 text-center">
-                          <div className="text-sm">
-                            <p className="font-medium text-gray-700">
-                              Bài tuyển dụng
-                            </p>
-                            <p className="text-gray-500">
-                              {seeker.postCount || 0} bài tuyển dụng
-                            </p>
                           </div>
                         </td>
                         <td className="flex flex-col gap-2 px-6 py-5 text-center">

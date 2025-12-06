@@ -17,7 +17,8 @@ type ApplicationState =
   | "INTERVIEW"
   | "ACCEPTED"
   | "HIRED"
-  | "REJECTED";
+  | "REJECTED"
+  | "CANCELLED";
 
 const statusConfig: Record<
   ApplicationState,
@@ -77,6 +78,13 @@ const statusConfig: Record<
     color: "text-red-700",
     bg: "bg-red-50",
     ring: "ring-red-300",
+  },
+  CANCELLED: {
+    label: "Đã hủy",
+    icon: XCircle,
+    color: "text-gray-700",
+    bg: "bg-gray-50",
+    ring: "ring-gray-300",
   },
 };
 

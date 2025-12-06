@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import DataLoader from "../../components/UI/DataLoader";
 import { getImageUrl } from "../../utils/helper";
+import { Link } from "react-router-dom";
 
 type PostState = "DRAFT" | "PUBLISHED" | "CLOSED" | "COMPLETED";
 type JobType =
@@ -413,9 +414,11 @@ const ManagePostPage = () => {
                       </div>
 
                       <div className="lg:col-span-1 text-center">
-                        <button className="p-4 bg-blue-100 text-blue-600 rounded-2xl hover:bg-blue-200 transition shadow-lg transform hover:scale-110">
-                          <Eye className="w-7 h-7" />
-                        </button>
+                        <Link to={`/jobs/${post.id}`}>
+                          <button className="p-4 bg-blue-100 text-blue-600 rounded-2xl hover:bg-blue-200 transition shadow-lg transform hover:scale-110">
+                            <Eye className="w-7 h-7" />
+                          </button>
+                        </Link>
                       </div>
                     </div>
                   </div>

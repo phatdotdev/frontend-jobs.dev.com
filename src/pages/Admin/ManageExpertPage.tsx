@@ -17,8 +17,10 @@ import {
   Loader2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getImageUrl } from "../../utils/helper";
 
 interface JobSeeker {
+  avatarUrl: string;
   status: string;
   id: string;
   username: string;
@@ -155,9 +157,6 @@ const ManageExpertPage = () => {
                         Tham gia
                       </th>
                       <th className="px-6 py-4 text-center text-sm font-bold uppercase tracking-wider">
-                        Hoạt động
-                      </th>
-                      <th className="px-6 py-4 text-center text-sm font-bold uppercase tracking-wider">
                         Hành động
                       </th>
                     </tr>
@@ -168,7 +167,12 @@ const ManageExpertPage = () => {
                         key={seeker.id}
                         className="hover:bg-gray-50 transition"
                       >
-                        <td className="px-6 py-5">
+                        <td className="flex gap-2 items-center px-6 py-5">
+                          <img
+                            src={getImageUrl(seeker.avatarUrl as string)}
+                            className="h-10 w-10 rounded"
+                            alt="avatar"
+                          />
                           <div>
                             <p className="font-bold text-gray-900">
                               {seeker.fullName || "Chưa cập nhật"}
@@ -219,16 +223,7 @@ const ManageExpertPage = () => {
                             })}
                           </div>
                         </td>
-                        <td className="px-6 py-5 text-center">
-                          <div className="text-sm">
-                            <p className="font-medium text-gray-700">
-                              {seeker.resumeCount || 0} CV
-                            </p>
-                            <p className="text-gray-500">
-                              {seeker.appliedCount || 0} lượt nộp
-                            </p>
-                          </div>
-                        </td>
+
                         <td className="gap-2 px-6 py-5 text-center">
                           <Link
                             to={`/admin/users/expert/${seeker.id}`}

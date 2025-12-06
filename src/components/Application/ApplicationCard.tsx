@@ -80,6 +80,16 @@ const getStateConfig = (state: ApplicationState) => {
         color: "bg-red-600",
         ring: "ring-red-400",
       };
+    case "CANCELLED":
+      return {
+        label: "Đã hủy",
+        icon: XCircle,
+        color: "bg-gray-500",
+        ring: "ring-gray-300",
+        textColor: "text-gray-600",
+        badge: "bg-gray-100 text-gray-600 border border-gray-300",
+        muted: true,
+      };
     default:
       return {
         label: "Không xác định",

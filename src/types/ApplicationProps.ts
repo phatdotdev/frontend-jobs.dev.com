@@ -6,6 +6,7 @@ export type ApplicationState =
   | "REJECTED"
   | "HIRED"
   | "INTERVIEW"
+  | "CANCELLED"
   | "";
 
 export interface DocumentProps {
@@ -37,7 +38,8 @@ export interface ApplicationDetail {
     | "REQUESTED"
     | "ACCEPTED"
     | "REJECTED"
-    | "HIRED";
+    | "HIRED"
+    | "CANCELLED";
   resume: {
     avatarUrl: string;
     id: string;

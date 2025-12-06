@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Ban,
   Award,
+  XCircle,
 } from "lucide-react";
 
 type Application = {
@@ -21,13 +22,16 @@ type Application = {
     | "ACCEPTED"
     | "INTERVIEW"
     | "HIRED"
-    | "REJECTED";
+    | "REJECTED"
+    | "CANCELLED";
   appliedAt?: string | null;
   requestedAt?: string | null;
   acceptedAt?: string | null;
   interviewAt?: string | null;
   hiredAt?: string | null;
   rejectedAt?: string | null;
+  cancelledAt?: string | null;
+  updatedAt?: string;
 };
 
 const steps = [
@@ -46,61 +50,58 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
     interviewAt,
     hiredAt,
     rejectedAt,
+    cancelledAt,
+    updatedAt,
   } = app;
 
-  // Xác định bước hiện tại và trạng thái từ chối
+  // Xác định tiến trình
   const getProgress = () => {
-    // Trường hợp bị từ chối
-    if (state === "REJECTED" || rejectedAt) {
-      if (acceptedAt) {
-        // Đã từng được chấp nhận → bị loại sau phỏng vấn → bước 4
-        return { currentStep: 4, isRejected: true, rejectedAtStep: 4 };
-      } else {
-        // Chưa từng được accepted → bị loại ở bước xét duyệt → bước 2
-        return { currentStep: 2, isRejected: true, rejectedAtStep: 2 };
+    const isRejected = state === "REJECTED" || !!rejectedAt;
+    const isCancelled = state === "CANCELLED" || !!cancelledAt;
+    const isTerminated = isRejected || isCancelled;
+
+    if (isTerminated) {
+      if (acceptedAt || interviewAt || hiredAt) {
+        return {
+          currentStep: 4,
+          terminatedAtStep: 4,
+          isCancelled,
+          isTerminated: true,
+        };
       }
+      return {
+        currentStep: 2,
+        terminatedAtStep: 2,
+        isCancelled,
+        isTerminated: true,
+      };
     }
 
-    // Trường hợp được nhận việc
-    if (state === "HIRED" || hiredAt) {
+    if (state === "HIRED" || hiredAt)
       return { currentStep: 4, status: "hired" };
-    }
-
-    // Đang phỏng vấn
-    if (state === "INTERVIEW" || interviewAt) {
+    if (state === "INTERVIEW" || interviewAt)
       return { currentStep: 3, status: "interview" };
-    }
-
-    // Hồ sơ đã được chấp nhận (đi phỏng vấn)
-    if (state === "ACCEPTED" || acceptedAt) {
+    if (state === "ACCEPTED" || acceptedAt)
       return { currentStep: 3, status: "accepted" };
-    }
-
-    // Yêu cầu bổ sung / đang xét duyệt
-    if (state === "REQUESTED" || requestedAt) {
+    if (state === "REQUESTED" || requestedAt)
       return { currentStep: 2, status: "requested" };
-    }
-
-    if (state === "REVIEW" || state === "REVIEWING") {
+    if (state === "REVIEW" || state === "REVIEWING")
       return { currentStep: 2, status: "reviewing" };
-    }
-
-    // Đã nộp hồ sơ → bước 1 hoàn thành
-    if (state === "SUBMITTED" || appliedAt) {
+    if (state === "SUBMITTED" || appliedAt)
       return { currentStep: 1, status: "submitted" };
-    }
 
     return { currentStep: 1, status: "pending" };
   };
 
   const {
     currentStep,
-    isRejected,
-    rejectedAtStep,
+    terminatedAtStep,
+    isTerminated = false,
+    isCancelled = false,
     status = "pending",
   } = getProgress();
 
-  const statusConfig: Record<string, any> = {
+  const statusConfig = {
     submitted: { color: "bg-green-500", ring: "ring-green-200", icon: Check },
     reviewing: { color: "bg-amber-500", ring: "ring-amber-200", icon: Clock },
     requested: {
@@ -108,28 +109,39 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
       ring: "ring-purple-200",
       icon: AlertCircle,
     },
-    accepted: { color: "bg-yellow-500", ring: "ring-yellow-200", icon: Check },
+    accepted: { color: "bg-blue-500", ring: "ring-blue-200", icon: Check },
     interview: { color: "bg-indigo-500", ring: "ring-indigo-200", icon: Users },
     hired: { color: "bg-emerald-600", ring: "ring-emerald-300", icon: Award },
   };
 
-  const getStepDisplay = (stepIndex: number) => {
+  const getStepStyle = (stepIndex: number) => {
     const isPast = stepIndex < currentStep;
     const isCurrent = stepIndex === currentStep;
     const isFuture = stepIndex > currentStep;
 
-    // Nếu bị từ chối: tô đỏ từ bước bị loại trở đi
-    if (isRejected && stepIndex >= (rejectedAtStep || currentStep)) {
-      return {
-        bg: "bg-red-600 text-white",
-        ring: "ring-red-300",
-        icon: X,
-        labelColor: "text-red-600",
-      };
+    // 1. Bước bị hủy/từ chối → chỉ tô đỏ những bước ĐÃ QUA + bước hiện tại (nơi dừng lại)
+    if (isTerminated && stepIndex <= terminatedAtStep!) {
+      if (stepIndex < terminatedAtStep!) {
+        // Các bước đã hoàn thành trước khi bị hủy → vẫn xanh (đã làm xong mà)
+        return {
+          bg: "bg-green-500 text-white",
+          ring: "ring-green-200",
+          icon: Check,
+          labelColor: "text-gray-800",
+        };
+      } else {
+        // Bước hiện tại (nơi bị hủy/rớt) → đỏ + X
+        return {
+          bg: "bg-red-600 text-white",
+          ring: "ring-red-300",
+          icon: X,
+          labelColor: "text-red-600",
+        };
+      }
     }
 
-    // Các bước đã hoàn thành (xanh)
-    if (isPast || (isCurrent && status === "hired")) {
+    // 2. Trường hợp bình thường (không bị hủy)
+    if (isPast) {
       return {
         bg: "bg-green-500 text-white",
         ring: "ring-green-200",
@@ -138,7 +150,6 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
       };
     }
 
-    // Bước hiện tại
     if (isCurrent) {
       if (status === "hired") {
         return {
@@ -148,7 +159,9 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
           labelColor: "text-emerald-700",
         };
       }
-      const cfg = statusConfig[status] || statusConfig.submitted;
+      const cfg =
+        statusConfig[status as keyof typeof statusConfig] ||
+        statusConfig.submitted;
       return {
         bg: cfg.color + " text-white",
         ring: cfg.ring,
@@ -157,7 +170,7 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
       };
     }
 
-    // Bước tương lai → xám
+    // 3. Tương lai → luôn xám (dù bị hủy hay không)
     return {
       bg: "bg-gray-300 text-gray-600",
       ring: "ring-gray-200",
@@ -166,36 +179,21 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
     };
   };
 
-  const getStatusText = () => {
-    if (isRejected)
-      return `Bị từ chối ${
-        rejectedAt ? format(new Date(rejectedAt), "dd/MM/yyyy") : ""
-      }`;
-    if (status === "hired")
-      return `Đã nhận việc ${
-        hiredAt ? format(new Date(hiredAt), "dd/MM/yyyy") : ""
-      }`;
-    if (status === "interview") return "Đã mời phỏng vấn";
-    if (status === "accepted") return "Hồ sơ được chấp nhận";
-    if (status === "requested") return "Yêu cầu bổ sung hồ sơ";
-    if (status === "reviewing") return "Đang xét duyệt";
-    if (status === "submitted") return "Đã nộp hồ sơ";
-    return "Chưa nộp hồ sơ";
-  };
-
   return (
     <div className="w-full max-w-6xl mx-auto py-10 px-6">
       {/* Thanh tiến trình */}
       <div className="relative">
-        {/* Line nền */}
+        {/* Đường nền + thanh màu */}
         <div className="absolute top-10 left-20 right-20 h-2 bg-gray-200 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-1000 ease-out ${
-              isRejected
+              isTerminated && currentStep === terminatedAtStep
                 ? "bg-red-500"
                 : "bg-gradient-to-r from-green-500 to-emerald-500"
             }`}
-            style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
+            style={{
+              width: `${((currentStep - 1) / (steps.length - 1)) * 100}%`,
+            }}
           />
         </div>
 
@@ -203,19 +201,19 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
         <div className="relative flex justify-between">
           {steps.map((step, index) => {
             const stepNum = index + 1;
-            const display = getStepDisplay(stepNum);
-            const Icon = display.icon;
+            const style = getStepStyle(stepNum);
+            const Icon = style.icon;
 
             return (
               <div key={index} className="flex flex-col items-center z-10">
                 <div
                   className={`
-                    w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold
-                    border-4 border-white shadow-xl transition-all duration-700
-                    ${display.bg}
+                    w-20 h-20 rounded-full flex items-center justify-center shadow-xl
+                    border-4 border-white transition-all duration-700
+                    ${style.bg}
                     ${
                       stepNum === currentStep
-                        ? display.ring + " ring-8 scale-110"
+                        ? "ring-8 " + style.ring + " scale-110"
                         : ""
                     }
                   `}
@@ -224,13 +222,20 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
                 </div>
 
                 <div className="mt-6 text-center w-40">
-                  <p className={`font-bold text-lg ${display.labelColor}`}>
+                  <p className={`font-bold text-lg ${style.labelColor}`}>
                     {step.label}
                   </p>
-
                   {stepNum === currentStep && (
                     <p className="text-sm font-medium text-gray-700 mt-2">
-                      {getStatusText()}
+                      {isTerminated
+                        ? isCancelled
+                          ? "Đơn đã bị hủy"
+                          : "Bị từ chối"
+                        : status === "hired"
+                        ? "Đã nhận việc"
+                        : status === "interview"
+                        ? "Đang phỏng vấn"
+                        : "Đang xử lý"}
                     </p>
                   )}
                 </div>
@@ -240,30 +245,44 @@ export default function ApplicationProgressBar({ app }: { app: Application }) {
         </div>
       </div>
 
-      {/* Thông báo đặc biệt */}
-      {isRejected && (
-        <div className="mt-12 text-center bg-red-50 border-2 border-red-300 rounded-2xl py-6 px-8">
-          <Ban className="w-16 h-16 text-red-600 mx-auto mb-3" />
-          <p className="text-2xl font-bold text-red-700">Hồ sơ đã bị từ chối</p>
-          {rejectedAt && (
-            <p className="text-red-600 mt-2">
-              Ngày: {format(new Date(rejectedAt), "dd/MM/yyyy HH:mm")}
-            </p>
+      {/* Thông báo cuối */}
+      {isTerminated && (
+        <div className="mt-6 text-center bg-red-50 border-2 border-red-300 rounded-3xl py-4 px-10 shadow-lg">
+          {isCancelled ? (
+            <>
+              <div>
+                <Ban className="w-20 h-20 text-red-600 mx-auto mb-4" />
+                <p className="text-xl font-bold text-red-700">
+                  Đơn ứng tuyển đã được hủy
+                </p>
+              </div>
+              <p className="text-red-600 mt-3 text-lg">
+                Ứng viên đã chủ động hủy đơn vào ngày{" "}
+                <span className="font-bold">
+                  {format(
+                    new Date(cancelledAt || updatedAt || Date.now()),
+                    "dd/MM/yyyy 'lúc' HH:mm"
+                  )}
+                </span>
+              </p>
+            </>
+          ) : (
+            <>
+              <XCircle className="w-20 h-20 text-red-600 mx-auto mb-4" />
+              <p className="text-xl font-bold text-red-700">
+                Hồ sơ đã bị từ chối
+              </p>
+            </>
           )}
         </div>
       )}
 
       {status === "hired" && (
-        <div className="mt-12 text-center bg-emerald-50 border-2 border-emerald-400 rounded-2xl py-6 px-8">
-          <Award className="w-16 h-16 text-emerald-600 mx-auto mb-3" />
-          <p className="text-2xl font-bold text-emerald-700">
-            Chúc mừng! Ứng viên đã nhận việc
+        <div className="mt-6 text-center bg-emerald-50 border-2 border-emerald-400 rounded-3xl py-4 px-10 shadow-lg">
+          <Award className="w-20 h-20 text-emerald-600 mx-auto mb-4" />
+          <p className="text-xl font-bold text-emerald-700">
+            Chúc mừng! Bạn đã được nhận việc
           </p>
-          {hiredAt && (
-            <p className="text-emerald-600 mt-2">
-              Ngày nhận việc: {format(new Date(hiredAt), "dd/MM/yyyy")}
-            </p>
-          )}
         </div>
       )}
     </div>

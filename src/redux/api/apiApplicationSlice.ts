@@ -51,6 +51,12 @@ export const applicationSlice = apiSlice.injectEndpoints({
         method: "PUT",
       }),
     }),
+    cancelApplication: builder.mutation<ResponseProps<any>, any>({
+      query: (id) => ({
+        url: `${APP_URL}/${id}/cancel`,
+        method: "PUT",
+      }),
+    }),
     // GET JS BY APPLICATION ID
     getJobSeekerByApplicationId: builder.query<ResponseProps<any>, any>({
       query: (id) => ({
@@ -76,6 +82,7 @@ export const {
   useGetApplicantsByPostQuery,
   useUpdateApplicationStateMutation,
   // CANDIDATE
+  useCancelApplicationMutation,
   useGetJobSeekerByApplicationIdQuery,
   useGetResumeByApplicationIdQuery,
 } = applicationSlice;
