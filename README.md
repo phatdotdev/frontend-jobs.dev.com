@@ -1,73 +1,57 @@
-# React + TypeScript + Vite
+# 💻 Job Board Frontend Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The web frontend client for `jobs.dev.com` — a modern, responsive job search application built with **React** and **TypeScript**. It provides job seekers with intuitive search, filter, and application interfaces, alongside dedicated management dashboards for employers.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 📌 Table of Contents
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Project Architecture](#-project-architecture)
+- [Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Environment Variables](#environment-variables)
+  - [Installation](#installation)
+- [Key Pages & Workflows](#-key-pages--workflows)
+- [Author](#-author)
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## ✨ Features
 
-## Expanding the ESLint configuration
+- 🔍 **Interactive Job Search:** Real-time search by title, keyword, location, and employment type.
+- 🎨 **Modern & Responsive UI:** Optimized for desktop, tablet, and mobile devices using Tailwind CSS.
+- 🔐 **Authentication Flows:** User registration, login, and protected routes for job seekers & employers.
+- 📋 **Job Seeker Dashboard:** Track submitted applications, save favorite jobs, and update user profiles/resumes.
+- 📊 **Employer Workspace:** Create job posts, manage candidate applications, and update listing status.
+- ⚡ **Optimized State Management:** Smooth data fetching, loading states, and notification toasts.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🛠 Tech Stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Framework / Library:** React.js (Vite / Next.js)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS / Lucide Icons
+- **State & Data Fetching:** React Query (TanStack Query) / Axios / Zustand
+- **Routing:** React Router DOM
+- **Form Handling:** React Hook Form + Zod
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 📁 Project Architecture
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+```text
+[frontend-jobs.dev.com/](https://frontend-jobs.dev.com/)
+├── src/
+│   ├── assets/          # Images, icons, and static assets
+│   ├── components/      # Reusable UI components (Navbar, Footer, JobCard, Modal)
+│   ├── context/         # Auth and App Context providers
+│   ├── hooks/           # Custom React hooks (useAuth, useJobs)
+│   ├── pages/           # Page views (Home, Jobs, JobDetails, Login, Dashboard)
+│   ├── services/        # API integration (Axios client setup & endpoints)
+│   ├── types/           # TypeScript interfaces & types
+│   └── utils/           # Helper functions & formatters
+├── .env.example
+├── package.json
+└── README.md
